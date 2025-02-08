@@ -9,28 +9,41 @@ export class PersonService {
 
   create(createPersonDto: CreatePersonDto) : Person {
     const newPerson: Person = {
-      id: this.persons.length + 1,
+      person_id: this.persons.length + 1,
       ...createPersonDto,
     };
     this.persons.push(newPerson);
     return newPerson;
-    //return 'This action adds a new person';
   }
 
   findAll() : Person[] {
     return this.persons;
-    //return `This action returns all person`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} person`;
+  async findOne(id: number) {
+    return await this.persons.find(person => person.person_id == id);
   }
 
-  update(id: number, updatePersonDto: UpdatePersonDto) {
+  async update(id: number, updatePersonDto: UpdatePersonDto) {
+    
+    //Find index of specific object using findIndex method.    
+    const objIndex = await this.persons.findIndex(obj => obj.person_id == id);
+
+    //update the specific object that was found with the update info
+    this.persons[objIndex].den = updatePersonDto.den;
+    this.persons[objIndex].name = updatePersonDto.name;
+    this.persons[objIndex].rank = updatePersonDto.rank;
+
     return `This action updates a #${id} person`;
   }
 
-  remove(id: number) {
+  async remove(id: number) {
+
+    //Find index of specific object using findIndex method.    
+    const objIndex = await this.persons.findIndex(obj => obj.person_id == id);
+
+    this.persons.splice(objIndex,1);
+
     return `This action removes a #${id} person`;
   }
 }

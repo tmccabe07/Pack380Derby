@@ -41,8 +41,12 @@ export class PersonService {
 
     //Find index of specific object using findIndex method.    
     const objIndex = await this.persons.findIndex(obj => obj.person_id == id);
-
+    
     this.persons.splice(objIndex,1);
+
+    for(let i = objIndex; i < this.persons.length; i++){
+      this.persons[i].person_id = this.persons[i].person_id-1; 
+    }
 
     return `This action removes a #${id} person`;
   }

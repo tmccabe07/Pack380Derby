@@ -9,21 +9,19 @@ export class PersonService {
 
   create(createPersonDto: CreatePersonDto) : Person {
     const newPerson: Person = {
-      id: this.persons.length + 1,
+      person_id: this.persons.length + 1,
       ...createPersonDto,
     };
     this.persons.push(newPerson);
     return newPerson;
-    //return 'This action adds a new person';
   }
 
   findAll() : Person[] {
     return this.persons;
-    //return `This action returns all person`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} person`;
+  async findOne(id: number) {
+    return await this.persons.find(person => person.person_id == id);
   }
 
   update(id: number, updatePersonDto: UpdatePersonDto) {

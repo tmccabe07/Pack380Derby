@@ -1,5 +1,5 @@
 export interface Person {
-    id: number;
+    person_id: number;
     name: string;
     den: string;
     rank: string;

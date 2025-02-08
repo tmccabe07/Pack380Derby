@@ -27,7 +27,7 @@ export class PersonService {
   async update(id: number, updatePersonDto: UpdatePersonDto) {
     
     //Find index of specific object using findIndex method.    
-    const objIndex = this.persons.findIndex(obj => obj.person_id == id);
+    const objIndex = await this.persons.findIndex(obj => obj.person_id == id);
 
     //update the specific object that was found with the update info
     this.persons[objIndex].den = updatePersonDto.den;
@@ -37,7 +37,13 @@ export class PersonService {
     return `This action updates a #${id} person`;
   }
 
-  remove(id: number) {
+  async remove(id: number) {
+
+    //Find index of specific object using findIndex method.    
+    const objIndex = await this.persons.findIndex(obj => obj.person_id == id);
+
+    this.persons.splice(objIndex,1);
+
     return `This action removes a #${id} person`;
   }
 }

@@ -24,7 +24,16 @@ export class PersonService {
     return await this.persons.find(person => person.person_id == id);
   }
 
-  update(id: number, updatePersonDto: UpdatePersonDto) {
+  async update(id: number, updatePersonDto: UpdatePersonDto) {
+    
+    //Find index of specific object using findIndex method.    
+    const objIndex = this.persons.findIndex(obj => obj.person_id == id);
+
+    //update the specific object that was found with the update info
+    this.persons[objIndex].den = updatePersonDto.den;
+    this.persons[objIndex].name = updatePersonDto.name;
+    this.persons[objIndex].rank = updatePersonDto.rank;
+
     return `This action updates a #${id} person`;
   }
 

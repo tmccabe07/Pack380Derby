@@ -3,4 +3,5 @@ export interface Person {
     name: string;
     den: string;
     rank: string;
+    role: string;
 }

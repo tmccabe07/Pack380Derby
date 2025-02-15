@@ -1,53 +1,86 @@
 import { Injectable } from '@nestjs/common';
-import { CreatePersonDto } from './dto/create-person.dto';
-import { UpdatePersonDto } from './dto/update-person.dto';
-import { Person } from './interfaces/person.interface';
+import { PrismaService } from './prisma.service';
+import { Person, Prisma } from '@prisma/client';
 
 @Injectable()
 export class PersonService {
-  private readonly persons: Person[] = [];
+  constructor(private prisma: PrismaService) {}
 
-  create(createPersonDto: CreatePersonDto) : Person {
-    const newPerson: Person = {
-      person_id: this.persons.length + 1,
-      ...createPersonDto,
-    };
-    this.persons.push(newPerson);
-    return newPerson;
+  async person(
+    personWhereUniqueInput: Prisma.PersonWhereUniqueInput,
+  ): Promise<Person | null> {
+    return this.prisma.person.findUnique({
+      where: personWhereUniqueInput,
+    });
   }
 
-  findAll() : Person[] {
-    return this.persons;
+  async persons(params: {
+    skip?: number;
+    take?: number;
+    cursor?: Prisma.PersonWhereUniqueInput;
+    where?: Prisma.PersonWhereInput;
+    orderBy?: Prisma.PersonOrderByWithRelationInput;
+  }): Promise<Person[]> {
+    const { skip, take, cursor, where, orderBy } = params;
+    return this.prisma.person.findMany({
+      skip,
+      take,
+      cursor,
+      where,
+      orderBy,
+    });
   }
 
-  async findOne(id: number) {
-    return await this.persons.find(person => person.person_id == id);
+  async createPerson(data: Prisma.PersonCreateInput): Promise<Person> {
+    return await this.prisma.person.create({
+      data,
+    });
   }
 
-  async update(id: number, updatePersonDto: UpdatePersonDto) {
+  async update(id: number, updateData: Prisma.PersonUpdateInput): Promise<Person> {
+    return await this.prisma.person.update({
+      where: {
+        person_id: id,
+      },
+      data : {
+        name: updateData.name,
+        rank: updateData.rank,
+        den: updateData.den,
+        role: updateData.role,  
+      },
+    });
+  }
+
+  async findAll() : Promise<Person[]> {
+    return this.prisma.person.findMany()
+  }
+
+  async findOne(id: number) : Promise<Person> {
     
-    //Find index of specific object using findIndex method.    
-    const objIndex = await this.persons.findIndex(obj => obj.person_id == id);
+    const oneValue = await this.prisma.person.findUnique({
+      where: {
+        person_id: id,
+      }
+    });
 
-    //update the specific object that was found with the update info
-    this.persons[objIndex].den = updatePersonDto.den;
-    this.persons[objIndex].name = updatePersonDto.name;
-    this.persons[objIndex].rank = updatePersonDto.rank;
-
-    return `This action updates a #${id} person`;
-  }
-
-  async remove(id: number) {
-
-    //Find index of specific object using findIndex method.    
-    const objIndex = await this.persons.findIndex(obj => obj.person_id == id);
-    
-    this.persons.splice(objIndex,1);
-
-    for(let i = objIndex; i < this.persons.length; i++){
-      this.persons[i].person_id = this.persons[i].person_id-1; 
+    if (oneValue === null) {
+      return null as any;
+    } else {
+      return oneValue;
     }
+  }
 
-    return `This action removes a #${id} person`;
+  async remove(id: number) : Promise<Person> {
+    const deletePerson = await this.prisma.person.findFirst({
+      where: { person_id: id, },
+    });
+
+    if (!deletePerson) {
+      throw new Error('No person found with that ID');
+    }
+  
+    return this.prisma.person.delete({
+      where: { person_id: deletePerson.person_id },
+    });
   }
 }

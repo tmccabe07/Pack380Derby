@@ -26,4 +26,10 @@ den: string;
 })
 rank: string;
 
+@ApiProperty({
+    example: 'Cub',
+    description: 'The role, valid values are Cub, Sibling, Adult',
+  })
+  role: string;
+
 }

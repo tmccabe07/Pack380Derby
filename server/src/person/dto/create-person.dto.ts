@@ -12,4 +12,8 @@ export class CreatePersonDto {
     @IsString()
     @IsNotEmpty()
     rank: string;
+
+    @IsString()
+    @IsNotEmpty()
+    role: string;
 }

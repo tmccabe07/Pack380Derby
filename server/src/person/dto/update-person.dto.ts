@@ -6,4 +6,5 @@ export class UpdatePersonDto extends PartialType(CreatePersonDto) {
     name: string;
     den: string;
     rank: string;
+    role: string;
 }

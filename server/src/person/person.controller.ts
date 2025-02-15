@@ -7,11 +7,11 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { PersonService } from './person.service';
 import { CreatePersonDto } from './dto/create-person.dto';
 import { UpdatePersonDto } from './dto/update-person.dto';
-import { Person } from './interfaces/person.interface';
 import { Person as PersonEntity } from './entities/person.entity';
+import { Person as PersonModel} from '@prisma/client';
+import { PersonService } from './person.service';
 
 @ApiTags('person')
 @Controller('person')
@@ -36,12 +36,18 @@ export class PersonController {
       name: "rank",
       type: "String",
       description: "Rank of the person",
-      example: "Lion, Sibling, Adult",
-      required: true })   
+      example: "Lion, Tiger, Wolf, Bear, Webelos, AoL, Sibling, Adult",
+      required: true })  
+  @ApiParam( {
+      name: "role",
+      type: "String",
+      description: "Role of the person",
+      example: "Cub, Sibling, Adult",
+      required: true }) 
   @ApiCreatedResponse({ description: 'Person created successfully', type: PersonEntity })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  create(@Body() createPersonDto: CreatePersonDto) {
-    return this.personService.create(createPersonDto);
+  async create(@Body() createPersonDto: CreatePersonDto): Promise<PersonModel> {
+    return this.personService.createPerson(createPersonDto);
   }
 
   @Get()
@@ -50,7 +56,7 @@ export class PersonController {
     description: 'All records',
     type: PersonEntity,
   })
-  async findAll(): Promise<Person[]> {
+  async findAll(): Promise<PersonModel[]> {
     return this.personService.findAll();
   }
 
@@ -60,10 +66,23 @@ export class PersonController {
     description: 'The found record',
     type: PersonEntity,
   })
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string): Promise<PersonModel> {
     return this.personService.findOne(+id);
   }
 
+  @Delete(':id')
+  @ApiOperation({ summary: 'Remove person' })
+  @ApiResponse({
+    status: 200,
+    description: 'The found record was deleted',
+    type: PersonEntity,
+  })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
+  async remove(@Param('id') id: string) {
+    return this.personService.remove(+id);
+  }
+
+  
   @Patch(':id')
   @ApiOperation({ summary: 'Update person' })
   @ApiParam( {
@@ -82,23 +101,14 @@ export class PersonController {
       name: "rank",
       type: "String",
       description: "Rank of the person",
-      example: "Lion, Sibling, Adult",
+      example: "Lion, Tiger, Wolf, Bear, Webelos, AoL, Sibling, Adult",
       required: true })   
   @ApiCreatedResponse({ description: 'Person updated successfully', type: PersonEntity })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  update(@Param('id') id: string, @Body() updatePersonDto: UpdatePersonDto) {
+  async update(@Param('id') id: string, @Body() updatePersonDto: UpdatePersonDto): Promise<PersonModel> {
     return this.personService.update(+id, updatePersonDto);
   }
 
-  @Delete(':id')
-  @ApiOperation({ summary: 'Remove person' })
-  @ApiResponse({
-    status: 200,
-    description: 'The found record was deleted',
-    type: PersonEntity,
-  })
-  @ApiBadRequestResponse({ description: 'Bad Request' })
-  remove(@Param('id') id: string) {
-    return this.personService.remove(+id);
-  }
+  
+  
 }

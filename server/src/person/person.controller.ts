@@ -11,7 +11,7 @@ import { CreatePersonDto } from './dto/create-person.dto';
 import { UpdatePersonDto } from './dto/update-person.dto';
 import { Person as PersonEntity } from './entities/person.entity';
 import { Person as PersonModel} from '@prisma/client';
-import { PersonService } from '../prisma/person.service';
+import { PersonService } from './person.service';
 
 @ApiTags('person')
 @Controller('person')

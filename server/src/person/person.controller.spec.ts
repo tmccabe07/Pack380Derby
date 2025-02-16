@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PersonController } from './person.controller';
-import { PersonService } from './person.service';
+import { PersonService } from '../prisma/person.service';
 
 describe('PersonController', () => {
   let controller: PersonController;

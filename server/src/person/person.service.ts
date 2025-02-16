@@ -13,12 +13,23 @@ export class PersonService {
   }
 
   async update(id: number, updateData: Prisma.PersonUpdateInput): Promise<Person> {
-    return await this.prisma.person.update({
+    const checkIndex = await this.prisma.person.findUnique({
       where: {
         person_id: id,
       },
-      data: updateData,
+    })
+
+    if (checkIndex === null) {
+      return null as any;
+    } 
+    
+    return await this.prisma.person.update({
+        where: {
+          person_id: id,
+        },
+        data: updateData,
     });
+
   }
 
   async findAll() : Promise<Person[]> {
@@ -32,7 +43,6 @@ export class PersonService {
   }
 
   async findOne(id: number) : Promise<Person> {
-    
     const oneValue = await this.prisma.person.findUnique({
       where: {
         person_id: id,
@@ -41,13 +51,32 @@ export class PersonService {
 
     if (oneValue === null) {
       return null as any;
-    } else {
-      return oneValue;
-    }
+    } 
+    
+    return oneValue;
   }
 
   async remove(id: number) : Promise<Person> {
-    const deletePerson = await this.prisma.person.findFirst({
+    
+    const checkIndex = await this.prisma.person.findUnique({
+      where: {
+        person_id: id,
+      },
+    })
+
+    if (checkIndex === null) {
+      return null as any;
+    } 
+    
+    return await this.prisma.person.delete({
+        where: {
+          person_id: id,
+        },
+    });
+    
+    
+    
+    /*const deletePerson = await this.prisma.person.findFirst({
       where: { person_id: id, },
     });
 
@@ -57,6 +86,7 @@ export class PersonService {
   
     return this.prisma.person.delete({
       where: { person_id: deletePerson.person_id },
-    });
+    });*/
+
   }
 }

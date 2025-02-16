@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException } from '@nestjs/common';
 import {
   ApiOperation,
   ApiParam,
@@ -67,7 +67,11 @@ export class PersonController {
     type: PersonEntity,
   })
   async findOne(@Param('id') id: string): Promise<PersonModel> {
-    return this.personService.findOne(+id);
+    const onePerson = await this.personService.findOne(+id);
+    if (!onePerson) {
+      throw new NotFoundException(`Person with ${id} does not exist.`);
+    }
+    return onePerson;
   }
 
   @Delete(':id')
@@ -79,7 +83,14 @@ export class PersonController {
   })
   @ApiBadRequestResponse({ description: 'Bad Request' })
   async remove(@Param('id') id: string) {
-    return this.personService.remove(+id);
+    //return this.personService.remove(+id);
+
+    const deletePerson = await this.personService.remove(+id);
+    if (!deletePerson) {
+      throw new NotFoundException(`Person with ${id} does not exist.`);
+    }
+    return deletePerson;
+
   }
 
   
@@ -106,7 +117,12 @@ export class PersonController {
   @ApiCreatedResponse({ description: 'Person updated successfully', type: PersonEntity })
   @ApiBadRequestResponse({ description: 'Bad Request' })
   async update(@Param('id') id: string, @Body() updatePersonDto: UpdatePersonDto): Promise<PersonModel> {
-    return this.personService.update(+id, updatePersonDto);
+    
+    const updatePerson = await this.personService.update(+id, updatePersonDto);
+    if (!updatePerson) {
+      throw new NotFoundException(`Person with ${id} does not exist.`);
+    }
+    return updatePerson;
   }
 
   

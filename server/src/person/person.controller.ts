@@ -83,8 +83,6 @@ export class PersonController {
   })
   @ApiBadRequestResponse({ description: 'Bad Request' })
   async remove(@Param('id') id: string) {
-    //return this.personService.remove(+id);
-
     const deletePerson = await this.personService.remove(+id);
     if (!deletePerson) {
       throw new NotFoundException(`Person with ${id} does not exist.`);

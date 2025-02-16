@@ -73,20 +73,6 @@ export class PersonService {
           person_id: id,
         },
     });
-    
-    
-    
-    /*const deletePerson = await this.prisma.person.findFirst({
-      where: { person_id: id, },
-    });
-
-    if (!deletePerson) {
-      throw new Error('No person found with that ID');
-    }
-  
-    return this.prisma.person.delete({
-      where: { person_id: deletePerson.person_id },
-    });*/
 
   }
 }

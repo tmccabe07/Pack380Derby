@@ -6,31 +6,6 @@ import { Person, Prisma } from '@prisma/client';
 export class PersonService {
   constructor(private prisma: PrismaService) {}
 
-  async person(
-    personWhereUniqueInput: Prisma.PersonWhereUniqueInput,
-  ): Promise<Person | null> {
-    return this.prisma.person.findUnique({
-      where: personWhereUniqueInput,
-    });
-  }
-
-  async persons(params: {
-    skip?: number;
-    take?: number;
-    cursor?: Prisma.PersonWhereUniqueInput;
-    where?: Prisma.PersonWhereInput;
-    orderBy?: Prisma.PersonOrderByWithRelationInput;
-  }): Promise<Person[]> {
-    const { skip, take, cursor, where, orderBy } = params;
-    return this.prisma.person.findMany({
-      skip,
-      take,
-      cursor,
-      where,
-      orderBy,
-    });
-  }
-
   async createPerson(data: Prisma.PersonCreateInput): Promise<Person> {
     return await this.prisma.person.create({
       data,
@@ -42,17 +17,18 @@ export class PersonService {
       where: {
         person_id: id,
       },
-      data : {
-        name: updateData.name,
-        rank: updateData.rank,
-        den: updateData.den,
-        role: updateData.role,  
-      },
+      data: updateData,
     });
   }
 
   async findAll() : Promise<Person[]> {
-    return this.prisma.person.findMany()
+    return this.prisma.person.findMany({
+      orderBy: [
+        {
+          person_id: 'asc',
+        },
+      ],
+    })
   }
 
   async findOne(id: number) : Promise<Person> {

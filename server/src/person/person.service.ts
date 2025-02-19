@@ -15,7 +15,7 @@ export class PersonService {
   async update(id: number, updateData: Prisma.PersonUpdateInput): Promise<Person> {
     const checkIndex = await this.prisma.person.findUnique({
       where: {
-        person_id: id,
+        id: id, 
       },
     })
 
@@ -25,7 +25,7 @@ export class PersonService {
     
     return await this.prisma.person.update({
         where: {
-          person_id: id,
+          id: id,
         },
         data: updateData,
     });
@@ -36,7 +36,7 @@ export class PersonService {
     return this.prisma.person.findMany({
       orderBy: [
         {
-          person_id: 'asc',
+          id: 'asc',
         },
       ],
     })
@@ -45,7 +45,7 @@ export class PersonService {
   async findOne(id: number) : Promise<Person> {
     const oneValue = await this.prisma.person.findUnique({
       where: {
-        person_id: id,
+        id: id,
       }
     });
 
@@ -60,7 +60,7 @@ export class PersonService {
     
     const checkIndex = await this.prisma.person.findUnique({
       where: {
-        person_id: id,
+        id: id,
       },
     })
 
@@ -70,7 +70,7 @@ export class PersonService {
     
     return await this.prisma.person.delete({
         where: {
-          person_id: id,
+          id: id,
         },
     });
 

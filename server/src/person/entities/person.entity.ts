@@ -5,7 +5,7 @@ export class Person {
     example: '1',
     description: 'The unique id of the person',
 })
-person_id: number;
+id: number;
 
 
 @ApiProperty({

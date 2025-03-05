@@ -33,6 +33,18 @@ export class Car {
     if (racer) {
       this.racer = new PersonEntity();
     }
+
   }
-    
+
+  @ApiProperty({
+    example: '2025',
+    description: 'The 4 digit year that this car raced',
+  })
+  year: number;
+
+  @ApiProperty({
+    example: '2025',
+    description: 'The 4 digit year that this car raced',
+  })
+  image?: string;
 }

@@ -10,11 +10,6 @@ export class CarController {
 
   @Post()
   async create(@Body() createCarDto: CreateCarDto) : Promise<CarModel> {    
-    
-    const idNum = createCarDto.racerId;
-
-    //need to convert the id that is being sent into an int
-
     return this.carService.create(createCarDto);
   }
 

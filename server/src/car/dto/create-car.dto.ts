@@ -13,4 +13,10 @@ export class CreateCarDto {
     @IsInt()
     racerId: Person["id"];
 
+    @IsInt()
+    year: number;
+
+    @IsString()
+    image: string;
+
 }

@@ -24,4 +24,13 @@ model Car {
   racerId Int? @unique // relation scaler field, the unique decorator means one to one relationship
   year Int?
   image String?
+  lane HeatLane?
+}
+
+model HeatLane {
+  id    Int    @id @default(autoincrement())
+  lane Int 
+  result Int? 
+  car Car? @relation(fields: [carId], references: [id])
+  carId Int? @unique
 }

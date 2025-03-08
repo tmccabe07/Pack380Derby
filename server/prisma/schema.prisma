@@ -24,6 +24,7 @@ model Car {
   racerId Int? @unique // relation scaler field, the unique decorator means one to one relationship
   year Int?
   image String?
+  lane HeatLane?
 }
 
 model HeatLane {

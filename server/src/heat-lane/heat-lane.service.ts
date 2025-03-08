@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { CreateHeatLaneDto } from './dto/create-heat-lane.dto';
 import { UpdateHeatLaneDto } from './dto/update-heat-lane.dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { HeatLane, Prisma } from '@prisma/client';
 
 @Injectable()
 export class HeatLaneService {

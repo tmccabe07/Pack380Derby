@@ -6,23 +6,75 @@ import { HeatLane, Prisma } from '@prisma/client';
 
 @Injectable()
 export class HeatLaneService {
-  create(createHeatLaneDto: CreateHeatLaneDto) {
-    return 'This action adds a new heatLane';
+  constructor(private prisma: PrismaService) {}
+  
+  async create(data: Prisma.HeatLaneCreateInput) : Promise<HeatLane> {
+    return await this.prisma.heatLane.create({
+      data,
+    });
   }
 
-  findAll() {
-    return `This action returns all heatLane`;
+  async findAll() : Promise<HeatLane[]> {
+    return await this.prisma.heatLane.findMany({
+      orderBy: [
+        {
+          id: 'asc',
+        },
+      ],
+    })
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} heatLane`;
+  async findOne(id: number) : Promise<HeatLane> {
+    const oneValue = await this.prisma.heatLane.findUnique({
+      where: {
+        id: id,
+      },
+      include: {
+        car: true,
+      }
+    });
+
+    if (oneValue === null) {
+      return null as any;
+    } 
+    
+    return oneValue;
   }
 
-  update(id: number, updateHeatLaneDto: UpdateHeatLaneDto) {
-    return `This action updates a #${id} heatLane`;
+  async update(id: number, updateData: Prisma.HeatLaneUpdateInput) : Promise<HeatLane> {
+    const checkIndex = await this.prisma.heatLane.findUnique({
+      where: {
+        id: id, 
+      },
+    })
+
+    if (checkIndex === null) {
+      return null as any;
+    } 
+    
+    return await this.prisma.heatLane.update({
+        where: {
+          id: id,
+        },
+        data: updateData,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} heatLane`;
+  async remove(id: number) : Promise<HeatLane> {
+    const checkIndex = await this.prisma.heatLane.findUnique({
+      where: {
+        id: id,
+      },
+    })
+
+    if (checkIndex === null) {
+      return null as any;
+    } 
+    
+    return await this.prisma.heatLane.delete({
+        where: {
+          id: id,
+        },
+    });
   }
 }

@@ -5,9 +5,10 @@ import { PersonModule } from './person/person.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { CarModule } from './car/car.module';
+import { HeatLaneModule } from './heat-lane/heat-lane.module';
 
 @Module({
-  imports: [PersonModule, ConfigModule.forRoot(), PrismaModule, CarModule],
+  imports: [PersonModule, ConfigModule.forRoot(), PrismaModule, CarModule, HeatLaneModule],
   controllers: [AppController],
   providers: [AppService],
 })

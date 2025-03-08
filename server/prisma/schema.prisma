@@ -25,3 +25,11 @@ model Car {
   year Int?
   image String?
 }
+
+model HeatLane {
+  id    Int    @id @default(autoincrement())
+  lane Int 
+  result Int? 
+  car Car? @relation(fields: [carId], references: [id])
+  carId Int? @unique
+}

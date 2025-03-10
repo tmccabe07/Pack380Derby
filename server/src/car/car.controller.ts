@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, NotFoundException } from '@nestjs/common';
 import {
   ApiOperation,
   ApiParam,
@@ -73,8 +73,12 @@ export class CarController {
       description: 'The found record',
       type: CarEntity,
     })
-  async findOne(@Param('id', ParseIntPipe) id: number) : Promise<CarModel> {
-    return this.carService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number) : Promise<CarModel> { 
+    const oneCar = await this.carService.findOne(+id);
+    if (!oneCar) {
+      throw new NotFoundException(`Car with ${id} does not exist.`);
+    }
+    return oneCar;
   }
 
   @Patch(':id')
@@ -112,7 +116,11 @@ export class CarController {
   @ApiCreatedResponse({ description: 'Car updated successfully', type: CarEntity })
   @ApiBadRequestResponse({ description: 'Bad Request' })     
   async update(@Param('id', ParseIntPipe) id: number, @Body() updateCarDto: UpdateCarDto) : Promise<CarModel> {
-    return this.carService.update(+id, updateCarDto);
+    const updateCar = await this.carService.update(+id, updateCarDto);
+    if (!updateCar) {
+      throw new NotFoundException(`Car with ${id} does not exist.`);
+    }
+    return updateCar;
   }
 
   @Delete(':id')
@@ -124,6 +132,10 @@ export class CarController {
   })
   @ApiBadRequestResponse({ description: 'Bad Request' })
   async remove(@Param('id', ParseIntPipe) id: number) : Promise<CarModel> {
-    return this.carService.remove(+id);
-  }
+    const deleteCar = await this.carService.remove(+id);
+    if (!deleteCar) {
+      throw new NotFoundException(`Car with ${id} does not exist.`);
+    }
+    return deleteCar;    
+ }
 }

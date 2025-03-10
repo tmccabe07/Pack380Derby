@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException } from '@nestjs/common';
 import {
   ApiOperation,
   ApiParam,
@@ -61,7 +61,11 @@ export class HeatLaneController {
       type: HeatLaneEntity,
     })
   async findOne(@Param('id') id: string) : Promise<HeatLaneModel> {
-    return this.heatLaneService.findOne(+id);
+    const oneHeatLane = await this.heatLaneService.findOne(+id);
+    if (!oneHeatLane) {
+      throw new NotFoundException(`HeatLane with ${id} does not exist.`);
+    }
+    return oneHeatLane;
   }
 
   @Patch(':id')
@@ -87,7 +91,11 @@ export class HeatLaneController {
   @ApiCreatedResponse({ description: 'HeatLane updated successfully', type: HeatLaneEntity })
   @ApiBadRequestResponse({ description: 'Bad Request' }) 
   async update(@Param('id') id: string, @Body() updateHeatLaneDto: UpdateHeatLaneDto) : Promise<HeatLaneModel> {
-    return this.heatLaneService.update(+id, updateHeatLaneDto);
+    const updateHeatLane = await this.heatLaneService.update(+id, updateHeatLaneDto);
+    if (!updateHeatLane) {
+      throw new NotFoundException(`HeatLane with ${id} does not exist.`);
+    }
+    return updateHeatLane;
   }
 
   @Delete(':id')
@@ -99,6 +107,10 @@ export class HeatLaneController {
   })
   @ApiBadRequestResponse({ description: 'Bad Request' })
   async remove(@Param('id') id: string) : Promise<HeatLaneModel> {
-    return this.heatLaneService.remove(+id);
+    const deleteHeatLane = await this.heatLaneService.remove(+id);
+    if (!deleteHeatLane) {
+      throw new NotFoundException(`HeatLane with ${id} does not exist.`);
+    }
+    return deleteHeatLane;
   }
 }

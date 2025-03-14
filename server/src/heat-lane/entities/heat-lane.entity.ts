@@ -21,18 +21,33 @@ export class HeatLane {
     result: number;
  
     @ApiProperty({ required: false, nullable: true })
-    carId: number | null;
+    carId?: number | null;
 
     @ApiProperty({ required: false, type: CarEntity })
     car?: CarEntity;
 
-    constructor({ car, ...data }: Partial<HeatLane>) {
-    Object.assign(this, data);
+    @ApiProperty({ required: true, nullable: true }) 
+    heatId: number | null;
 
-    if (car) {
-      this.car = new CarEntity({});
+    @ApiProperty({ required: true, nullable: true }) 
+    raceId: number | null;
+
+    @ApiProperty({
+        example: 'Cub Quarterfinals',
+        description: 'The name of the race',
+    })
+    raceName: string;
+
+    constructor({ car, ...data }: Partial<HeatLane>) {
+        Object.assign(this, data);
+
+        if (car) {
+        this.car = new CarEntity({});
+        }
+
     }
 
-  }
+    
+    
     
 }

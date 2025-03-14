@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsInt, IsIn } from 'class-validator';
+import { IsNotEmpty, IsInt, IsIn, IsString } from 'class-validator';
 import { Car } from "../../car/entities/car.entity";
 
 export class CreateHeatLaneDto {
@@ -13,4 +13,13 @@ export class CreateHeatLaneDto {
     
     @IsInt()
     carId: Car["id"];
+
+    @IsInt()
+    heatId: number;
+
+    @IsInt()
+    raceId: number;
+
+    @IsString()
+    raceName: string;
 }

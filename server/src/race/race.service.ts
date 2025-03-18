@@ -7,11 +7,9 @@ import { Car, HeatLane, Prisma } from '@prisma/client';
 @Injectable()
 export class RaceService {
 
-  //constructor(private readonly heatLaneService: HeatLaneService) {}
-
   constructor(private prisma: PrismaService) {}
 
-  async create(createRaceDto: CreateRaceDto): Promise<Car[]> {
+  async create(createRaceDto: CreateRaceDto): Promise<HeatLane[]> {
     
     //set variable for number of lanes from API parameter input
     const numLanes = createRaceDto.numLanes;
@@ -70,16 +68,20 @@ export class RaceService {
     //add appropriate number of blanks to array only, not to persistent table, therefore 900 as high number.
     let blankCarId = 900;
 
-    //updating cubcars array with blanks
+
+    //updating car table and cubs array with blanks
+    //consider - do we need a blank person by role? 
     for (let i = 0; i < numCarBlanks; i++){
-      cars.push({
-          id: blankCarId, 
-          name: 'Blank',
-          weight: '0',
-          racerId: null,
-          year: null,
-          image: null
-      })
+      const blankCar = await this.prisma.car.create({
+        data: {
+          name: "blank", 
+          weight: "0", 
+          racerId: null, 
+          year: 9999, 
+          image: "blank", 
+        },
+      });
+      cars.push(blankCar);
       blankCarId++;
     }
 
@@ -95,49 +97,30 @@ export class RaceService {
     let numHeats = cars.length/numLanes;
   
     //initialize an array of heatlanes to represent this race
-    const heat : HeatLane[] = []; 
+    const heats : HeatLane[] = []; 
 
     //assign lanes to new array of heat that includes already randomized cars
     let counter = 0; 
 
+    //assign lanes to heatlane and persist in table
     for(let i = 0; i < numHeats; i++) {
       for(let j = 0; j < 6; j++) {
-        heat.push({
-          id: i+1, 
-          result: 99, 
-          lane: j+1, 
-          carId: cars[j].id, 
-          heatId: i+1, 
-          raceId: raceId, 
-          raceName: raceName 
-        })
-
-        /*the data structure passes syntax checks but gives a foreign key constraint violated: 'Heatlane_carId_fkey (index)'*/
-        /*await this.prisma.heatLane.create({
-            data: {
-              result: 99, 
-              lane: j+1, 
-              carId: cars[j].id, 
-              heatId: i+1, 
-              raceId: raceId, 
-              raceName: raceName
-            },
-        });*/
+        const newHeatLane = await this.prisma.heatLane.create({
+          data: {
+            result: 99, 
+            lane: j+1, 
+            carId: cars[j].id, 
+            heatId: i, 
+            raceId: raceId,
+            raceName: raceName, 
+          },
+        });
+        heats.push(newHeatLane);
         counter++; 
       }
     }
 
-
-
-
-    //console.log("heat", heat);
-    //is heat-lane id and heatId redundant?
-    //how to include car object into heat? do you only do car ids and then put objects in later? 
-    //how do you store heat from an array into a table? maybe instead of an array above, do a prisma write? 
-
-    return cars;
-
-    //return 'This action adds a new race';
+    return heats;
   }
 
   findAll() {

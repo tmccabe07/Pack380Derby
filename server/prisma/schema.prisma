@@ -33,4 +33,7 @@ model HeatLane {
   result Int? 
   car Car? @relation(fields: [carId], references: [id])
   carId Int? @unique
+  heatId Int?
+  raceId Int?
+  raceName String? @db.VarChar(255)
 }

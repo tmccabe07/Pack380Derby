@@ -16,6 +16,13 @@ export class HeatLaneService {
 
   async findAll() : Promise<HeatLane[]> {
     return await this.prisma.heatLane.findMany({
+      include: {
+        car: {
+          include: {
+            racer : true,
+          }
+        },
+      },
       orderBy: [
         {
           id: 'asc',
@@ -30,7 +37,11 @@ export class HeatLaneService {
         id: id,
       },
       include: {
-        car: true,
+        car: {
+          include: {
+            racer : true,
+          },
+        }
       }
     });
 

@@ -11,7 +11,7 @@ export class CreatePersonDto {
 
     @IsString()
     @IsNotEmpty()
-    @IsIn(['Lion','Tiger','Wolf','Bear','Webelos','AoL'], { message: 'rank must be one of: Lion, Tiger, Wolf, Bear, Webelos, AoL'})
+    @IsIn(['Lion','Tiger','Wolf','Bear','Webelos','AoL', 'Sibling', 'Adult'], { message: 'rank must be one of: Lion, Tiger, Wolf, Bear, Webelos, AoL, Sibling, Adult'})
     rank: string;
 
     @IsString()

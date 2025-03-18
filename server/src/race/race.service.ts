@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateRaceDto } from './dto/create-race.dto';
 import { UpdateRaceDto } from './dto/update-race.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { Person, Car, HeatLane } from '@prisma/client';
+import { Car, HeatLane, Prisma } from '@prisma/client';
 
 @Injectable()
 export class RaceService {
@@ -13,8 +13,6 @@ export class RaceService {
 
   async create(createRaceDto: CreateRaceDto): Promise<Car[]> {
     
-    /*to do: need to include role as an input, so that cars table can be filtered by Cub, Sibling or Adult*/
-
     //set variable for number of lanes from API parameter input
     const numLanes = createRaceDto.numLanes;
 
@@ -25,30 +23,25 @@ export class RaceService {
     const raceId = createRaceDto.raceId;
 
     //set variable for role to filter car table based on API parameter iput
-    const role = createRaceDto.role;
-
-    /*todo: how to filter cars by looking up person role?*/
-
-    //find out how many cars are in the car table
+    const inputRole = createRaceDto.role;
+  
+    //find out how many cars are in the car table overall
     const carCount = await this.prisma.car.count({
       select: {
         _all: true, // Count all records
       },
     })
-
-    //set variable to number of total cars found in the car table
-    const numCars = carCount._all;
-
-    //find out how many blank cars are needed based on numLanes
-    const numCarBlanks = numLanes - numCars % numLanes;
-
+    
     //create a new array of car type
     const cars : Car[] = [];
 
     //initialize found index variable since index number may not match table row number
     let foundIndex = 0; 
 
-    //loop through car table to create array of cars 
+    //initialize temp variable to check role as type any; 
+    let checkRole; 
+
+    //loop through car table to create array of cars.  Use foundindex because index may not match row number if row deletions have occurred
     for(let i = 0; foundIndex < carCount._all; i++){
       const oneValue = await this.prisma.car.findUnique({
         where: {
@@ -59,10 +52,20 @@ export class RaceService {
         }
       });
       if(oneValue !== null){
-        cars.push(oneValue);
+        //filter results by role, use the ? since racer can be null
+        checkRole = oneValue.racer?.role;
+        if( checkRole === inputRole){
+          cars.push(oneValue);
+        }
         foundIndex++;
       }
     }
+
+    //set variable to number of total number of cars in car table filtered by role
+    const numCars = cars.length;
+
+    //find out how many blank cars are needed based on dividing filtered total by numLanes
+    const numCarBlanks = numLanes - numCars % numLanes;
 
     //add appropriate number of blanks to array only, not to persistent table, therefore 900 as high number.
     let blankCarId = 900;
@@ -91,13 +94,12 @@ export class RaceService {
     //figure out how many heats are needed
     let numHeats = cars.length/numLanes;
   
-    console.log("total number of heats", numHeats);
-
     //initialize an array of heatlanes to represent this race
-    const heat : HeatLane[] = [];
+    const heat : HeatLane[] = []; 
 
     //assign lanes to new array of heat that includes already randomized cars
     let counter = 0; 
+
     for(let i = 0; i < numHeats; i++) {
       for(let j = 0; j < 6; j++) {
         heat.push({
@@ -109,11 +111,26 @@ export class RaceService {
           raceId: raceId, 
           raceName: raceName 
         })
+
+        /*the data structure passes syntax checks but gives a foreign key constraint violated: 'Heatlane_carId_fkey (index)'*/
+        /*await this.prisma.heatLane.create({
+            data: {
+              result: 99, 
+              lane: j+1, 
+              carId: cars[j].id, 
+              heatId: i+1, 
+              raceId: raceId, 
+              raceName: raceName
+            },
+        });*/
         counter++; 
       }
     }
 
-    console.log(heat);
+
+
+
+    //console.log("heat", heat);
     //is heat-lane id and heatId redundant?
     //how to include car object into heat? do you only do car ids and then put objects in later? 
     //how do you store heat from an array into a table? maybe instead of an array above, do a prisma write? 

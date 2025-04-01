@@ -22,4 +22,8 @@ export class CreateHeatLaneDto {
 
     @IsString()
     raceName: string;
+
+    @IsString()
+    @IsIn(['Cub', 'Sibling', 'Adult'])
+    raceRole: string;
 }

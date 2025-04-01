@@ -12,6 +12,11 @@ export class RaceController {
     return this.raceService.create(createRaceDto);
   }
 
+  @Post('semi')
+  createSemi(@Body() createRaceDto: CreateRaceDto) {
+    return this.raceService.createSemi(createRaceDto);
+  }
+
   @Get()
   findAll() {
     return this.raceService.findAll();

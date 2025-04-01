@@ -38,6 +38,12 @@ export class HeatLane {
     })
     raceName: string;
 
+    @ApiProperty({
+        example: 'Cub',
+        description: 'The role that the race is applicable to, Cub, Sibling or Adult',
+    })
+    raceRole: string;
+
     constructor({ car, ...data }: Partial<HeatLane>) {
         Object.assign(this, data);
 

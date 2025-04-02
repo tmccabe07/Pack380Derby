@@ -36,4 +36,5 @@ model HeatLane {
   heatId Int?
   raceId Int?
   raceName String? @db.VarChar(255)
+  raceRole String?
 }

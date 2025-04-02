@@ -31,7 +31,7 @@ export class RaceService {
     })
     
     //create a new array of car type
-    const cars : Car[] = [];
+    let cars : Car[] = [];
 
     //initialize found index variable since index number may not match table row number
     let foundIndex = 0; 
@@ -59,48 +59,36 @@ export class RaceService {
       }
     }
 
-    //set variable to number of total number of cars in car table filtered by role
-    const numCars = cars.length;
+    //add blank cars to make full lanes
+    //use this syntax to assign async result because async result can't be assigned directly
+    this.addBlankCars(cars, numLanes).then(result => cars = result);
 
-    //console.log("numCars: ", numCars);
+    //randomly sort the cars including blanks
+    cars = this.shuffleSort(cars);
+   
+    //console.log("after shuffle: ", cars);
 
-    //find out how many blank cars are needed based on dividing filtered total by numLanes
-    const numCarBlanks = numLanes - numCars % numLanes;
+    //figure out how many heats are needed
+    let numHeats = cars.length/numLanes;
 
-    //add appropriate number of blanks to array only, not to persistent table, therefore 900 as high number.
-    let blankCarId = 900;
+    //assign lanes
+    return this.createHeats(numHeats, cars, raceId, raceName, inputRole);
 
-    //updating car table and cubs array with blanks
-    //consider - do we need a blank person by role? 
-    for (let i = 0; i < numCarBlanks; i++){
-      const blankCar = await this.prisma.car.create({
-        data: {
-          name: "blank", 
-          weight: "0", 
-          racerId: null, 
-          year: 9999, 
-          image: "blank", 
-        },
-      });
-      cars.push(blankCar);
-      blankCarId++;
-    }
+  }
 
-
-    //fisher yates random sort the car array
+  //reusable function for fisher yates shuffle sort
+  shuffleSort(cars: Car[]): Car[] {
     for (let i = cars.length - 1; i > 0; i--) { 
       const j = Math.floor(Math.random() * (i + 1)); 
       [cars[i], cars[j]] = [cars[j], cars[i]]; 
     } 
 
-    //assign lanes
-    //console.log("after shuffle: ", cars);
+    return cars; 
+  }
 
-    //figure out how many heats are needed
-    let numHeats = cars.length/numLanes;
-  
-    //initialize an array of heatlanes to represent this race
-    const heats : HeatLane[] = []; 
+  async createHeats(numHeats: number, cars: Car[], raceId: number, raceName: string, inputRole: string): Promise<HeatLane[]>{
+    
+    const heats : HeatLane[] = [];
 
     //assign lanes to new array of heat that includes already randomized cars
     let counter = 0; 
@@ -127,6 +115,33 @@ export class RaceService {
     return heats;
   }
 
+  async addBlankCars(cars: Car[], numLanes: number): Promise<Car[]>{
+    //set variable to number of total number of cars 
+    const numCars = cars.length;
+
+    //console.log("numCars: ", numCars);
+
+    //find out how many blank cars are needed based on dividing filtered total by numLanes
+    const numCarBlanks = numLanes - numCars % numLanes;
+
+    //updating car table and cubs array with blanks
+    //consider - do we need a blank person by role?
+    for (let i = 0; i < numCarBlanks; i++){
+      const blankCar = await this.prisma.car.create({
+        data: {
+          name: "blank", 
+          weight: "0", 
+          racerId: null, 
+          year: 9999, 
+          image: "blank", 
+        },
+      });
+      cars.push(blankCar);
+    }
+
+    return cars;
+  }
+
   async createSemi(createRaceDto: CreateRaceDto): Promise<HeatLane[]> {
   
     //set variable for number of lanes from API parameter input
@@ -141,7 +156,7 @@ export class RaceService {
     //set variable for role to filter car table based on API parameter iput
     const inputRole = createRaceDto.role;
 
-    const heats : HeatLane[] = [];
+    let heats : HeatLane[] = [];
 
     const heatCount = await this.prisma.heatLane.count({
       select: {
@@ -289,7 +304,62 @@ export class RaceService {
 
     console.log("these cars are tied and need to do a deadheat: ", deadHeat);
     console.log("these cars advance to semis: ", advanceToSemis);
+
+    //build car array from deadHeats
+    let deadHeatCars : Car[] = [];
+
+    for(let i = 0; i < deadHeat.length; i++){
+      const oneValue = await this.prisma.car.findUnique({
+        where: {
+          id: deadHeat[i].carId,
+        }
+      });
+      if(oneValue !== null){
+        deadHeatCars.push(oneValue);
+      }
+    }
+
+    //console.log("these cars are tied: ", deadHeatCars);
+
+    //add blank cars to make full lanes
+    //use this syntax to assign async result because async result can't be assigned directly
+    this.addBlankCars(deadHeatCars, numLanes).then(result => deadHeatCars = result);
+
+    //randomly sort the cars including blanks
+    deadHeatCars = this.shuffleSort(deadHeatCars);
+   
+    //console.log("after shuffle: ", cars);
+
+    //figure out how many heats are needed
+    let numDeadHeats = deadHeatCars.length/numLanes;
+
+    let deadHeatRaceName = raceName + " deadHeat";
+
+    //assign lanes
+    this.createHeats(numDeadHeats, deadHeatCars, raceId, deadHeatRaceName, inputRole).then(result => heats = result);
+
+    //console.log("these deadheat cars are now sorted: ", deadHeatCars);
     
+
+    let advanceToSemisCars : Car[] = [];    
+
+    for(let i = 0; i < advanceToSemis.length; i++){
+      const oneValue = await this.prisma.car.findUnique({
+        where: {
+          id: advanceToSemis[i].carId,
+        }
+      });
+      if(oneValue !== null){
+        advanceToSemisCars.push(oneValue);
+      }
+    }
+
+    //NOTE: shuffle and building semi heats needs to wait until a full semis is available
+    advanceToSemisCars = this.shuffleSort(advanceToSemisCars);
+
+    console.log("these advance to semis cars are now sorted: ", advanceToSemisCars);
+
+    //note return is returning deadheats technically ... maybe don't need a return at all? 
     return heats; 
 
   }

@@ -174,6 +174,8 @@ export class RaceService {
       },
     ];
 
+    totalResults.length = 0;
+
     //loop through car table to create array of non-blankcars.  Use foundindex because index may not match row number if row deletions have occurred
     for(let i = 0; foundIndex < carCount._all; i++){
       const oneValue = await this.prisma.car.findUnique({
@@ -219,17 +221,11 @@ export class RaceService {
       })
 
       //console.log("selectHeats of car id ", cars[i].id, " :", selectHeats);
-
-      //since array was initialized with 1 value, only add values after i is greater than zero
-      if(i===0){
-        totalResults[i].carId = cars[i].id;
-      }
-      else{
-        totalResults.push({
+      
+      totalResults.push({
           carId: cars[i].id,
           aggResults: 0,
-        });
-      }
+      });
 
       //sum up results for each car 
       for(let j = 0; j < selectHeats.length; j++){
@@ -239,7 +235,7 @@ export class RaceService {
     }
 
     //summed up results.  Note, this likely needs to be a table not an array
-   // console.log("totalresults: ", totalResults);
+    //console.log("totalresults: ", totalResults);
 
     //total number of semifinal participants
     const numSemiLanes = numLanes * 2; 
@@ -264,7 +260,7 @@ export class RaceService {
       },
     ];
 
-    let deadHeatCounter = 0;
+    deadHeat.length = 0;
 
     const advanceToSemis = [
       { 
@@ -272,35 +268,21 @@ export class RaceService {
         aggResults: 0, 
       },
     ];
-
-    let advanceToSemisCounter = 0;
+    
+    advanceToSemis.length = 0;
 
     for(let i = 0; i < sortedResult.length; i++){
       if(sortedResult[i].aggResults === lastPlaceAggResults){
-        if(deadHeatCounter===0){
-          deadHeat[0].carId = sortedResult[i].carId;
-          deadHeat[0].aggResults = sortedResult[i].aggResults;
-        }
-        else{
-          deadHeat.push({
-            carId: sortedResult[i].carId,
-            aggResults: sortedResult[i].aggResults,
-          });
-        }
-        deadHeatCounter++;
+        deadHeat.push({
+          carId: sortedResult[i].carId,
+          aggResults: sortedResult[i].aggResults,
+        });
       }
-      else if (i < numSemiLanes) {
-        if(advanceToSemisCounter===0){
-          advanceToSemis[0].carId = sortedResult[i].carId;
-          advanceToSemis[0].aggResults = sortedResult[i].aggResults;
-        }
-        else{
-          advanceToSemis.push({
-            carId: sortedResult[i].carId,
-            aggResults: sortedResult[i].aggResults,
-          });
-        }
-        advanceToSemisCounter++;
+      else if (i < numSemiLanes) {   
+        advanceToSemis.push({
+          carId: sortedResult[i].carId,
+          aggResults: sortedResult[i].aggResults,
+        });
       }
 
     }

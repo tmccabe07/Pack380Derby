@@ -3,11 +3,12 @@ import { CreateRaceDto } from './dto/create-race.dto';
 import { UpdateRaceDto } from './dto/update-race.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { Car, HeatLane, Prisma } from '@prisma/client';
+import { SemiGlobalVariableService } from './semi.service';
 
 @Injectable()
 export class RaceService {
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private numAdvances: SemiGlobalVariableService) {}
 
   async create(createRaceDto: CreateRaceDto): Promise<HeatLane[]> {
     
@@ -147,7 +148,8 @@ export class RaceService {
     //set variable for number of lanes from API parameter input
     const numLanes = createRaceDto.numLanes;
 
-    //set variable for raceName from API parameter input
+    //set variable for raceName from API parameter input, which is the race that semis are created from
+    //first time quarterfinals, then quarterdeadheats
     const raceName = createRaceDto.raceName;
 
     //set variable for raceId from API parameter input
@@ -216,7 +218,7 @@ export class RaceService {
     //find all the results in a set of races for each non-blank car id
 
     //loop through all heatlanes of non-blank cars that match the input role
-    //note hardcoded to racename quarterfinals
+    //note racename should be "quarterfinals" first
     for(let i = 0; i < cars.length; i++){
       const selectHeats = await this.prisma.heatLane.findMany({
         select: {
@@ -228,7 +230,7 @@ export class RaceService {
         where: {
           raceRole: inputRole,
           carId: cars[i].id,
-          raceName: "quarterfinals",
+          raceName: raceName,
         },
         orderBy: {
           raceId: 'asc',
@@ -254,16 +256,18 @@ export class RaceService {
 
     //total number of semifinal participants
     const numSemiLanes = numLanes * 2; 
+
+    //console.log("numSemiLanes: " + numSemiLanes);
   
     //find the top number that is within the semifinal participants
     
     //sort from lowest to highest
     const sortedResult = totalResults.sort((a, b) => a.aggResults - b.aggResults);
-    
 
     console.log("sortedResult: ", sortedResult);
 
     //check if there are any ties
+    //find last place first
     const lastPlaceAggResults = sortedResult[numSemiLanes-1].aggResults;
 
     console.log("last place: ", sortedResult[numSemiLanes-1].carId);
@@ -285,61 +289,92 @@ export class RaceService {
     ];
     
     advanceToSemis.length = 0;
-
-    for(let i = 0; i < sortedResult.length; i++){
-      if(sortedResult[i].aggResults === lastPlaceAggResults){
-        deadHeat.push({
-          carId: sortedResult[i].carId,
-          aggResults: sortedResult[i].aggResults,
-        });
-      }
-      else if (i < numSemiLanes) {   
-        advanceToSemis.push({
-          carId: sortedResult[i].carId,
-          aggResults: sortedResult[i].aggResults,
-        });
-      }
-
-    }
-
-    console.log("these cars are tied and need to do a deadheat: ", deadHeat);
-    console.log("these cars advance to semis: ", advanceToSemis);
-
-    //build car array from deadHeats
-    let deadHeatCars : Car[] = [];
-
-    for(let i = 0; i < deadHeat.length; i++){
-      const oneValue = await this.prisma.car.findUnique({
-        where: {
-          id: deadHeat[i].carId,
-        }
-      });
-      if(oneValue !== null){
-        deadHeatCars.push(oneValue);
-      }
-    }
-
-    //console.log("these cars are tied: ", deadHeatCars);
-
-    //add blank cars to make full lanes
-    //use this syntax to assign async result because async result can't be assigned directly
-    this.addBlankCars(deadHeatCars, numLanes).then(result => deadHeatCars = result);
-
-    //randomly sort the cars including blanks
-    deadHeatCars = this.shuffleSort(deadHeatCars);
-   
-    //console.log("after shuffle: ", cars);
-
-    //figure out how many heats are needed
-    let numDeadHeats = deadHeatCars.length/numLanes;
-
-    let deadHeatRaceName = raceName + " deadHeat";
-
-    //assign lanes
-    this.createHeats(numDeadHeats, deadHeatCars, raceId, deadHeatRaceName, inputRole).then(result => heats = result);
-
-    //console.log("these deadheat cars are now sorted: ", deadHeatCars);
     
+    //TODO: need to check how many can advance if this is the deadheat one
+
+    
+    //need to know if there is a match of last place after the number of advancement slots
+    for(let i = 0; i < sortedResult.length; i++){
+      if(i >= numSemiLanes){
+        if(sortedResult[i].aggResults === lastPlaceAggResults){
+          deadHeat.push({
+            carId: sortedResult[i].carId,
+            aggResults: sortedResult[i].aggResults,
+          });
+        }
+      }
+    }
+    //if there is tie for last place, then need to look through the start of the array again for all ties and add that to deadheat; else goes to advance
+    if(deadHeat.length > 0){
+      for(let i = 0; i < sortedResult.length; i++){
+        if(i <= numSemiLanes ){
+          if(sortedResult[i].aggResults === lastPlaceAggResults){
+            deadHeat.push({
+              carId: sortedResult[i].carId,
+              aggResults: sortedResult[i].aggResults,
+            });
+          }
+          else {
+            advanceToSemis.push({
+              carId: sortedResult[i].carId,
+              aggResults: sortedResult[i].aggResults,
+            });
+          }
+        }
+      }
+      console.log("these cars are tied and need to do a deadheat: ", deadHeat);
+      //build car array from deadHeats
+      let deadHeatCars : Car[] = [];
+
+      for(let i = 0; i < deadHeat.length; i++){
+        const oneValue = await this.prisma.car.findUnique({
+          where: {
+            id: deadHeat[i].carId,
+          }
+        });
+        if(oneValue !== null){
+          deadHeatCars.push(oneValue);
+        }
+      }
+
+      //console.log("these cars are tied: ", deadHeatCars);
+
+      //add blank cars to make full lanes
+      //use this syntax to assign async result because async result can't be assigned directly
+      this.addBlankCars(deadHeatCars, numLanes).then(result => deadHeatCars = result);
+
+      //randomly sort the cars including blanks
+      deadHeatCars = this.shuffleSort(deadHeatCars);
+   
+      //console.log("after shuffle: ", cars);
+
+      //figure out how many heats are needed
+      let numDeadHeats = deadHeatCars.length/numLanes;
+
+      let deadHeatRaceName = raceName + "deadHeat";
+
+      //assign lanes
+      this.createHeats(numDeadHeats, deadHeatCars, raceId, deadHeatRaceName, inputRole).then(result => heats = result);
+
+      //console.log("these deadheat cars are now sorted: ", deadHeatCars);    
+    }
+    //if there isn't, then there's no need for deadheat, because all cars that can advance will advance, and there's no need to care about ties
+    else{
+      for(let i = 0; i < sortedResult.length; i++){
+        if(i < numSemiLanes ){
+          advanceToSemis.push({
+            carId: sortedResult[i].carId,
+            aggResults: sortedResult[i].aggResults,
+          });
+        }
+      }
+    }
+
+    this.numAdvances.setnumAdvances(advanceToSemis.length);
+
+    console.log("this many advanced: " + this.numAdvances.getNumAdvances());
+
+    console.log("these cars advance to semis: ", advanceToSemis);
 
     let advanceToSemisCars : Car[] = [];    
 
@@ -355,9 +390,9 @@ export class RaceService {
     }
 
     //NOTE: shuffle and building semi heats needs to wait until a full semis is available
-    advanceToSemisCars = this.shuffleSort(advanceToSemisCars);
+    //advanceToSemisCars = this.shuffleSort(advanceToSemisCars);
 
-    console.log("these advance to semis cars are now sorted: ", advanceToSemisCars);
+    //console.log("these advance to semis cars are now sorted: ", advanceToSemisCars);
 
     //note return is returning deadheats technically ... maybe don't need a return at all? 
     return heats; 

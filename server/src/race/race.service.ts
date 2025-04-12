@@ -290,12 +290,25 @@ export class RaceService {
     
     advanceToSemis.length = 0;
     
-    //TODO: need to check how many can advance if this is the deadheat one
+    //Check how many can advance if this is the deadheat one
+    //numSemiLanes is the total number that can advance if this is quarterfinals
 
+    let checkNumAdvances = this.numAdvances.getNumAdvances();
+
+    console.log("checkNumAdvances: " + checkNumAdvances);
+
+    if(checkNumAdvances === 0){
+      checkNumAdvances = numSemiLanes;
+    }
+    else{
+      checkNumAdvances = numSemiLanes - checkNumAdvances;
+    }
     
+    console.log("checkNumAdvances after checking for zero value: " + checkNumAdvances);
+
     //need to know if there is a match of last place after the number of advancement slots
     for(let i = 0; i < sortedResult.length; i++){
-      if(i >= numSemiLanes){
+      if(i >= checkNumAdvances){
         if(sortedResult[i].aggResults === lastPlaceAggResults){
           deadHeat.push({
             carId: sortedResult[i].carId,
@@ -307,7 +320,7 @@ export class RaceService {
     //if there is tie for last place, then need to look through the start of the array again for all ties and add that to deadheat; else goes to advance
     if(deadHeat.length > 0){
       for(let i = 0; i < sortedResult.length; i++){
-        if(i <= numSemiLanes ){
+        if(i <= checkNumAdvances ){
           if(sortedResult[i].aggResults === lastPlaceAggResults){
             deadHeat.push({
               carId: sortedResult[i].carId,
@@ -361,7 +374,7 @@ export class RaceService {
     //if there isn't, then there's no need for deadheat, because all cars that can advance will advance, and there's no need to care about ties
     else{
       for(let i = 0; i < sortedResult.length; i++){
-        if(i < numSemiLanes ){
+        if(i < checkNumAdvances ){
           advanceToSemis.push({
             carId: sortedResult[i].carId,
             aggResults: sortedResult[i].aggResults,
@@ -369,6 +382,8 @@ export class RaceService {
         }
       }
     }
+
+    //TODO: revisit when numAdvances gets set, and what to do with the cars that do advance
 
     this.numAdvances.setnumAdvances(advanceToSemis.length);
 

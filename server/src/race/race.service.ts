@@ -65,7 +65,7 @@ export class RaceService {
     this.addBlankCars(cars, numLanes).then(result => cars = result);
 
     //randomly sort the cars including blanks
-    cars = this.shuffleSort(cars);
+    cars = await this.shuffleSort(cars);
    
     //console.log("after shuffle: ", cars);
 
@@ -73,12 +73,12 @@ export class RaceService {
     let numHeats = cars.length/numLanes;
 
     //assign lanes
-    return this.createHeats(numHeats, cars, raceId, raceName, inputRole);
+    return await this.createHeats(numHeats, cars, raceId, raceName, inputRole);
 
   }
 
   //reusable function for fisher yates shuffle sort
-  shuffleSort(cars: Car[]): Car[] {
+  async shuffleSort(cars: Car[]): Promise<Car[]> {
     for (let i = cars.length - 1; i > 0; i--) { 
       const j = Math.floor(Math.random() * (i + 1)); 
       [cars[i], cars[j]] = [cars[j], cars[i]]; 
@@ -140,6 +140,8 @@ export class RaceService {
       cars.push(blankCar);
     }
 
+    //console.log("addBlankCars ending with: ", cars);
+
     return cars;
   }
 
@@ -158,6 +160,13 @@ export class RaceService {
     //set variable for role to filter car table based on API parameter iput
     const inputRole = createRaceDto.role;
 
+     //initializing first time without deadheats
+    if(this.numAdvances.getdeadHeatBoolean() == false) {
+      this.numAdvances.initAdvanceToSemis();  
+      this.numAdvances.setdeadHeatBoolean(true);
+    }
+
+    //this is needed for return of heat lane creation; but is not returned overall
     let heats : HeatLane[] = [];
 
     //need to find all the car ids that aren't blank
@@ -213,8 +222,8 @@ export class RaceService {
 
     let totalResultsIndex = 0;
 
-    //loop through all heatlanes of non-blank cars that match the input role
-    //note racename should be "quarterfinals" first
+    //loop through all heatlanes of non-blank cars that match the input role and the race name
+    //note racename should be "quarterfinals" first, then appended with "deadheat"
     for(let i = 0; i < cars.length; i++){
       const selectHeats = await this.prisma.heatLane.findMany({
         select: {
@@ -233,10 +242,11 @@ export class RaceService {
         },
       })
 
-      console.log("selectHeats of car id ", cars[i].id, " :", selectHeats);
+      //console.log("selectHeats of car id ", cars[i].id, " :", selectHeats);
       
+      //only sum up results for cars that were found to match the input role and racename
       if(selectHeats.length > 0) {
-        console.log("select Heats is not null");
+        //console.log("select Heats is not null");
         totalResults.push({
             carId: cars[i].id,
             aggResults: 0,
@@ -244,11 +254,10 @@ export class RaceService {
 
         totalResultsIndex = totalResults.length-1;
 
-        //sum up results for each car 
+        //sum up results for each car that was found for the input role and racename 
         for(let j = 0; j < selectHeats.length; j++){
           totalResults[totalResultsIndex].aggResults = totalResults[totalResultsIndex].aggResults + (selectHeats[j].result ?? 0); 
         }
-
       }
     }
 
@@ -265,37 +274,14 @@ export class RaceService {
     //sort from lowest to highest
     const sortedResult = totalResults.sort((a, b) => a.aggResults - b.aggResults);
 
-    console.log("sortedResult: ", sortedResult);
+    console.log("sorted total Result: ", sortedResult);
 
-    //check if there are any ties
-    
-    let lastPlaceAggResults = 0;
-
-    //find last place  but only if this isn't a deadheat
-    if(totalResults.length > numSemiLanes){
-      lastPlaceAggResults = sortedResult[numSemiLanes-1].aggResults;
-      console.log("last place: ", sortedResult[numSemiLanes-1].carId);
-      //you only want to do this if this isn't a deadheat
-      this.numAdvances.initAdvanceToSemis();  
-    }
-
-    const deadHeat = [
-      { 
-        carId: 0,
-        aggResults: 0, 
-      },
-    ];
-
-    deadHeat.length = 0;
-
-    let advanceToSemis = this.numAdvances.getAdvanceToSemis();
-
-    //Check how many can advance if this is the deadheat one
+    //check if there are any ties for last place of who can advance
     //numSemiLanes is the total number that can advance if this is quarterfinals
-
+    
     let checkNumAdvances = this.numAdvances.getNumAdvances();
 
-    console.log("checkNumAdvances: " + checkNumAdvances);
+    //console.log("orig checkNumAdvances: " + checkNumAdvances);
 
     if(checkNumAdvances === 0){
       checkNumAdvances = numSemiLanes;
@@ -304,7 +290,24 @@ export class RaceService {
       checkNumAdvances = numSemiLanes - checkNumAdvances;
     }
     
-    console.log("checkNumAdvances after checking for zero value: " + checkNumAdvances);
+    console.log("checkNumAdvances: " + checkNumAdvances);
+
+    let advanceToSemis = this.numAdvances.getAdvanceToSemis();
+
+    //find last place of what will advance
+    let lastPlaceAggResults = 0;
+
+    lastPlaceAggResults = sortedResult[checkNumAdvances-1].aggResults;
+    console.log("last place: ", sortedResult[checkNumAdvances-1].carId);
+      
+    const deadHeat = [
+      { 
+        carId: 0,
+        aggResults: 0, 
+      },
+    ];
+
+    deadHeat.length = 0;
 
     //need to know if there is a match of last place after the number of advancement slots
     for(let i = 0; i < sortedResult.length; i++){
@@ -354,8 +357,8 @@ export class RaceService {
 
       //add blank cars to make full lanes
       //use this syntax to assign async result because async result can't be assigned directly
-      this.addBlankCars(deadHeatCars, numLanes).then(result => deadHeatCars = result);
-      
+      await this.addBlankCars(deadHeatCars, numLanes).then(result => deadHeatCars = result);
+        
       //figure out how many heats are needed
       let numDeadHeats = deadHeatCars.length/numLanes;
 
@@ -364,16 +367,16 @@ export class RaceService {
       //assign lanes
       //using i as raceId 
       for(let i = 0; i < numDeadHeats; i++){
-        
+          
         //randomly sort the cars including blanks
-        deadHeatCars = this.shuffleSort(deadHeatCars);
-    
-        //console.log("after shuffle: ", cars);
+        deadHeatCars = await this.shuffleSort(deadHeatCars);
+      
+        //console.log("dead heat for race: ", i, " cars are shuffled: ", deadHeatCars);
 
-        this.createHeats(numDeadHeats, deadHeatCars, i, deadHeatRaceName, inputRole).then(result => heats = result);
+        await this.createHeats(numDeadHeats, deadHeatCars, i, deadHeatRaceName, inputRole).then(result => heats = result);
       }
     }
-    //if there isn't, then there's no need for deadheat, because all cars that can advance will advance, and there's no need to care about ties
+    //if there isn't any tie, then there's no need for deadheat, because all cars that can advance will advance, and there's no need to care about ties
     else{
       for(let i = 0; i < sortedResult.length; i++){
         if(i < checkNumAdvances ){
@@ -383,11 +386,12 @@ export class RaceService {
           });
         }
       }
-      //save all the cars that advance
+        //save all the cars that advance
       this.numAdvances.setAdvanceToSemis(advanceToSemis);
     }
 
-    //if greater than zero and less than the total number of advancing possible save in global variable
+ 
+    //if advancing greater than zero and less than the total number of advancing possible save in global variable
     if(advanceToSemis.length > 0 && advanceToSemis.length < numSemiLanes){
       this.numAdvances.setnumAdvances(advanceToSemis.length);
 
@@ -426,11 +430,11 @@ export class RaceService {
       for(let i = 0; i < numSemiHeats; i++){ 
         //no need to add blanks because will always have a full set of cars advancing
         //sort the array of cars for each race
-        advanceToSemisCars = this.shuffleSort(advanceToSemisCars);
+        advanceToSemisCars = await this.shuffleSort(advanceToSemisCars);
 
-        //console.log("these advance to semis cars are now sorted: ", advanceToSemisCars);
+        //console.log("advance to semis cars for race: ", i, " are sorted: ", advanceToSemisCars);
        
-        this.createHeats(numSemiHeats, advanceToSemisCars, i, semiRaceName, inputRole).then(result => heats = result);
+        await this.createHeats(numSemiHeats, advanceToSemisCars, i, semiRaceName, inputRole).then(result => heats = result);
       }
 
     }

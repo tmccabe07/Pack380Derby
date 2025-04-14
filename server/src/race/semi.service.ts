@@ -11,6 +11,8 @@ export class SemiGlobalVariableService {
     },
   ];
 
+  private deadHeatBoolean: boolean = false; 
+
   getNumAdvances(): number {
     return this.numAdvances;
   }
@@ -29,5 +31,13 @@ export class SemiGlobalVariableService {
 
   initAdvanceToSemis(){
     this.advanceToSemis.length = 0;
+  }
+
+  getdeadHeatBoolean(): boolean{
+    return this.deadHeatBoolean;
+  }
+
+  setdeadHeatBoolean(value: boolean){
+    this.deadHeatBoolean = value;
   }
 }

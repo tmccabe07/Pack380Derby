@@ -12,9 +12,9 @@ export class RaceController {
     return this.raceService.create(createRaceDto);
   }
 
-  @Post('semi')
-  createSemi(@Body() createRaceDto: CreateRaceDto) {
-    return this.raceService.createSemi(createRaceDto);
+  @Post('semiorfinal')
+  createSemiorFinal(@Body() createRaceDto: CreateRaceDto) {
+    return this.raceService.createSemiorFinal(createRaceDto);
   }
 
   @Get()

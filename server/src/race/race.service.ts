@@ -3,12 +3,12 @@ import { CreateRaceDto } from './dto/create-race.dto';
 import { UpdateRaceDto } from './dto/update-race.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { Car, HeatLane, Prisma } from '@prisma/client';
-import { SemiGlobalVariableService } from './semi.service';
+import { RaceGlobalVariableService } from './raceGlobalVariable.service';
 
 @Injectable()
 export class RaceService {
 
-  constructor(private prisma: PrismaService, private numAdvances: SemiGlobalVariableService) {}
+  constructor(private prisma: PrismaService, private numAdvances: RaceGlobalVariableService) {}
 
   async create(createRaceDto: CreateRaceDto): Promise<HeatLane[]> {
     
@@ -145,12 +145,12 @@ export class RaceService {
     return cars;
   }
 
-  async createSemi(createRaceDto: CreateRaceDto) {
+  async createSemiorFinal(createRaceDto: CreateRaceDto) {
   
     //set variable for number of lanes from API parameter input
     const numLanes = createRaceDto.numLanes;
 
-    //set variable for raceName from API parameter input, which is the race that semis are created from
+    //set variable for raceName from API parameter input, which is the race that new race is created from
     //first time quarterfinals, then quarterdeadheats
     const raceName = createRaceDto.raceName;
 
@@ -160,12 +160,29 @@ export class RaceService {
     //set variable for role to filter car table based on API parameter iput
     const inputRole = createRaceDto.role;
 
-     //initializing first time without deadheats
-    if(this.numAdvances.getdeadHeatBoolean() == false) {
-      this.numAdvances.initAdvanceToSemis();  
-      this.numAdvances.setdeadHeatBoolean(true);
+    let newRaceName = "";
+
+    //initializing advance array and number of advancing first time for semis or finals
+    if(raceName === "quarterfinals" || raceName === "semi"){
+      this.numAdvances.initAdvance();
+      this.numAdvances.setnumAdvances(0);
+      //console.log("Initialized advance array");
+    }
+    
+    let numTotalLanes = 0; 
+
+    //set the new racename depending on whether this function is being run to generate a semi or a final.  Using include instead of equals due to possibility of deadheats.
+    if(raceName.includes("quarter") === true){
+      newRaceName = "semi";
+      numTotalLanes = numLanes * 2;
+    } else if(raceName.includes("semi") === true){
+      newRaceName = "final";
+      numTotalLanes = numLanes;
     }
 
+    //console.log("newRaceName: " + newRaceName);
+    //console.log("numTotalLanes: " + numTotalLanes);
+    
     //this is needed for return of heat lane creation; but is not returned overall
     let heats : HeatLane[] = [];
 
@@ -224,6 +241,7 @@ export class RaceService {
 
     //loop through all heatlanes of non-blank cars that match the input role and the race name
     //note racename should be "quarterfinals" first, then appended with "deadheat"
+    //then racename should be "semi", then potentially appended with "deadheat"
     for(let i = 0; i < cars.length; i++){
       const selectHeats = await this.prisma.heatLane.findMany({
         select: {
@@ -264,35 +282,28 @@ export class RaceService {
     //summed up results.  
     console.log("totalresults: ", totalResults);
 
-    //total number of semifinal participants
-    const numSemiLanes = numLanes * 2; 
-
-    //console.log("numSemiLanes: " + numSemiLanes);
-  
-    //find the top number that is within the semifinal participants
-    
     //sort from lowest to highest
     const sortedResult = totalResults.sort((a, b) => a.aggResults - b.aggResults);
 
     console.log("sorted total Result: ", sortedResult);
 
     //check if there are any ties for last place of who can advance
-    //numSemiLanes is the total number that can advance if this is quarterfinals
+    //numTotalLanes is the total number that can advance
     
     let checkNumAdvances = this.numAdvances.getNumAdvances();
 
     //console.log("orig checkNumAdvances: " + checkNumAdvances);
 
     if(checkNumAdvances === 0){
-      checkNumAdvances = numSemiLanes;
+      checkNumAdvances = numTotalLanes;
     }
     else{
-      checkNumAdvances = numSemiLanes - checkNumAdvances;
+      checkNumAdvances = numTotalLanes - checkNumAdvances;
     }
     
     console.log("checkNumAdvances: " + checkNumAdvances);
 
-    let advanceToSemis = this.numAdvances.getAdvanceToSemis();
+    let advance = this.numAdvances.getAdvance();
 
     //find last place of what will advance
     let lastPlaceAggResults = 0;
@@ -331,7 +342,7 @@ export class RaceService {
             });
           }
           else {
-            advanceToSemis.push({
+            advance.push({
               carId: sortedResult[i].carId,
               aggResults: sortedResult[i].aggResults,
             });
@@ -380,64 +391,65 @@ export class RaceService {
     else{
       for(let i = 0; i < sortedResult.length; i++){
         if(i < checkNumAdvances ){
-          advanceToSemis.push({
+          advance.push({
             carId: sortedResult[i].carId,
             aggResults: sortedResult[i].aggResults,
           });
         }
       }
         //save all the cars that advance
-      this.numAdvances.setAdvanceToSemis(advanceToSemis);
+      this.numAdvances.setAdvance(advance);
     }
 
  
     //if advancing greater than zero and less than the total number of advancing possible save in global variable
-    if(advanceToSemis.length > 0 && advanceToSemis.length < numSemiLanes){
-      this.numAdvances.setnumAdvances(advanceToSemis.length);
+    if(advance.length > 0 && advance.length < numTotalLanes){
+      this.numAdvances.setnumAdvances(advance.length);
 
       console.log("this many advanced and need to be saved: " + this.numAdvances.getNumAdvances());
 
       //save the partial set of cars that will advance into a global variable
-      this.numAdvances.setAdvanceToSemis(advanceToSemis);
+      this.numAdvances.setAdvance(advance);
     }
 
-    //instead of an else get all the cars that will advance to check if there's a full set of semis
-    let finalAdvanceToSemis = this.numAdvances.getAdvanceToSemis();
+    //instead of an else get all the cars that will advance to check if there's a full set that can advance
+    let finalAdvance = this.numAdvances.getAdvance();
 
-    if(finalAdvanceToSemis.length === numSemiLanes){
+    if(finalAdvance.length === numTotalLanes){
       
-      console.log("these cars advance to semis: ", finalAdvanceToSemis);
+      console.log("these cars advance to next race: ", finalAdvance);
 
-      let advanceToSemisCars : Car[] = [];    
+      let advanceCars : Car[] = [];    
 
-      for(let i = 0; i < finalAdvanceToSemis.length; i++){
+      for(let i = 0; i < finalAdvance.length; i++){
         const oneValue = await this.prisma.car.findUnique({
           where: {
-            id: finalAdvanceToSemis[i].carId,
+            id: finalAdvance[i].carId,
           }
         });
         if(oneValue !== null){
-          advanceToSemisCars.push(oneValue);
+          advanceCars.push(oneValue);
         }
       }
       
       //figure out how many heats are needed
-      let numSemiHeats = advanceToSemisCars.length/numLanes;
+      let numNewRaceHeats = advanceCars.length/numLanes;
 
-      let semiRaceName = "semi";
+      
 
       //using i as raceId 
-      for(let i = 0; i < numSemiHeats; i++){ 
+      for(let i = 0; i < numNewRaceHeats; i++){ 
         //no need to add blanks because will always have a full set of cars advancing
         //sort the array of cars for each race
-        advanceToSemisCars = await this.shuffleSort(advanceToSemisCars);
+        advanceCars = await this.shuffleSort(advanceCars);
 
-        //console.log("advance to semis cars for race: ", i, " are sorted: ", advanceToSemisCars);
+        //console.log("advance to next race cars for race: ", i, " are sorted: ", advanceCars);
        
-        await this.createHeats(numSemiHeats, advanceToSemisCars, i, semiRaceName, inputRole).then(result => heats = result);
+        await this.createHeats(numNewRaceHeats, advanceCars, i, newRaceName, inputRole).then(result => heats = result);
       }
 
     }
+   
   }
 
   findAll() {

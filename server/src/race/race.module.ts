@@ -3,12 +3,12 @@ import { RaceService } from './race.service';
 import { RaceController } from './race.controller';
 import { HeatLaneModule } from '../heat-lane/heat-lane.module'
 import { PrismaService } from '../prisma/prisma.service';
-import { SemiGlobalVariableService } from './semi.service';
+import { RaceGlobalVariableService } from './raceGlobalVariable.service';
 
 @Module({
   controllers: [RaceController],
-  providers: [RaceService, PrismaService, SemiGlobalVariableService],
+  providers: [RaceService, PrismaService, RaceGlobalVariableService],
   imports: [HeatLaneModule],
-  exports: [SemiGlobalVariableService]
+  exports: [RaceGlobalVariableService]
 })
 export class RaceModule {}

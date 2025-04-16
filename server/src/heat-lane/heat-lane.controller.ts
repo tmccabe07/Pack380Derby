@@ -98,6 +98,32 @@ export class HeatLaneController {
     return updateHeatLane;
   }
 
+  @Patch(':id/:result')
+  @ApiOperation({ summary: 'Update result of a given heatlane id'})
+  @ApiParam({
+    name: "id",
+    type: "Number",
+    description: "unique id of the heatlane",
+    example: "1",
+    required: true
+  })
+  @ApiParam({
+    name: "result",
+    type: "Number",
+    description: "result of race",
+    example: "1",
+    required: true
+  })
+  @ApiCreatedResponse({ description: 'HeatLane updated successfully', type: HeatLaneEntity })
+  @ApiBadRequestResponse({ description: 'Bad Request' }) 
+  async updateResult(@Param('id') id: number, @Param('result') result: number) : Promise<HeatLaneModel>{
+    const updateHeatLane = await this.heatLaneService.updateResult(id, result);
+    if (!updateHeatLane) {
+      throw new NotFoundException(`HeatLane with ${id} does not exist.`);
+    }
+    return updateHeatLane;
+  }
+
   @Delete(':id')
   @ApiOperation({ summary: 'Remove HeatLane' })
   @ApiResponse({

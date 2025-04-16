@@ -71,6 +71,36 @@ export class HeatLaneService {
     });
   }
 
+  async updateResult(id: number, result: number): Promise<HeatLane> {
+    const checkIndex = await this.prisma.heatLane.findUnique({
+      where: {
+        id: id, 
+      },
+    })
+
+    if (checkIndex === null) {
+      return null as any;
+    } 
+
+    const data = {
+      lane: checkIndex.lane,
+      result: result,
+      carId: checkIndex.carId,
+      heatId: checkIndex.heatId,
+      raceId: checkIndex.raceId,
+      raceName: checkIndex.raceName,
+      raceRole: checkIndex.raceRole
+    }
+
+    return await this.prisma.heatLane.update({
+      where: {
+        id: id,
+      },
+      data: data,
+  });
+
+  }
+
   async remove(id: number) : Promise<HeatLane> {
     const checkIndex = await this.prisma.heatLane.findUnique({
       where: {

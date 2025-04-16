@@ -52,6 +52,26 @@ export class HeatLaneService {
     return oneValue;
   }
 
+  async findRaceName(raceName: string) : Promise<HeatLane[]> {  
+    return await this.prisma.heatLane.findMany({
+      where:{
+        raceName: raceName,
+      },
+      include: {
+        car: {
+          include: {
+            racer : true,
+          }
+        },
+      },
+      orderBy: [
+        {
+          id: 'asc',
+        },
+      ],
+    })
+  }
+
   async update(id: number, updateData: Prisma.HeatLaneUpdateInput) : Promise<HeatLane> {
     const checkIndex = await this.prisma.heatLane.findUnique({
       where: {

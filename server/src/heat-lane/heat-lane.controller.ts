@@ -68,6 +68,20 @@ export class HeatLaneController {
     return oneHeatLane;
   }
 
+  @Get('byName/:raceName')
+  @ApiResponse({
+      status: 200,
+      description: 'The found records based on raceName',
+      type: HeatLaneEntity,
+    })
+  async findRaceName(@Param('raceName') raceName: string) : Promise<HeatLaneModel[]> {
+    const returnedHeatLanes = await this.heatLaneService.findRaceName(raceName);
+    if (!returnedHeatLanes) {
+      throw new NotFoundException(`HeatLanes with ${raceName} does not exist.`);
+    }
+    return returnedHeatLanes;
+  }
+
   @Patch(':id')
   @ApiOperation({ summary: 'Update heatlane' })
   @ApiParam( {

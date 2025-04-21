@@ -2,13 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { CreateRaceDto } from './dto/create-race.dto';
 import { UpdateRaceDto } from './dto/update-race.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { Car, HeatLane, Prisma } from '@prisma/client';
+import { Car, HeatLane, Prisma, RaceMetadata } from '@prisma/client';
 import { RaceGlobalVariableService } from './raceGlobalVariable.service';
 
 @Injectable()
 export class RaceService {
 
   constructor(private prisma: PrismaService, private numAdvances: RaceGlobalVariableService) {}
+
+  async createRaceMetadata(data: CreateRaceDto): Promise<RaceMetadata> {
+    return await this.prisma.raceMetadata.create({data});
+  }
 
   async create(createRaceDto: CreateRaceDto): Promise<HeatLane[]> {
     
@@ -450,6 +454,68 @@ export class RaceService {
 
     }
    
+  }
+
+  async findAllRaceMetadata() {
+    return this.prisma.raceMetadata.findMany({
+      orderBy: [
+        {
+          id: 'asc',
+        },
+      ],
+    })
+  }
+
+  async findOneRaceMetadata(id: number) : Promise<RaceMetadata> {
+    const oneValue = await this.prisma.raceMetadata.findUnique({
+      where: {
+        id: id,
+      }
+    });
+
+    if (oneValue === null) {
+      return null as any;
+    } 
+    
+    return oneValue;
+  }
+  
+  async updateRaceMetadata(id: number, updateRaceDto: UpdateRaceDto): Promise<RaceMetadata> {
+    const checkIndex = await this.prisma.raceMetadata.findUnique({
+      where: {
+        id: id, 
+      },
+    })
+
+    if (checkIndex === null) {
+      return null as any;
+    } 
+    
+    return await this.prisma.raceMetadata.update({
+        where: {
+          id: id,
+        },
+        data: updateRaceDto,
+    });
+
+  }
+
+  async removeRaceMetadata(id: number): Promise<RaceMetadata> {
+    const checkIndex = await this.prisma.raceMetadata.findUnique({
+      where: {
+        id: id,
+      },
+    })
+
+    if (checkIndex === null) {
+      return null as any;
+    } 
+    
+    return await this.prisma.raceMetadata.delete({
+        where: {
+          id: id,
+        },
+    });
   }
 
   findAll() {

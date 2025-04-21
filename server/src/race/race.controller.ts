@@ -10,11 +10,42 @@ import {
 import { RaceService } from './race.service';
 import { CreateRaceDto } from './dto/create-race.dto';
 import { UpdateRaceDto } from './dto/update-race.dto';
+import { RaceMetadata } from '@prisma/client';
 
 @ApiTags('race')
 @Controller('race')
 export class RaceController {
   constructor(private readonly raceService: RaceService) {}
+
+  @Post('metadata')
+  @ApiOperation({ summary: 'Create race metadata' })
+  async createRaceMetadata(@Body() createRaceDto: CreateRaceDto): Promise<RaceMetadata> {
+    return await this.raceService.createRaceMetadata(createRaceDto);
+  }
+
+  @Get('metadata')
+  @ApiOperation({ summary: 'Get all race metadata'})
+  async raceMetadatafindAll(): Promise<RaceMetadata[]>  {
+    return await this.raceService.findAllRaceMetadata();
+  }
+
+  @Get('metadata/:id')
+  @ApiOperation({ summary: 'Get race metadata by race id'})
+  async raceMetadatafindOne(@Param('id') id: string): Promise<RaceMetadata> {
+    return await this.raceService.findOneRaceMetadata(+id);
+  }
+
+  @Patch('metadata/:id')
+  @ApiOperation({ summary: 'Update race metadata by race id'})
+  async updateRaceMetadata(@Param('id') id: string, @Body() updateRaceDto: UpdateRaceDto) {
+    return await this.raceService.updateRaceMetadata(+id, updateRaceDto);
+  }
+
+  @Delete('metadata/:id')
+  @ApiOperation({ summary: 'Delete race metadata by race id'})
+  async removeRaceMetadata(@Param('id') id: string) {
+    return await this.raceService.removeRaceMetadata(+id);
+  }
 
   @Post()
   @ApiOperation({ summary: 'Create quarterfinals race' })
@@ -78,7 +109,7 @@ export class RaceController {
     example: "Cub, Sibling, Adult",
     required: true
   })  
-  @ApiCreatedResponse({ description: 'Race created successfully', type: CreateRaceDto })
+  @ApiCreatedResponse({ description: 'Semi or Final Race created successfully', type: CreateRaceDto })
   @ApiBadRequestResponse({ description: 'Bad Request' }) 
   async createSemiorFinal(@Body() createRaceDto: CreateRaceDto) {
     return await this.raceService.createSemiorFinal(createRaceDto);

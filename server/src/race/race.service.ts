@@ -16,6 +16,18 @@ export class RaceService {
 
   async create(createRaceDto: CreateRaceDto): Promise<HeatLane[]> {
     
+    //create a new race metadata object
+    const data = createRaceDto;
+    await this.prisma.raceMetadata.create({data});
+
+    const latestRace = await this.prisma.raceMetadata.findMany({
+      orderBy: {
+          id: 'desc',
+      },
+      take: 1,
+    })
+
+
     //set variable for number of lanes from API parameter input
     const numLanes = createRaceDto.numLanes;
 
@@ -23,7 +35,10 @@ export class RaceService {
     const raceName = createRaceDto.raceName;
 
     //set variable for raceId from API parameter input
-    const raceId = createRaceDto.raceId;
+    //const raceId = createRaceDto.raceId;
+
+    //set variable for raceId from newest race metadata object
+    const raceId = latestRace[0].id;
 
     //set variable for role to filter car table based on API parameter iput
     const inputRole = createRaceDto.role;
@@ -91,6 +106,7 @@ export class RaceService {
     return cars; 
   }
 
+  //reusable function to create heats in a race
   async createHeats(numHeats: number, cars: Car[], raceId: number, raceName: string, inputRole: string): Promise<HeatLane[]>{
     
     const heats : HeatLane[] = [];
@@ -120,6 +136,7 @@ export class RaceService {
     return heats;
   }
 
+  //reusable function to add blank cars to an array of cars
   async addBlankCars(cars: Car[], numLanes: number): Promise<Car[]>{
     //set variable to number of total number of cars 
     const numCars = cars.length;
@@ -159,7 +176,7 @@ export class RaceService {
     const raceName = createRaceDto.raceName;
 
     //set variable for raceId from API parameter input
-    const raceId = createRaceDto.raceId;
+    //const raceId = createRaceDto.raceId;
 
     //set variable for role to filter car table based on API parameter iput
     const inputRole = createRaceDto.role;

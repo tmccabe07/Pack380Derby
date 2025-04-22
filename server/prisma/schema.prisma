@@ -42,6 +42,6 @@ model HeatLane {
 model RaceMetadata {
   id Int @id @default(autoincrement())
   raceName String? @db.VarChar(255)
-  raceRole String? @db.VarChar(30)
+  role String? @db.VarChar(30)
   numLanes Int 
 }

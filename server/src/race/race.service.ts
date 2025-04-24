@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateRaceDto } from './dto/create-race.dto';
 import { UpdateRaceDto } from './dto/update-race.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { Car, HeatLane, Prisma } from '@prisma/client';
+import { Car, HeatLane, Prisma, RaceMetadata } from '@prisma/client';
 import { RaceGlobalVariableService } from './raceGlobalVariable.service';
 
 @Injectable()
@@ -10,8 +10,24 @@ export class RaceService {
 
   constructor(private prisma: PrismaService, private numAdvances: RaceGlobalVariableService) {}
 
+  async createRaceMetadata(data: CreateRaceDto): Promise<RaceMetadata> {
+    return await this.prisma.raceMetadata.create({data});
+  }
+
   async create(createRaceDto: CreateRaceDto): Promise<HeatLane[]> {
     
+    //create a new race metadata object
+    const data = createRaceDto;
+    await this.prisma.raceMetadata.create({data});
+
+    const latestRace = await this.prisma.raceMetadata.findMany({
+      orderBy: {
+          id: 'desc',
+      },
+      take: 1,
+    })
+
+
     //set variable for number of lanes from API parameter input
     const numLanes = createRaceDto.numLanes;
 
@@ -19,7 +35,10 @@ export class RaceService {
     const raceName = createRaceDto.raceName;
 
     //set variable for raceId from API parameter input
-    const raceId = createRaceDto.raceId;
+    //const raceId = createRaceDto.raceId;
+
+    //set variable for raceId from newest race metadata object
+    const raceId = latestRace[0].id;
 
     //set variable for role to filter car table based on API parameter iput
     const inputRole = createRaceDto.role;
@@ -87,6 +106,7 @@ export class RaceService {
     return cars; 
   }
 
+  //reusable function to create heats in a race
   async createHeats(numHeats: number, cars: Car[], raceId: number, raceName: string, inputRole: string): Promise<HeatLane[]>{
     
     const heats : HeatLane[] = [];
@@ -116,6 +136,7 @@ export class RaceService {
     return heats;
   }
 
+  //reusable function to add blank cars to an array of cars
   async addBlankCars(cars: Car[], numLanes: number): Promise<Car[]>{
     //set variable to number of total number of cars 
     const numCars = cars.length;
@@ -155,7 +176,7 @@ export class RaceService {
     const raceName = createRaceDto.raceName;
 
     //set variable for raceId from API parameter input
-    const raceId = createRaceDto.raceId;
+    //const raceId = createRaceDto.raceId;
 
     //set variable for role to filter car table based on API parameter iput
     const inputRole = createRaceDto.role;
@@ -450,6 +471,68 @@ export class RaceService {
 
     }
    
+  }
+
+  async findAllRaceMetadata() {
+    return this.prisma.raceMetadata.findMany({
+      orderBy: [
+        {
+          id: 'asc',
+        },
+      ],
+    })
+  }
+
+  async findOneRaceMetadata(id: number) : Promise<RaceMetadata> {
+    const oneValue = await this.prisma.raceMetadata.findUnique({
+      where: {
+        id: id,
+      }
+    });
+
+    if (oneValue === null) {
+      return null as any;
+    } 
+    
+    return oneValue;
+  }
+  
+  async updateRaceMetadata(id: number, updateRaceDto: UpdateRaceDto): Promise<RaceMetadata> {
+    const checkIndex = await this.prisma.raceMetadata.findUnique({
+      where: {
+        id: id, 
+      },
+    })
+
+    if (checkIndex === null) {
+      return null as any;
+    } 
+    
+    return await this.prisma.raceMetadata.update({
+        where: {
+          id: id,
+        },
+        data: updateRaceDto,
+    });
+
+  }
+
+  async removeRaceMetadata(id: number): Promise<RaceMetadata> {
+    const checkIndex = await this.prisma.raceMetadata.findUnique({
+      where: {
+        id: id,
+      },
+    })
+
+    if (checkIndex === null) {
+      return null as any;
+    } 
+    
+    return await this.prisma.raceMetadata.delete({
+        where: {
+          id: id,
+        },
+    });
   }
 
   findAll() {

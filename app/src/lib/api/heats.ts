@@ -1,13 +1,12 @@
 // lib/api/racers.js
 import { DERBY_API_URL } from "@/lib/config/apiConfig";
 
-// Define what a Racer looks like
-export interface Racer {
-    id: number;
-    name: string;
-    carName: string;
-    time?: number | null;
-  }
+// Define what a Heat looks like
+export interface Heat {
+  carId: number;
+  result: number;
+  lane: number;
+}
   
 
 export async function fetchHeats() {

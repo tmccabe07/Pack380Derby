@@ -2,7 +2,7 @@
 
 import Layout from "@/components/Layout";
 import Link from "next/link";
-import RacerList from "@/components/cars/RacerList";
+import RacerList from "@/components/racers/RacerList";
 
 export default function CarsPage() {
 

@@ -1,28 +1,29 @@
 "use client"
 // components/CarList.tsx
 import { useEffect, useState } from "react";
-import { fetchRacers, Racer} from "@/lib/api/racers";
+import { fetchCars, Car} from "@/lib/api/cars";
+import CarCard from "./CarCard";
 
 
 export default function CarList() {
-  const [racers, setRacers] = useState<Racer[]>([]);
+  const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function loadRacers() {
+  async function loadCars() {
     try {
-      const data = await fetchRacers();
-      setRacers(data);
+      const data = await fetchCars();
+      setCars(data);
     } catch (err) {
       console.error(err);
-      setError('Failed to load racers.');
+      setError('Failed to load cars.');
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    loadRacers();
+    loadCars();
   }, []);
 
   if (loading) {
@@ -33,7 +34,7 @@ export default function CarList() {
     return <p className="text-center text-red-500">{error}</p>;
   }
 
-  if (racers.length === 0) {
+  if (cars.length === 0) {
     return <p className="text-center text-gray-500">No cars registered yet.</p>;
   }
 
@@ -41,12 +42,12 @@ export default function CarList() {
     <div className="mt-6">
       <h2 className="text-2xl font-bold mb-4 text-center">Registered Cars</h2>
       <ul className="space-y-2">
-        {racers.map((racer) => (
+        {cars.map((car) => (
           <li
-            key={racer.id}
+            key={car.id}
             className="border p-4 rounded shadow-sm hover:shadow-md transition"
           >
-            <CarCard racer={racer} />
+            <CarCard car={car} />
           </li>
         ))}
       </ul>

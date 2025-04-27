@@ -34,33 +34,58 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-## Deployment
+## API Testing
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### To register
+Create person, then create a car linked to that person
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+POST /api/person
+{
+    "name": "Jane Doe",
+    "den": "8",
+    "rank": "Tiger",
+    "role": "Cub"
+}
 
-```bash
-$ npm install -g mau
-$ mau deploy
-```
+POST /api/car
+{
+        "name": "25 Car",
+        "weight": "5.0",
+        "year": 2025,
+        "image": "someurlhere",
+        "racerId": 25
+}
+racerId is the unique id of the person that was created. 
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### To create races
+POST /api/race 
+{
+    "raceName": "quarterfinals",
+    "raceId": 3,
+    "numLanes": 6,
+    "role": "Cub"
+}
+This will create quarterfinals race with id 3.  Repeat this with different raceIds to create multiple quarterfinals races. 
 
+POST /api/race/semiorfinal
+{
+    "raceName": "quarterfinals",
+    "raceId": 1,
+    "numLanes": 6,
+    "role": "Cub"
+}
+This will try to create a semi final race from the quarterfinals race results for Cubs.  
+'deadheat' gets appended to raceName if deadheats are needed, e.g. "quarterfinalsdeadHeat".  
+If a deadheat is generated, re-run this with raceName = "quarterfinalsdeadHeat".
+Note: not elegant, but deadheat will get appended again if there is more than one deadHeat.  
 
-## Resources
+{
+    "raceName": "semi",
+    "raceId": 1,
+    "numLanes": 6,
+    "role": "Cub"
+}
+This will try to create a final race from the semi race results for Cubs. 
+'deadheat' gets appended to raceName if deadheats are needed, e.g. "semideadHeat".
 
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
+All races are stored in table "public"."HeatLane".

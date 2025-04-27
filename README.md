@@ -1,10 +1,30 @@
 # Pack380Derby
 Cub Scouts Pack 380 Pinewood Derby application
 
-# To register
+## Architecture
+
+- [Web Service](./server)
+- [Web Application](./client)
+
+## Development
+
+### Getting Started
+
+```bash
+cd server
+npm install
+npm run db:migrate
+npm run server:start:dev
+```
+
+visit API Docs at https://localhost:3000/api/docs
+
+## API Testing
+
+### To register
 Create person, then create a car linked to that person
 
-POST /person
+POST /api/person
 {
     "name": "Jane Doe",
     "den": "8",
@@ -12,7 +32,7 @@ POST /person
     "role": "Cub"
 }
 
-POST /car
+POST /api/car
 {
         "name": "25 Car",
         "weight": "5.0",
@@ -23,7 +43,7 @@ POST /car
 racerId is the unique id of the person that was created. 
 
 # To create races
-POST /race 
+POST /api/race 
 {
     "raceName": "quarterfinals",
     "raceId": 3,
@@ -32,7 +52,7 @@ POST /race
 }
 This will create quarterfinals race with id 3.  Repeat this with different raceIds to create multiple quarterfinals races. 
 
-POST /race/semiorfinal
+POST /api/race/semiorfinal
 {
     "raceName": "quarterfinals",
     "raceId": 1,

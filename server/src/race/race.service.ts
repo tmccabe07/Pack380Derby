@@ -66,12 +66,12 @@ export class RaceService {
           id: i,
         },
         include: {
-          racer: true,
+          person: true,
         }
       });
       if(oneValue !== null){
-        //filter results by role, use the ? since racer can be null
-        checkRole = oneValue.racer?.role;
+        //filter results by role, use the ? since person can be null
+        checkRole = oneValue.person?.role;
         if( checkRole === inputRole){
           cars.push(oneValue);
         }
@@ -153,7 +153,7 @@ export class RaceService {
         data: {
           name: "blank", 
           weight: "0", 
-          racerId: null, 
+          personId: null, 
           year: 9999, 
           image: "blank", 
         },
@@ -241,12 +241,12 @@ export class RaceService {
           id: i,
         },
         include: {
-          racer: true,
+          person: true,
         }
       });
       if(oneValue !== null){
-        //filter results by role, use the ? since racer can be null
-        checkRole = oneValue.racer?.role;
+        //filter results by role, use the ? since person can be null
+        checkRole = oneValue.person?.role;
         if( checkRole === inputRole){
           if( oneValue.name !== "blank"){
             cars.push(oneValue);

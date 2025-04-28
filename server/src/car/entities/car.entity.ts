@@ -22,16 +22,16 @@ export class Car {
     weight: string;
     
     @ApiProperty({ required: false, nullable: true })
-    racerId: number | null;
+    personId: number | null;
 
     @ApiProperty({ required: false, type: PersonEntity })
-    racer?: PersonEntity;
+    person?: PersonEntity;
 
-    constructor({ racer, ...data }: Partial<Car>) {
+    constructor({ person, ...data }: Partial<Car>) {
     Object.assign(this, data);
 
-    if (racer) {
-      this.racer = new PersonEntity();
+    if (person) {
+      this.person = new PersonEntity();
     }
 
   }

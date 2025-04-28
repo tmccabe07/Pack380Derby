@@ -31,7 +31,7 @@ export class CarService {
         id: id,
       },
       include: {
-        racer: true,
+        person: true,
       }
     });
 

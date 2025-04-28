@@ -34,7 +34,7 @@ export class CarController {
       example: "5.0",
       required: true }) 
   @ApiParam( {
-      name: "racerId",
+      name: "personId",
       type: "Integer",
       description: "Unique ID of Person that owns this car",
       example: "1",
@@ -96,7 +96,7 @@ export class CarController {
     example: "5.0",
     required: true }) 
   @ApiParam( {
-    name: "racerId",
+    name: "personId",
     type: "Integer",
     description: "Unique ID of Person that owns this car",
     example: "1",

@@ -11,7 +11,7 @@ export class CreateCarDto {
     weight: string;
 
     @IsInt()
-    racerId: Person["id"];
+    personId: Person["id"];
 
     @IsInt()
     year: number;

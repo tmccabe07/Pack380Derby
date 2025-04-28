@@ -31,4 +31,22 @@ export class RaceGlobalVariableService {
     this.advance.length = 0;
   }
 
+  getRaceName(value: number): string {
+    switch(value){
+      case 1:
+        return "quarterfinal";
+      case 2: 
+        return "semi";
+      case 3: 
+        return "final";
+      case 4: 
+        return "quarterfinaldeadheat";
+      case 5:
+        return "semideadheat";
+      default:
+        return "racetype match not found";
+    }
+    
+  }
+
 }

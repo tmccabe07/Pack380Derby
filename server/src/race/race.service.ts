@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateRaceDto } from './dto/create-race.dto';
 import { UpdateRaceDto } from './dto/update-race.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { Car, HeatLane, Prisma, RaceMetadata } from '@prisma/client';
+import { Car, HeatLane, Prisma, Race } from '@prisma/client';
 import { RaceGlobalVariableService } from './raceGlobalVariable.service';
 
 @Injectable()
@@ -10,17 +10,14 @@ export class RaceService {
 
   constructor(private prisma: PrismaService, private numAdvances: RaceGlobalVariableService) {}
 
-  async createRaceMetadata(data: CreateRaceDto): Promise<RaceMetadata> {
-    return await this.prisma.raceMetadata.create({data});
-  }
-
-  async create(createRaceDto: CreateRaceDto): Promise<HeatLane[]> {
+  
+  async createNewRace(createRaceDto: CreateRaceDto): Promise<HeatLane[]> {
     
-    //create a new race metadata object
+    //create a new race  object
     const data = createRaceDto;
-    await this.prisma.raceMetadata.create({data});
+    await this.prisma.race.create({data});
 
-    const latestRace = await this.prisma.raceMetadata.findMany({
+    const latestRace = await this.prisma.race.findMany({
       orderBy: {
           id: 'desc',
       },
@@ -32,12 +29,12 @@ export class RaceService {
     const numLanes = createRaceDto.numLanes;
 
     //set variable for raceName from API parameter input
-    const raceName = createRaceDto.raceName;
+    const raceName = this.numAdvances.getRaceName(createRaceDto.raceType);
 
     //set variable for raceId from API parameter input
     //const raceId = createRaceDto.raceId;
 
-    //set variable for raceId from newest race metadata object
+    //set variable for raceId from newest race  object
     const raceId = latestRace[0].id;
 
     //set variable for role to filter car table based on API parameter iput
@@ -173,7 +170,7 @@ export class RaceService {
 
     //set variable for raceName from API parameter input, which is the race that new race is created from
     //first time quarterfinals, then quarterdeadheats
-    const raceName = createRaceDto.raceName;
+    const raceName = this.numAdvances.getRaceName(createRaceDto.raceType);
 
     //set variable for raceId from API parameter input
     //const raceId = createRaceDto.raceId;
@@ -473,8 +470,21 @@ export class RaceService {
    
   }
 
-  async findAllRaceMetadata() {
-    return this.prisma.raceMetadata.findMany({
+  async create(createRaceDto: CreateRaceDto): Promise<Race> {
+    const raceName = this.numAdvances.getRaceName(createRaceDto.raceType); 
+    
+    const data = {
+      raceName: raceName,
+      numLanes: createRaceDto.numLanes,
+      raceType: createRaceDto.raceType,
+      role: createRaceDto.role
+    }
+
+    return await this.prisma.race.create({data});
+  }
+
+  async findAll() {
+    return this.prisma.race.findMany({
       orderBy: [
         {
           id: 'asc',
@@ -483,8 +493,8 @@ export class RaceService {
     })
   }
 
-  async findOneRaceMetadata(id: number) : Promise<RaceMetadata> {
-    const oneValue = await this.prisma.raceMetadata.findUnique({
+  async findOne(id: number) : Promise<Race> {
+    const oneValue = await this.prisma.race.findUnique({
       where: {
         id: id,
       }
@@ -497,8 +507,8 @@ export class RaceService {
     return oneValue;
   }
   
-  async updateRaceMetadata(id: number, updateRaceDto: UpdateRaceDto): Promise<RaceMetadata> {
-    const checkIndex = await this.prisma.raceMetadata.findUnique({
+  async update(id: number, updateRaceDto: UpdateRaceDto): Promise<Race> {
+    const checkIndex = await this.prisma.race.findUnique({
       where: {
         id: id, 
       },
@@ -508,7 +518,7 @@ export class RaceService {
       return null as any;
     } 
     
-    return await this.prisma.raceMetadata.update({
+    return await this.prisma.race.update({
         where: {
           id: id,
         },
@@ -517,8 +527,8 @@ export class RaceService {
 
   }
 
-  async removeRaceMetadata(id: number): Promise<RaceMetadata> {
-    const checkIndex = await this.prisma.raceMetadata.findUnique({
+  async remove(id: number): Promise<Race> {
+    const checkIndex = await this.prisma.race.findUnique({
       where: {
         id: id,
       },
@@ -528,26 +538,11 @@ export class RaceService {
       return null as any;
     } 
     
-    return await this.prisma.raceMetadata.delete({
+    return await this.prisma.race.delete({
         where: {
           id: id,
         },
     });
   }
 
-  findAll() {
-    return `This action returns all race`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} race`;
-  }
-
-  update(id: number, updateRaceDto: UpdateRaceDto) {
-    return `This action updates a #${id} race`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} race`;
-  }
 }

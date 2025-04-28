@@ -10,44 +10,44 @@ import {
 import { RaceService } from './race.service';
 import { CreateRaceDto } from './dto/create-race.dto';
 import { UpdateRaceDto } from './dto/update-race.dto';
-import { RaceMetadata } from '@prisma/client';
+import { Race } from '@prisma/client';
 
 @ApiTags('race')
 @Controller('race')
 export class RaceController {
   constructor(private readonly raceService: RaceService) {}
 
-  @Post('metadata')
-  @ApiOperation({ summary: 'Create race metadata' })
-  async createRaceMetadata(@Body() createRaceDto: CreateRaceDto): Promise<RaceMetadata> {
-    return await this.raceService.createRaceMetadata(createRaceDto);
-  }
-
-  @Get('metadata')
-  @ApiOperation({ summary: 'Get all race metadata'})
-  async raceMetadatafindAll(): Promise<RaceMetadata[]>  {
-    return await this.raceService.findAllRaceMetadata();
-  }
-
-  @Get('metadata/:id')
-  @ApiOperation({ summary: 'Get race metadata by race id'})
-  async raceMetadatafindOne(@Param('id') id: string): Promise<RaceMetadata> {
-    return await this.raceService.findOneRaceMetadata(+id);
-  }
-
-  @Patch('metadata/:id')
-  @ApiOperation({ summary: 'Update race metadata by race id'})
-  async updateRaceMetadata(@Param('id') id: string, @Body() updateRaceDto: UpdateRaceDto) {
-    return await this.raceService.updateRaceMetadata(+id, updateRaceDto);
-  }
-
-  @Delete('metadata/:id')
-  @ApiOperation({ summary: 'Delete race metadata by race id'})
-  async removeRaceMetadata(@Param('id') id: string) {
-    return await this.raceService.removeRaceMetadata(+id);
-  }
-
   @Post()
+  @ApiOperation({ summary: 'Create race' })
+  async create(@Body() createRaceDto: CreateRaceDto): Promise<Race> {
+    return await this.raceService.create(createRaceDto);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get all races'})
+  async findAll(): Promise<Race[]>  {
+    return await this.raceService.findAll();
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get race by race id'})
+  async findOne(@Param('id') id: string): Promise<Race> {
+    return await this.raceService.findOne(+id);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update race by race id'})
+  async update(@Param('id') id: string, @Body() updateRaceDto: UpdateRaceDto) {
+    return await this.raceService.update(+id, updateRaceDto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete race by race id'})
+  async remove(@Param('id') id: string) {
+    return await this.raceService.remove(+id);
+  }
+
+  @Post('quarter')
   @ApiOperation({ summary: 'Create quarterfinals race' })
   @ApiParam( {
       name: "raceId",
@@ -77,7 +77,7 @@ export class RaceController {
   })  
   @ApiCreatedResponse({ description: 'Race created successfully', type: CreateRaceDto })
   @ApiBadRequestResponse({ description: 'Bad Request' }) 
-  async create(@Body() createRaceDto: CreateRaceDto) {
+  async createNewRace(@Body() createRaceDto: CreateRaceDto) {
     return await this.raceService.create(createRaceDto);
   }
 
@@ -115,23 +115,4 @@ export class RaceController {
     return await this.raceService.createSemiorFinal(createRaceDto);
   }
 
-  @Get()
-  findAll() {
-    return this.raceService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.raceService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRaceDto: UpdateRaceDto) {
-    return this.raceService.update(+id, updateRaceDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.raceService.remove(+id);
-  }
 }

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateRaceDto } from './dto/create-race.dto';
 import { UpdateRaceDto } from './dto/update-race.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { Car, HeatLane, Prisma, RaceMetadata } from '@prisma/client';
+import { Car, HeatLane, Prisma, Race } from '@prisma/client';
 import { RaceGlobalVariableService } from './raceGlobalVariable.service';
 
 @Injectable()
@@ -10,17 +10,21 @@ export class RaceService {
 
   constructor(private prisma: PrismaService, private numAdvances: RaceGlobalVariableService) {}
 
-  async createRaceMetadata(data: CreateRaceDto): Promise<RaceMetadata> {
-    return await this.prisma.raceMetadata.create({data});
-  }
-
-  async create(createRaceDto: CreateRaceDto): Promise<HeatLane[]> {
+  
+  async createNewRace(createRaceDto: CreateRaceDto): Promise<HeatLane[]> {
     
-    //create a new race metadata object
-    const data = createRaceDto;
-    await this.prisma.raceMetadata.create({data});
+    //create a new race  object
+    const raceName = this.numAdvances.getRaceName(createRaceDto.raceType);
 
-    const latestRace = await this.prisma.raceMetadata.findMany({
+    const data = {
+      raceName: raceName,
+      numLanes: createRaceDto.numLanes,
+      role: createRaceDto.role,
+      raceType: createRaceDto.raceType
+    }
+    await this.prisma.race.create({data});
+
+    const latestRace = await this.prisma.race.findMany({
       orderBy: {
           id: 'desc',
       },
@@ -31,13 +35,13 @@ export class RaceService {
     //set variable for number of lanes from API parameter input
     const numLanes = createRaceDto.numLanes;
 
-    //set variable for raceName from API parameter input
-    const raceName = createRaceDto.raceName;
+    //set variable for raceType from API parameter input
+    const raceType = createRaceDto.raceType;
 
     //set variable for raceId from API parameter input
     //const raceId = createRaceDto.raceId;
 
-    //set variable for raceId from newest race metadata object
+    //set variable for raceId from newest race  object
     const raceId = latestRace[0].id;
 
     //set variable for role to filter car table based on API parameter iput
@@ -66,12 +70,12 @@ export class RaceService {
           id: i,
         },
         include: {
-          racer: true,
+          person: true,
         }
       });
       if(oneValue !== null){
-        //filter results by role, use the ? since racer can be null
-        checkRole = oneValue.racer?.role;
+        //filter results by role, use the ? since person can be null
+        checkRole = oneValue.person?.role;
         if( checkRole === inputRole){
           cars.push(oneValue);
         }
@@ -92,7 +96,7 @@ export class RaceService {
     let numHeats = cars.length/numLanes;
 
     //assign lanes
-    return await this.createHeats(numHeats, cars, raceId, raceName, inputRole);
+    return await this.createHeats(numHeats, cars, raceId, raceType, inputRole);
 
   }
 
@@ -107,7 +111,7 @@ export class RaceService {
   }
 
   //reusable function to create heats in a race
-  async createHeats(numHeats: number, cars: Car[], raceId: number, raceName: string, inputRole: string): Promise<HeatLane[]>{
+  async createHeats(numHeats: number, cars: Car[], raceId: number, raceType: number, inputRole: string): Promise<HeatLane[]>{
     
     const heats : HeatLane[] = [];
 
@@ -124,8 +128,8 @@ export class RaceService {
             carId: cars[counter].id, 
             heatId: i, 
             raceId: raceId,
-            raceName: raceName,
-            raceRole: inputRole, 
+            raceType: raceType,
+            role: inputRole, 
           },
         });
         heats.push(newHeatLane);
@@ -153,7 +157,7 @@ export class RaceService {
         data: {
           name: "blank", 
           weight: "0", 
-          racerId: null, 
+          personId: null, 
           year: 9999, 
           image: "blank", 
         },
@@ -171,9 +175,9 @@ export class RaceService {
     //set variable for number of lanes from API parameter input
     const numLanes = createRaceDto.numLanes;
 
-    //set variable for raceName from API parameter input, which is the race that new race is created from
+    //set variable for raceType from API parameter input, which is the race that new race is created from
     //first time quarterfinals, then quarterdeadheats
-    const raceName = createRaceDto.raceName;
+    const raceType = createRaceDto.raceType;
 
     //set variable for raceId from API parameter input
     //const raceId = createRaceDto.raceId;
@@ -181,27 +185,51 @@ export class RaceService {
     //set variable for role to filter car table based on API parameter iput
     const inputRole = createRaceDto.role;
 
-    let newRaceName = "";
+    let numTotalLanes = 0;
+    let deadHeatRaceType = 0;
+    let nextRaceType = 0;
+    let deadHeatRaceName = "";
+    let nextRaceName = "";
 
     //initializing advance array and number of advancing first time for semis or finals
-    if(raceName === "quarterfinals" || raceName === "semi"){
-      this.numAdvances.initAdvance();
-      this.numAdvances.setnumAdvances(0);
-      //console.log("Initialized advance array");
+    //note: consider what happens if there is more than one deadheat
+    switch(raceType){
+      case 1: //api sent quarterfinal, which is what we're filtering by, meaning create new semi
+        this.numAdvances.initAdvance();
+        this.numAdvances.setnumAdvances(0);
+        numTotalLanes = numLanes * 2;
+        deadHeatRaceType = 4;
+        nextRaceType = 2;
+        deadHeatRaceName = "quarterfinaldeadheat";
+        nextRaceName = "semi";
+        break;
+      case 2: //api sent semi, which is what we're filtering by to create a new final
+        this.numAdvances.initAdvance();
+        this.numAdvances.setnumAdvances(0);
+        numTotalLanes = numLanes;
+        deadHeatRaceType = 5;
+        nextRaceType = 3;
+        deadHeatRaceName = "semideadheat";
+        nextRaceName = "final";
+        break;
+      case 3: //api sent final, which doesn't make sense
+       console.log("why would api send final to filter by");
+      case 4: //create semi from quarter deadheat
+        numTotalLanes = numLanes * 2;
+        deadHeatRaceType = 4;
+        nextRaceType = 2;
+        deadHeatRaceName = "quarterfinaldeadheat";
+        nextRaceName = "semi";
+        break;
+      case 5: //create final from semi deadheat
+        numTotalLanes = numLanes;
+        deadHeatRaceType = 5;
+        nextRaceType = 3;
+        deadHeatRaceName = "semideadheat";
+        nextRaceName = "final";
+        break;
     }
-    
-    let numTotalLanes = 0; 
 
-    //set the new racename depending on whether this function is being run to generate a semi or a final.  Using include instead of equals due to possibility of deadheats.
-    if(raceName.includes("quarter") === true){
-      newRaceName = "semi";
-      numTotalLanes = numLanes * 2;
-    } else if(raceName.includes("semi") === true){
-      newRaceName = "final";
-      numTotalLanes = numLanes;
-    }
-
-    //console.log("newRaceName: " + newRaceName);
     //console.log("numTotalLanes: " + numTotalLanes);
     
     //this is needed for return of heat lane creation; but is not returned overall
@@ -241,12 +269,12 @@ export class RaceService {
           id: i,
         },
         include: {
-          racer: true,
+          person: true,
         }
       });
       if(oneValue !== null){
-        //filter results by role, use the ? since racer can be null
-        checkRole = oneValue.racer?.role;
+        //filter results by role, use the ? since person can be null
+        checkRole = oneValue.person?.role;
         if( checkRole === inputRole){
           if( oneValue.name !== "blank"){
             cars.push(oneValue);
@@ -260,10 +288,8 @@ export class RaceService {
 
     let totalResultsIndex = 0;
 
-    //loop through all heatlanes of non-blank cars that match the input role and the race name
-    //note racename should be "quarterfinals" first, then appended with "deadheat"
-    //then racename should be "semi", then potentially appended with "deadheat"
-    for(let i = 0; i < cars.length; i++){
+    //loop through all heatlanes of non-blank cars that match the input role and the race type to filter on
+     for(let i = 0; i < cars.length; i++){
       const selectHeats = await this.prisma.heatLane.findMany({
         select: {
           result: true,
@@ -272,9 +298,9 @@ export class RaceService {
           id: true,
         },
         where: {
-          raceRole: inputRole,
+          role: inputRole,
           carId: cars[i].id,
-          raceName: raceName,
+          raceType: raceType,
         },
         orderBy: {
           raceId: 'asc',
@@ -283,7 +309,7 @@ export class RaceService {
 
       //console.log("selectHeats of car id ", cars[i].id, " :", selectHeats);
       
-      //only sum up results for cars that were found to match the input role and racename
+      //only sum up results for cars that were found to match the input role and race type
       if(selectHeats.length > 0) {
         //console.log("select Heats is not null");
         totalResults.push({
@@ -293,7 +319,7 @@ export class RaceService {
 
         totalResultsIndex = totalResults.length-1;
 
-        //sum up results for each car that was found for the input role and racename 
+        //sum up results for each car that was found for the input role and race type 
         for(let j = 0; j < selectHeats.length; j++){
           totalResults[totalResultsIndex].aggResults = totalResults[totalResultsIndex].aggResults + (selectHeats[j].result ?? 0); 
         }
@@ -394,18 +420,32 @@ export class RaceService {
       //figure out how many heats are needed
       let numDeadHeats = deadHeatCars.length/numLanes;
 
-      let deadHeatRaceName = raceName + "deadHeat";
-
       //assign lanes
-      //using i as raceId 
       for(let i = 0; i < numDeadHeats; i++){
           
+        //create a new deadheat race
+        const data = {
+          numLanes: numLanes,
+          raceType: deadHeatRaceType,
+          role: inputRole,
+          raceName: deadHeatRaceName
+        }
+        await this.prisma.race.create({data});
+
+        //find the id of the newest deadheat race 
+        const latestRace = await this.prisma.race.findMany({
+          orderBy: {
+              id: 'desc',
+          },
+          take: 1,
+        })
+
         //randomly sort the cars including blanks
         deadHeatCars = await this.shuffleSort(deadHeatCars);
       
-        //console.log("dead heat for race: ", i, " cars are shuffled: ", deadHeatCars);
+        //console.log("dead heat for race: ", latestRace[0].id, " cars are shuffled: ", deadHeatCars);
 
-        await this.createHeats(numDeadHeats, deadHeatCars, i, deadHeatRaceName, inputRole).then(result => heats = result);
+        await this.createHeats(numDeadHeats, deadHeatCars, latestRace[0].id, deadHeatRaceType, inputRole).then(result => heats = result);
       }
     }
     //if there isn't any tie, then there's no need for deadheat, because all cars that can advance will advance, and there's no need to care about ties
@@ -464,17 +504,47 @@ export class RaceService {
         //sort the array of cars for each race
         advanceCars = await this.shuffleSort(advanceCars);
 
-        //console.log("advance to next race cars for race: ", i, " are sorted: ", advanceCars);
+        //create a new semi race
+        const data = {
+          numLanes: numLanes,
+          raceType: nextRaceType,
+          role: inputRole,
+          raceName: "semi"
+        }
+        await this.prisma.race.create({data});
+        
+        //find the id of the newest deadheat race 
+        const latestRace = await this.prisma.race.findMany({
+          orderBy: {
+              id: 'desc',
+          },
+          take: 1,
+        })
+
+        //console.log("advance to next race cars for race: ", latestRace[0].id, " are sorted: ", advanceCars);
        
-        await this.createHeats(numNewRaceHeats, advanceCars, i, newRaceName, inputRole).then(result => heats = result);
+        await this.createHeats(numNewRaceHeats, advanceCars, latestRace[0].id, nextRaceType, inputRole).then(result => heats = result);
       }
 
     }
    
   }
 
-  async findAllRaceMetadata() {
-    return this.prisma.raceMetadata.findMany({
+  async create(createRaceDto: CreateRaceDto): Promise<Race> {
+    const raceName = this.numAdvances.getRaceName(createRaceDto.raceType); 
+    
+    const data = {
+      raceName: raceName,
+      numLanes: createRaceDto.numLanes,
+      raceType: createRaceDto.raceType,
+      role: createRaceDto.role
+    }
+
+    return await this.prisma.race.create({data});
+  }
+
+  async findAll() {
+    return this.prisma.race.findMany({
       orderBy: [
         {
           id: 'asc',
@@ -483,8 +553,8 @@ export class RaceService {
     })
   }
 
-  async findOneRaceMetadata(id: number) : Promise<RaceMetadata> {
-    const oneValue = await this.prisma.raceMetadata.findUnique({
+  async findOne(id: number) : Promise<Race> {
+    const oneValue = await this.prisma.race.findUnique({
       where: {
         id: id,
       }
@@ -497,8 +567,8 @@ export class RaceService {
     return oneValue;
   }
   
-  async updateRaceMetadata(id: number, updateRaceDto: UpdateRaceDto): Promise<RaceMetadata> {
-    const checkIndex = await this.prisma.raceMetadata.findUnique({
+  async update(id: number, updateRaceDto: UpdateRaceDto): Promise<Race> {
+    const checkIndex = await this.prisma.race.findUnique({
       where: {
         id: id, 
       },
@@ -508,7 +578,7 @@ export class RaceService {
       return null as any;
     } 
     
-    return await this.prisma.raceMetadata.update({
+    return await this.prisma.race.update({
         where: {
           id: id,
         },
@@ -517,8 +587,8 @@ export class RaceService {
 
   }
 
-  async removeRaceMetadata(id: number): Promise<RaceMetadata> {
-    const checkIndex = await this.prisma.raceMetadata.findUnique({
+  async remove(id: number): Promise<Race> {
+    const checkIndex = await this.prisma.race.findUnique({
       where: {
         id: id,
       },
@@ -528,26 +598,11 @@ export class RaceService {
       return null as any;
     } 
     
-    return await this.prisma.raceMetadata.delete({
+    return await this.prisma.race.delete({
         where: {
           id: id,
         },
     });
   }
 
-  findAll() {
-    return `This action returns all race`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} race`;
-  }
-
-  update(id: number, updateRaceDto: UpdateRaceDto) {
-    return `This action updates a #${id} race`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} race`;
-  }
 }

@@ -19,7 +19,7 @@ export class HeatLaneService {
       include: {
         car: {
           include: {
-            racer : true,
+            person : true,
           }
         },
       },
@@ -39,7 +39,7 @@ export class HeatLaneService {
       include: {
         car: {
           include: {
-            racer : true,
+            person : true,
           },
         }
       }
@@ -52,17 +52,20 @@ export class HeatLaneService {
     return oneValue;
   }
 
-  async findRaceName(raceName: string) : Promise<HeatLane[]> {  
+  async findRaceType(raceType: number) : Promise<HeatLane[]> {  
     return await this.prisma.heatLane.findMany({
       where:{
-        raceName: raceName,
+        raceType: raceType,
       },
       include: {
         car: {
           include: {
-            racer : true,
+            person : true,
           }
         },
+        race: {
+          
+        }
       },
       orderBy: [
         {
@@ -108,8 +111,8 @@ export class HeatLaneService {
       carId: checkIndex.carId,
       heatId: checkIndex.heatId,
       raceId: checkIndex.raceId,
-      raceName: checkIndex.raceName,
-      raceRole: checkIndex.raceRole
+      raceType: checkIndex.raceType,
+      role: checkIndex.role
     }
 
     return await this.prisma.heatLane.update({

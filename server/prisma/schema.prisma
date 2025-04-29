@@ -20,8 +20,8 @@ model Car {
   id Int     @id @default(autoincrement())
   name      String? @db.VarChar(255)
   weight String? @db.VarChar(30)
-  racer Person? @relation(fields: [racerId], references: [id])
-  racerId Int? @unique // relation scaler field, the unique decorator means one to one relationship
+  person Person? @relation(fields: [personId], references: [id])
+  personId Int? @unique // relation scaler field, the unique decorator means one to one relationship
   year Int?
   image String?
   lane HeatLane[]
@@ -34,14 +34,17 @@ model HeatLane {
   car Car? @relation(fields: [carId], references: [id])
   carId Int? 
   heatId Int?
+  race Race? @relation(fields: [raceId], references: [id])
   raceId Int?
-  raceName String? @db.VarChar(255)
-  raceRole String?
+  raceType Int? 
+  role String?
 }
 
-model RaceMetadata {
+model Race {
   id Int @id @default(autoincrement())
   raceName String? @db.VarChar(255)
+  raceType Int?
   role String? @db.VarChar(30)
   numLanes Int 
+  lane HeatLane[]
 }

@@ -1,14 +1,15 @@
+import { IsString, IsNotEmpty, IsInt } from 'class-validator';
 
 export class CreateRaceDto {
 
-    /*to do: add validation*/
-    
-    raceId: number;
-
-    raceName: string;
-
+    @IsInt()
     numLanes: number;
 
+    @IsInt()
+    @IsNotEmpty()
+    raceType: number;
+
+    @IsString()
     role: string;
         
 }

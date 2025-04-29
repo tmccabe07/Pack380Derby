@@ -22,13 +22,13 @@ den: string;
 
 @ApiProperty({
   example: 'Lion',
-  description: 'The rank, valid values are Lion, Tiger, Wolf, Bear, Webelos, AoL, Sibling, Adult',
+  description: 'The rank, valid values are lion, tiger, wolf, bear, webelos, aol, sibling, adult',
 })
 rank: string;
 
 @ApiProperty({
     example: 'Cub',
-    description: 'The role, valid values are Cub, Sibling, Adult',
+    description: 'The role, valid values are cub, sibling, adult',
   })
   role: string;
 

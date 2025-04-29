@@ -50,17 +50,10 @@ export class RaceController {
   @Post('raceandheats')
   @ApiOperation({ summary: 'Create semifinal or final race, including any needed deadheats' })
   @ApiParam( {
-      name: "raceId",
-      type: "Number",
-      description: "Desired number of race, note this isn't used",
-      example: "1, 2, 3, 4, 5, 6",
-      required: true 
-  })
-  @ApiParam( {
-    name: "raceName",
-    type: "String",
-    description: "name of race to generate new race from",
-    example: "quarterfinals, quarterfinalsdeadHeat, semi, semideadHeat",
+    name: "raceType",
+    type: "number",
+    description: "race type code to filter races from to create new one",
+    example: "1 (prelim, generate quarterfinal), 10 (quarterfinal, generate semi), 20 (semi, generate final), 30 (final, not used), 40 (quarterfinaldeadheat, generate semi), 50 (semideadheat, generate final)",
     required: true }) 
   @ApiParam( {
     name: "numLanes",
@@ -72,7 +65,7 @@ export class RaceController {
     name: "role",
     type: "String",
     description: "role to filter table by",
-    example: "Cub, Sibling, Adult",
+    example: "cub, sibling, adult",
     required: true
   })  
   @ApiCreatedResponse({ description: 'Semi or Final Race created successfully', type: CreateRaceDto })

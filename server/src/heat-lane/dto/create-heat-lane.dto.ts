@@ -1,5 +1,6 @@
 import { IsNotEmpty, IsInt, IsIn, IsString } from 'class-validator';
 import { Car } from "../../car/entities/car.entity";
+import { Race } from "../../race/entities/race.entity"
 
 export class CreateHeatLaneDto {
     @IsInt()
@@ -18,12 +19,12 @@ export class CreateHeatLaneDto {
     heatId: number;
 
     @IsInt()
-    raceId: number;
+    raceId: Race["id"];
+
+    @IsInt()
+    raceType: number;
 
     @IsString()
-    raceName: string;
-
-    @IsString()
-    @IsIn(['Cub', 'Sibling', 'Adult'])
-    raceRole: string;
+    @IsIn(['cub', 'sibling', 'adult'])
+    role: string;
 }

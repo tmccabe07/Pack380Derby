@@ -33,15 +33,17 @@ export class RaceGlobalVariableService {
 
   getRaceName(value: number): string {
     switch(value){
-      case 1:
+      case 1: 
+        return "prelim";
+      case 10:
         return "quarterfinal";
-      case 2: 
+      case 20: 
         return "semi";
-      case 3: 
+      case 30: 
         return "final";
-      case 4: 
+      case 40: 
         return "quarterfinaldeadheat";
-      case 5:
+      case 50:
         return "semideadheat";
       default:
         return "racetype match not found";

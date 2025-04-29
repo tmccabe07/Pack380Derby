@@ -170,7 +170,7 @@ export class RaceService {
     return cars;
   }
 
-  async createSemiorFinal(createRaceDto: CreateRaceDto) {
+  async createRaceAndHeats(createRaceDto: CreateRaceDto) {
   
     //set variable for number of lanes from API parameter input
     const numLanes = createRaceDto.numLanes;
@@ -194,37 +194,41 @@ export class RaceService {
     //initializing advance array and number of advancing first time for semis or finals
     //note: consider what happens if there is more than one deadheat
     switch(raceType){
-      case 1: //api sent quarterfinal, which is what we're filtering by, meaning create new semi
+      case 1: //api sent prelim, meaning generate quarterfinals
+        nextRaceType = 10;
+        nextRaceName = "quarterfinal";
+        break;
+      case 10: //api sent quarterfinal, which is what we're filtering by, meaning create new semi
         this.numAdvances.initAdvance();
         this.numAdvances.setnumAdvances(0);
         numTotalLanes = numLanes * 2;
-        deadHeatRaceType = 4;
-        nextRaceType = 2;
+        deadHeatRaceType = 40;
+        nextRaceType = 20;
         deadHeatRaceName = "quarterfinaldeadheat";
         nextRaceName = "semi";
         break;
-      case 2: //api sent semi, which is what we're filtering by to create a new final
+      case 20: //api sent semi, which is what we're filtering by to create a new final
         this.numAdvances.initAdvance();
         this.numAdvances.setnumAdvances(0);
         numTotalLanes = numLanes;
-        deadHeatRaceType = 5;
-        nextRaceType = 3;
+        deadHeatRaceType = 50;
+        nextRaceType = 30;
         deadHeatRaceName = "semideadheat";
         nextRaceName = "final";
         break;
-      case 3: //api sent final, which doesn't make sense
+      case 30: //api sent final, which doesn't make sense
        console.log("why would api send final to filter by");
-      case 4: //create semi from quarter deadheat
+      case 40: //create semi from quarter deadheat
         numTotalLanes = numLanes * 2;
-        deadHeatRaceType = 4;
-        nextRaceType = 2;
+        deadHeatRaceType = 40;
+        nextRaceType = 20;
         deadHeatRaceName = "quarterfinaldeadheat";
         nextRaceName = "semi";
         break;
-      case 5: //create final from semi deadheat
+      case 50: //create final from semi deadheat
         numTotalLanes = numLanes;
-        deadHeatRaceType = 5;
-        nextRaceType = 3;
+        deadHeatRaceType = 50;
+        nextRaceType = 30;
         deadHeatRaceName = "semideadheat";
         nextRaceName = "final";
         break;
@@ -244,23 +248,13 @@ export class RaceService {
     })
     
     //create a new array of car type
-    const cars : Car[] = [];
+    let cars : Car[] = [];
 
     //initialize found index variable since index number may not match table row number
     let foundIndex = 0; 
 
     //initialize temp variable to check role as type any; 
     let checkRole; 
-
-    //initialize total results array
-    const totalResults = [
-      { 
-        carId: 0,
-        aggResults: 0, 
-      },
-    ];
-
-    totalResults.length = 0;
 
     //loop through car table to create array of non-blankcars.  Use foundindex because index may not match row number if row deletions have occurred
     for(let i = 0; foundIndex < carCount._all; i++){
@@ -274,6 +268,7 @@ export class RaceService {
       });
       if(oneValue !== null){
         //filter results by role, use the ? since person can be null
+        //exclude blank cars, which could happen for generating semis
         checkRole = oneValue.person?.role;
         if( checkRole === inputRole){
           if( oneValue.name !== "blank"){
@@ -284,11 +279,59 @@ export class RaceService {
       }
     }
 
-    //find all the results in a set of races for each non-blank car id
+    //generate quarterfinals if api sends prelim code
+    if(raceType == 1){
+
+      //create a new race  object
+      const data = {
+        raceName: nextRaceName,
+        numLanes: createRaceDto.numLanes,
+        role: createRaceDto.role,
+        raceType: nextRaceType
+      }
+      await this.prisma.race.create({data});
+
+      const latestRace = await this.prisma.race.findMany({
+        orderBy: {
+            id: 'desc',
+        },
+        take: 1,
+      })
+
+      const raceId = latestRace[0].id;
+
+        //add blank cars to make full lanes
+      //use this syntax to assign async result because async result can't be assigned directly
+      this.addBlankCars(cars, numLanes).then(result => cars = result);
+
+      //randomly sort the cars including blanks
+      cars = await this.shuffleSort(cars);
+    
+      //console.log("after quarter shuffle: ", cars);
+
+      //figure out how many heats are needed
+      let numHeats = cars.length/numLanes;
+
+      //assign lanes
+      return await this.createHeats(numHeats, cars, raceId, nextRaceType, inputRole);
+    }
+
+    //if not quarter finals, find all the results in a set of races for each non-blank car id
+
+    //initialize total results array
+    const totalResults = [
+      { 
+        carId: 0,
+        aggResults: 0, 
+      },
+    ];
+
+    totalResults.length = 0;
 
     let totalResultsIndex = 0;
 
     //loop through all heatlanes of non-blank cars that match the input role and the race type to filter on
+    //how to do a nested where?
      for(let i = 0; i < cars.length; i++){
       const selectHeats = await this.prisma.heatLane.findMany({
         select: {
@@ -327,7 +370,7 @@ export class RaceService {
     }
 
     //summed up results.  
-    console.log("totalresults: ", totalResults);
+    //console.log("totalresults: ", totalResults);
 
     //sort from lowest to highest
     const sortedResult = totalResults.sort((a, b) => a.aggResults - b.aggResults);

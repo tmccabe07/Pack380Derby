@@ -34,9 +34,10 @@ model HeatLane {
   car Car? @relation(fields: [carId], references: [id])
   carId Int? 
   heatId Int?
+  race Race? @relation(fields: [raceId], references: [id])
   raceId Int?
-  raceName String? @db.VarChar(255)
-  raceRole String?
+  raceType Int? 
+  role String?
 }
 
 model Race {
@@ -45,4 +46,5 @@ model Race {
   raceType Int?
   role String? @db.VarChar(30)
   numLanes Int 
+  lane HeatLane[]
 }

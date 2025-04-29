@@ -78,7 +78,7 @@ export class RaceController {
   @ApiCreatedResponse({ description: 'Race created successfully', type: CreateRaceDto })
   @ApiBadRequestResponse({ description: 'Bad Request' }) 
   async createNewRace(@Body() createRaceDto: CreateRaceDto) {
-    return await this.raceService.create(createRaceDto);
+    return await this.raceService.createNewRace(createRaceDto);
   }
 
   @Post('semiorfinal')

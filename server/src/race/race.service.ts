@@ -28,8 +28,8 @@ export class RaceService {
     //set variable for number of lanes from API parameter input
     const numLanes = createRaceDto.numLanes;
 
-    //set variable for raceName from API parameter input
-    const raceName = this.numAdvances.getRaceName(createRaceDto.raceType);
+    //set variable for raceType from API parameter input
+    const raceType = createRaceDto.raceType;
 
     //set variable for raceId from API parameter input
     //const raceId = createRaceDto.raceId;
@@ -89,7 +89,7 @@ export class RaceService {
     let numHeats = cars.length/numLanes;
 
     //assign lanes
-    return await this.createHeats(numHeats, cars, raceId, raceName, inputRole);
+    return await this.createHeats(numHeats, cars, raceId, raceType, inputRole);
 
   }
 
@@ -104,7 +104,7 @@ export class RaceService {
   }
 
   //reusable function to create heats in a race
-  async createHeats(numHeats: number, cars: Car[], raceId: number, raceName: string, inputRole: string): Promise<HeatLane[]>{
+  async createHeats(numHeats: number, cars: Car[], raceId: number, raceType: number, inputRole: string): Promise<HeatLane[]>{
     
     const heats : HeatLane[] = [];
 
@@ -121,8 +121,8 @@ export class RaceService {
             carId: cars[counter].id, 
             heatId: i, 
             raceId: raceId,
-            raceName: raceName,
-            raceRole: inputRole, 
+            raceType: raceType,
+            role: inputRole, 
           },
         });
         heats.push(newHeatLane);
@@ -168,9 +168,9 @@ export class RaceService {
     //set variable for number of lanes from API parameter input
     const numLanes = createRaceDto.numLanes;
 
-    //set variable for raceName from API parameter input, which is the race that new race is created from
+    //set variable for raceType from API parameter input, which is the race that new race is created from
     //first time quarterfinals, then quarterdeadheats
-    const raceName = this.numAdvances.getRaceName(createRaceDto.raceType);
+    const raceType = createRaceDto.raceType;
 
     //set variable for raceId from API parameter input
     //const raceId = createRaceDto.raceId;
@@ -178,27 +178,40 @@ export class RaceService {
     //set variable for role to filter car table based on API parameter iput
     const inputRole = createRaceDto.role;
 
-    let newRaceName = "";
-
+    let numTotalLanes = 0;
+    let deadHeatRaceType = 0;
+    let nextRaceType = 0;
     //initializing advance array and number of advancing first time for semis or finals
-    if(raceName === "quarterfinals" || raceName === "semi"){
-      this.numAdvances.initAdvance();
-      this.numAdvances.setnumAdvances(0);
-      //console.log("Initialized advance array");
+    //note: consider what happens if there is more than one deadheat
+    switch(raceType){
+      case 1: //api sent quarterfinal, which is what we're filtering by, meaning create new semi
+        this.numAdvances.initAdvance();
+        this.numAdvances.setnumAdvances(0);
+        numTotalLanes = numLanes * 2;
+        deadHeatRaceType = 4;
+        nextRaceType = 2;
+        break;
+      case 2: //api sent semi, which is what we're filtering by to create a new final
+        this.numAdvances.initAdvance();
+        this.numAdvances.setnumAdvances(0);
+        numTotalLanes = numLanes;
+        deadHeatRaceType = 5;
+        nextRaceType = 3;
+        break;
+      case 3: //api sent final, which doesn't make sense
+       console.log("why would api send final to filter by");
+      case 4: //create semi from quarter deadheat
+        numTotalLanes = numLanes * 2;
+        deadHeatRaceType = 4;
+        nextRaceType = 2;
+        break;
+      case 5: //create final from semi deadheat
+        numTotalLanes = numLanes;
+        deadHeatRaceType = 5;
+        nextRaceType = 3;
+        break;
     }
-    
-    let numTotalLanes = 0; 
 
-    //set the new racename depending on whether this function is being run to generate a semi or a final.  Using include instead of equals due to possibility of deadheats.
-    if(raceName.includes("quarter") === true){
-      newRaceName = "semi";
-      numTotalLanes = numLanes * 2;
-    } else if(raceName.includes("semi") === true){
-      newRaceName = "final";
-      numTotalLanes = numLanes;
-    }
-
-    //console.log("newRaceName: " + newRaceName);
     //console.log("numTotalLanes: " + numTotalLanes);
     
     //this is needed for return of heat lane creation; but is not returned overall
@@ -257,10 +270,8 @@ export class RaceService {
 
     let totalResultsIndex = 0;
 
-    //loop through all heatlanes of non-blank cars that match the input role and the race name
-    //note racename should be "quarterfinals" first, then appended with "deadheat"
-    //then racename should be "semi", then potentially appended with "deadheat"
-    for(let i = 0; i < cars.length; i++){
+    //loop through all heatlanes of non-blank cars that match the input role and the race type to filter on
+     for(let i = 0; i < cars.length; i++){
       const selectHeats = await this.prisma.heatLane.findMany({
         select: {
           result: true,
@@ -269,9 +280,9 @@ export class RaceService {
           id: true,
         },
         where: {
-          raceRole: inputRole,
+          role: inputRole,
           carId: cars[i].id,
-          raceName: raceName,
+          raceType: raceType,
         },
         orderBy: {
           raceId: 'asc',
@@ -280,7 +291,7 @@ export class RaceService {
 
       //console.log("selectHeats of car id ", cars[i].id, " :", selectHeats);
       
-      //only sum up results for cars that were found to match the input role and racename
+      //only sum up results for cars that were found to match the input role and race type
       if(selectHeats.length > 0) {
         //console.log("select Heats is not null");
         totalResults.push({
@@ -290,7 +301,7 @@ export class RaceService {
 
         totalResultsIndex = totalResults.length-1;
 
-        //sum up results for each car that was found for the input role and racename 
+        //sum up results for each car that was found for the input role and race type 
         for(let j = 0; j < selectHeats.length; j++){
           totalResults[totalResultsIndex].aggResults = totalResults[totalResultsIndex].aggResults + (selectHeats[j].result ?? 0); 
         }
@@ -391,18 +402,31 @@ export class RaceService {
       //figure out how many heats are needed
       let numDeadHeats = deadHeatCars.length/numLanes;
 
-      let deadHeatRaceName = raceName + "deadHeat";
-
       //assign lanes
-      //using i as raceId 
       for(let i = 0; i < numDeadHeats; i++){
           
+        //create a new deadheat race
+        const data = {
+          numLanes: numLanes,
+          raceType: deadHeatRaceType,
+          role: inputRole
+        }
+        await this.prisma.race.create({data});
+
+        //find the id of the newest deadheat race 
+        const latestRace = await this.prisma.race.findMany({
+          orderBy: {
+              id: 'desc',
+          },
+          take: 1,
+        })
+
         //randomly sort the cars including blanks
         deadHeatCars = await this.shuffleSort(deadHeatCars);
       
-        //console.log("dead heat for race: ", i, " cars are shuffled: ", deadHeatCars);
+        //console.log("dead heat for race: ", latestRace[0].id, " cars are shuffled: ", deadHeatCars);
 
-        await this.createHeats(numDeadHeats, deadHeatCars, i, deadHeatRaceName, inputRole).then(result => heats = result);
+        await this.createHeats(numDeadHeats, deadHeatCars, latestRace[0].id, deadHeatRaceType, inputRole).then(result => heats = result);
       }
     }
     //if there isn't any tie, then there's no need for deadheat, because all cars that can advance will advance, and there's no need to care about ties
@@ -461,9 +485,25 @@ export class RaceService {
         //sort the array of cars for each race
         advanceCars = await this.shuffleSort(advanceCars);
 
-        //console.log("advance to next race cars for race: ", i, " are sorted: ", advanceCars);
+        //create a new semi race
+        const data = {
+          numLanes: numLanes,
+          raceType: nextRaceType,
+          role: inputRole
+        }
+        await this.prisma.race.create({data});
+        
+        //find the id of the newest deadheat race 
+        const latestRace = await this.prisma.race.findMany({
+          orderBy: {
+              id: 'desc',
+          },
+          take: 1,
+        })
+
+        //console.log("advance to next race cars for race: ", latestRace[0].id, " are sorted: ", advanceCars);
        
-        await this.createHeats(numNewRaceHeats, advanceCars, i, newRaceName, inputRole).then(result => heats = result);
+        await this.createHeats(numNewRaceHeats, advanceCars, latestRace[0].id, nextRaceType, inputRole).then(result => heats = result);
       }
 
     }

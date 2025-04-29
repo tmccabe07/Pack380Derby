@@ -14,7 +14,14 @@ export class RaceService {
   async createNewRace(createRaceDto: CreateRaceDto): Promise<HeatLane[]> {
     
     //create a new race  object
-    const data = createRaceDto;
+    const raceName = this.numAdvances.getRaceName(createRaceDto.raceType);
+
+    const data = {
+      raceName: raceName,
+      numLanes: createRaceDto.numLanes,
+      role: createRaceDto.role,
+      raceType: createRaceDto.raceType
+    }
     await this.prisma.race.create({data});
 
     const latestRace = await this.prisma.race.findMany({
@@ -181,6 +188,9 @@ export class RaceService {
     let numTotalLanes = 0;
     let deadHeatRaceType = 0;
     let nextRaceType = 0;
+    let deadHeatRaceName = "";
+    let nextRaceName = "";
+
     //initializing advance array and number of advancing first time for semis or finals
     //note: consider what happens if there is more than one deadheat
     switch(raceType){
@@ -190,6 +200,8 @@ export class RaceService {
         numTotalLanes = numLanes * 2;
         deadHeatRaceType = 4;
         nextRaceType = 2;
+        deadHeatRaceName = "quarterfinaldeadheat";
+        nextRaceName = "semi";
         break;
       case 2: //api sent semi, which is what we're filtering by to create a new final
         this.numAdvances.initAdvance();
@@ -197,6 +209,8 @@ export class RaceService {
         numTotalLanes = numLanes;
         deadHeatRaceType = 5;
         nextRaceType = 3;
+        deadHeatRaceName = "semideadheat";
+        nextRaceName = "final";
         break;
       case 3: //api sent final, which doesn't make sense
        console.log("why would api send final to filter by");
@@ -204,11 +218,15 @@ export class RaceService {
         numTotalLanes = numLanes * 2;
         deadHeatRaceType = 4;
         nextRaceType = 2;
+        deadHeatRaceName = "quarterfinaldeadheat";
+        nextRaceName = "semi";
         break;
       case 5: //create final from semi deadheat
         numTotalLanes = numLanes;
         deadHeatRaceType = 5;
         nextRaceType = 3;
+        deadHeatRaceName = "semideadheat";
+        nextRaceName = "final";
         break;
     }
 
@@ -409,7 +427,8 @@ export class RaceService {
         const data = {
           numLanes: numLanes,
           raceType: deadHeatRaceType,
-          role: inputRole
+          role: inputRole,
+          raceName: deadHeatRaceName
         }
         await this.prisma.race.create({data});
 
@@ -489,7 +508,8 @@ export class RaceService {
         const data = {
           numLanes: numLanes,
           raceType: nextRaceType,
-          role: inputRole
+          role: inputRole,
+          raceName: "semi"
         }
         await this.prisma.race.create({data});
         

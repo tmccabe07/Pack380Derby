@@ -63,6 +63,9 @@ export class HeatLaneService {
             person : true,
           }
         },
+        race: {
+          
+        }
       },
       orderBy: [
         {

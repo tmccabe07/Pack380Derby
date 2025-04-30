@@ -25,6 +25,7 @@ model Car {
   year Int?
   image String?
   lane HeatLane[]
+  aggResults Results[]
 }
 
 model HeatLane {
@@ -47,4 +48,12 @@ model Race {
   role String? @db.VarChar(30)
   numLanes Int 
   lane HeatLane[]
+}
+
+model Results {
+  id Int @id @default(autoincrement())
+  car Car? @relation(fields: [carId], references: [id])
+  carId Int? 
+  raceType Int?
+  aggResults Int?
 }

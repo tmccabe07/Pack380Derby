@@ -43,8 +43,8 @@ export class Car {
   year: number;
 
   @ApiProperty({
-    example: '2025',
-    description: 'The 4 digit year that this car raced',
+    example: '...',
+    description: 'The URL path to the image of the car',
   })
   image?: string;
 }

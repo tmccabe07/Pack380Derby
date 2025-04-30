@@ -20,10 +20,10 @@ export class PersonController {
 
   @Post()
   @ApiOperation({ summary: 'Create person' })
-  @ApiParam( {
+  @ApiParam({
     name: "name",
     type: "String",
-    description: "Full Name of the user",
+    description: "Full Name of the person",
     example: "Jane Doe",
     required: true })
   @ApiParam( {
@@ -88,10 +88,8 @@ export class PersonController {
       throw new NotFoundException(`Person with ${id} does not exist.`);
     }
     return deletePerson;
-
   }
 
-  
   @Patch(':id')
   @ApiOperation({ summary: 'Update person' })
   @ApiParam( {
@@ -114,8 +112,10 @@ export class PersonController {
       required: true })   
   @ApiCreatedResponse({ description: 'Person updated successfully', type: PersonEntity })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  async update(@Param('id', ParseIntPipe) id: number, @Body() updatePersonDto: UpdatePersonDto): Promise<PersonModel> {
-    
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updatePersonDto: UpdatePersonDto,
+  ): Promise<PersonModel> {
     const updatePerson = await this.personService.update(+id, updatePersonDto);
     if (!updatePerson) {
       throw new NotFoundException(`Person with ${id} does not exist.`);

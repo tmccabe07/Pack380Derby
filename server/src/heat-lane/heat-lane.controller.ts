@@ -195,4 +195,10 @@ export class HeatLaneController {
     }
     return deleteHeatLane;
   }
+
+  @Delete('deleteall/clear')
+  @ApiOperation({ summary: 'Clear heatlane table and restart id sequence'})
+  async clearHeatLaneTable(): Promise<string> {
+    return await this.heatLaneService.clearHeatLaneTable();
+  }
 }

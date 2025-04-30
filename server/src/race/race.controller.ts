@@ -47,6 +47,11 @@ export class RaceController {
     return await this.raceService.remove(+id);
   }
 
+  @Delete('deleteall/clear')
+  @ApiOperation({ summary: 'Clear race table and restart id sequence'})
+  async clearRaceTable(): Promise<string> {
+    return await this.raceService.clearRaceTable();
+  }
   @Post('raceandheats')
   @ApiOperation({ summary: 'Create semifinal or final race, including any needed deadheats' })
   @ApiParam( {

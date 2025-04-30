@@ -78,4 +78,10 @@ export class CarService {
         },
     });
   }
+
+  async clearCarTable(): Promise<string> {
+    await this.prisma.$queryRaw`DELETE FROM public."Car"`
+    await this.prisma.$queryRaw`ALTER SEQUENCE public."Car_id_seq" RESTART WITH 1`;
+    return "Car table dropped and sequence restarted";
+  }
 }

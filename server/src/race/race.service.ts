@@ -558,4 +558,10 @@ export class RaceService {
     });
   }
 
+  async clearRaceTable(): Promise<string> {
+    await this.prisma.$queryRaw`DELETE FROM public."Race"`
+    await this.prisma.$queryRaw`ALTER SEQUENCE public."Race_id_seq" RESTART WITH 1`;
+    return "Race table dropped and sequence restarted";
+  }
+
 }

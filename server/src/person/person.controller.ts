@@ -123,6 +123,11 @@ export class PersonController {
     return updatePerson;
   }
 
+  @Delete('deleteall/clear')
+  @ApiOperation({ summary: 'Clear person table and restart id sequence'})
+  async clearPersonTable(): Promise<string> {
+    return await this.personService.clearPersonTable();
+  }
   
   
 }

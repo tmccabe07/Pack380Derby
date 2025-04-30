@@ -6,19 +6,27 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+   // Enable CORS
+   app.enableCors({
+    origin: 'http://localhost:3001', // Allow your Next.js frontend
+    credentials: true, // Allow cookies/authorization headers if needed
+  });
+
+  app.setGlobalPrefix('api');
+
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
     transformOptions: { enableImplicitConversion: true},
   }));
 
   const config = new DocumentBuilder()
-    .setTitle('Person')
-    .setDescription('The Person API description')
+    .setTitle('Pinewood Derby API')
+    .setDescription('Web Service for managing Pinewood Derby information.')
     .setVersion('1.0')
-    .addTag('person')
+    .addTag('')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+  SwaggerModule.setup('api/docs', app, documentFactory);
 
   await app.listen(process.env.PORT ?? 3000);
 }

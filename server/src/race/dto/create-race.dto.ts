@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsInt } from 'class-validator';
+import { IsString, IsNotEmpty, IsInt, IsIn } from 'class-validator';
 
 export class CreateRaceDto {
 
@@ -10,6 +10,7 @@ export class CreateRaceDto {
     raceType: number;
 
     @IsString()
+    @IsIn(['cub','sibling','adult'], { message: 'role must be one of: cub, sibling, adult'})
     role: string;
         
 }

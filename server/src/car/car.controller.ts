@@ -138,4 +138,10 @@ export class CarController {
     }
     return deleteCar;    
  }
+
+ @Delete('deleteall/clear')
+  @ApiOperation({ summary: 'Clear car table and restart id sequence'})
+  async clearCarTable(): Promise<string> {
+    return await this.carService.clearCarTable();
+  }
 }

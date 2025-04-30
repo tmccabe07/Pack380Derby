@@ -25,33 +25,26 @@ export class PersonController {
     type: "String",
     description: "Full Name of the person",
     example: "Jane Doe",
-    required: true,
-  })
-  @ApiParam({
-    name: 'den',
-    type: "String",
-    description: "Den or unit association of the person. Leave blank for non-scouts.",
-    example: "Den 8",
-    required: false,
-  })
-  @ApiParam({
-    name: 'rank',
-    enum: ['lion', 'tiger', 'wolf', 'bear', 'webelos', 'aol'],
-    description: 'Cub Scout Rank of the person. Leave blank for non-scouts.',
-    example: 'lion',
-    required: false,
-  })
-  @ApiParam({
-    name: "role",
-    enum: ['cub', 'sibling', 'adult'],
-    description: "Role of the person.",
-    example: "cub",
-    required: true,
-  })
-  @ApiCreatedResponse({
-    description: 'Person created successfully',
-    type: PersonEntity,
-  })
+    required: true })
+  @ApiParam( {
+      name: "den",
+      type: "String",
+      description: "Full den of the user",
+      example: "8, sibling, adult",
+      required: true }) 
+  @ApiParam( {
+      name: "rank",
+      type: "String",
+      description: "Rank of the person",
+      example: "lion, tiger, wolf, bear, webelos, aol, sibling, adult",
+      required: true })  
+  @ApiParam( {
+      name: "role",
+      type: "String",
+      description: "Role of the person",
+      example: "cub, sibling, adult",
+      required: true }) 
+  @ApiCreatedResponse({ description: 'Person created successfully', type: PersonEntity })
   @ApiBadRequestResponse({ description: 'Bad Request' })
   async create(@Body() createPersonDto: CreatePersonDto): Promise<PersonModel> {
     return this.personService.createPerson(createPersonDto);
@@ -104,26 +97,20 @@ export class PersonController {
     type: "String",
     description: "Full Name of the user",
     example: "Jane Doe",
-    required: true,
-  })
-  @ApiParam({
-    name: 'den',
-    type: 'String',
-    description: "Full den of the user",
-    example: "Den 8, Sibling, Adult",
-    required: true,
-  })
+    required: true })
   @ApiParam( {
-    name: "rank",
-    type: "String",
-    description: "Rank of the person",
-    example: "Lion, Tiger, Wolf, Bear, Webelos, AoL, Sibling, Adult",
-    required: true,
-  })
-  @ApiCreatedResponse({
-    description: 'Person updated successfully',
-    type: PersonEntity,
-  })
+      name: "den",
+      type: "String",
+      description: "Full den of the user",
+      example: "8, sibling, adult",
+      required: true }) 
+  @ApiParam( {
+      name: "rank",
+      type: "String",
+      description: "Rank of the person",
+      example: "lion, tiger, wolf, bear, webelos, aol, sibling, adult",
+      required: true })   
+  @ApiCreatedResponse({ description: 'Person updated successfully', type: PersonEntity })
   @ApiBadRequestResponse({ description: 'Bad Request' })
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -136,6 +123,11 @@ export class PersonController {
     return updatePerson;
   }
 
+  @Delete('deleteall/clear')
+  @ApiOperation({ summary: 'Clear person table and restart id sequence'})
+  async clearPersonTable(): Promise<string> {
+    return await this.personService.clearPersonTable();
+  }
   
   
 }

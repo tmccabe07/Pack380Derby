@@ -47,54 +47,19 @@ export class RaceController {
     return await this.raceService.remove(+id);
   }
 
-  @Post('quarter')
-  @ApiOperation({ summary: 'Create quarterfinals race' })
-  @ApiParam( {
-      name: "raceId",
-      type: "Number",
-      description: "Desired number of race",
-      example: "1, 2, 3, 4, 5, 6",
-      required: true 
-  })
-  @ApiParam( {
-    name: "raceName",
-    type: "String",
-    description: "name of new race",
-    example: "quarterfinals",
-    required: true }) 
-  @ApiParam( {
-    name: "numLanes",
-    type: "Number",
-    description: "number of valid lanes per heat",
-    example: "6",
-    required: true })
-  @ApiParam({
-    name: "role",
-    type: "String",
-    description: "role to filter table by",
-    example: "Cub, Sibling, Adult",
-    required: true
-  })  
-  @ApiCreatedResponse({ description: 'Race created successfully', type: CreateRaceDto })
-  @ApiBadRequestResponse({ description: 'Bad Request' }) 
-  async createNewRace(@Body() createRaceDto: CreateRaceDto) {
-    return await this.raceService.createNewRace(createRaceDto);
+  @Delete('deleteall/clear')
+  @ApiOperation({ summary: 'Clear race table and restart id sequence'})
+  async clearRaceTable(): Promise<string> {
+    return await this.raceService.clearRaceTable();
   }
-
-  @Post('semiorfinal')
-  @ApiOperation({ summary: 'Create semifinal or final race, including any needed deadheats' })
+  
+  @Post('raceandheats')
+  @ApiOperation({ summary: 'Create quarterfinal, semifinal or final race, including any needed deadheats' })
   @ApiParam( {
-      name: "raceId",
-      type: "Number",
-      description: "Desired number of race, note this isn't used",
-      example: "1, 2, 3, 4, 5, 6",
-      required: true 
-  })
-  @ApiParam( {
-    name: "raceName",
-    type: "String",
-    description: "name of race to generate new race from",
-    example: "quarterfinals, quarterfinalsdeadHeat, semi, semideadHeat",
+    name: "raceType",
+    type: "number",
+    description: "race type code to filter races from to create new one",
+    example: "1 (prelim, generate quarterfinal), 10 (quarterfinal, generate semi), 20 (semi, generate final), 30 (final, not used), 40 (quarterfinaldeadheat, generate semi), 50 (semideadheat, generate final)",
     required: true }) 
   @ApiParam( {
     name: "numLanes",
@@ -106,13 +71,13 @@ export class RaceController {
     name: "role",
     type: "String",
     description: "role to filter table by",
-    example: "Cub, Sibling, Adult",
+    example: "cub, sibling, adult",
     required: true
   })  
   @ApiCreatedResponse({ description: 'Semi or Final Race created successfully', type: CreateRaceDto })
   @ApiBadRequestResponse({ description: 'Bad Request' }) 
-  async createSemiorFinal(@Body() createRaceDto: CreateRaceDto) {
-    return await this.raceService.createSemiorFinal(createRaceDto);
+  async createRaceAndHeats(@Body() createRaceDto: CreateRaceDto) {
+    return await this.raceService.createRaceAndHeats(createRaceDto);
   }
 
 }

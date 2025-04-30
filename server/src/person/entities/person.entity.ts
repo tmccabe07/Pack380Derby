@@ -16,19 +16,19 @@ name: string;
 
 @ApiProperty({
     example: 'Den 8',
-    description: 'The den number, valid values are Den 1, Den 2, Den 3, Den 4, Den 5, Den 6, Den 7, Den 8, Den 10, Den 11, Sibling, Adult',
+    description: 'The den number, valid values are 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, sibling, adult',
 })
 den: string;
 
 @ApiProperty({
   example: 'Lion',
-  description: 'The rank, valid values are Lion, Tiger, Wolf, Bear, Webelos, AoL, Sibling, Adult',
+  description: 'The rank, valid values are lion, tiger, wolf, bear, webelos, aol, sibling, adult',
 })
 rank: string;
 
 @ApiProperty({
     example: 'Cub',
-    description: 'The role, valid values are Cub, Sibling, Adult',
+    description: 'The role, valid values are cub, sibling, adult',
   })
   role: string;
 

@@ -11,11 +11,11 @@ export class CreatePersonDto {
 
     @IsString()
     @IsNotEmpty()
-    @IsIn(['Lion','Tiger','Wolf','Bear','Webelos','AoL', 'Sibling', 'Adult'], { message: 'rank must be one of: Lion, Tiger, Wolf, Bear, Webelos, AoL, Sibling, Adult'})
+    @IsIn(['lion','tiger','wolf','bear','webelos','aol', 'sibling', 'adult'], { message: 'rank must be one of: lion, tiger, wolf, bear, webelos, aol, sibling, adult'})
     rank: string;
 
     @IsString()
     @IsNotEmpty()
-    @IsIn(['Cub','Sibling','Adult'], { message: 'role must be one of: Cub, Sibling, Adult'})
+    @IsIn(['cub','sibling','adult'], { message: 'role must be one of: cub, sibling, adult'})
     role: string;
 }

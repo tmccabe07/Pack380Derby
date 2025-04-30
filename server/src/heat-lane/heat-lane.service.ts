@@ -141,4 +141,10 @@ export class HeatLaneService {
         },
     });
   }
+
+  async clearHeatLaneTable(): Promise<string> {
+    await this.prisma.$queryRaw`DELETE FROM public."HeatLane"`
+    await this.prisma.$queryRaw`ALTER SEQUENCE public."HeatLane_id_seq" RESTART WITH 1`;
+    return "HeatLane table dropped and sequence restarted";
+  }
 }

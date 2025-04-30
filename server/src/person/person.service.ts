@@ -75,4 +75,10 @@ export class PersonService {
     });
 
   }
+
+  async clearPersonTable(): Promise<string> {
+    await this.prisma.$queryRaw`DELETE FROM public."Person"`
+    await this.prisma.$queryRaw`ALTER SEQUENCE public."Person_id_seq" RESTART WITH 1`;
+    return "Person table dropped and sequence restarted";
+  }
 }

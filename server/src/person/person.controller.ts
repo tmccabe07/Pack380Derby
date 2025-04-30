@@ -30,19 +30,19 @@ export class PersonController {
       name: "den",
       type: "String",
       description: "Full den of the user",
-      example: "Den 8, Sibling, Adult",
+      example: "8, sibling, adult",
       required: true }) 
   @ApiParam( {
       name: "rank",
       type: "String",
       description: "Rank of the person",
-      example: "Lion, Tiger, Wolf, Bear, Webelos, AoL, Sibling, Adult",
+      example: "lion, tiger, wolf, bear, webelos, aol, sibling, adult",
       required: true })  
   @ApiParam( {
       name: "role",
       type: "String",
       description: "Role of the person",
-      example: "Cub, Sibling, Adult",
+      example: "cub, sibling, adult",
       required: true }) 
   @ApiCreatedResponse({ description: 'Person created successfully', type: PersonEntity })
   @ApiBadRequestResponse({ description: 'Bad Request' })
@@ -104,13 +104,13 @@ export class PersonController {
       name: "den",
       type: "String",
       description: "Full den of the user",
-      example: "Den 8, Sibling, Adult",
+      example: "8, sibling, adult",
       required: true }) 
   @ApiParam( {
       name: "rank",
       type: "String",
       description: "Rank of the person",
-      example: "Lion, Tiger, Wolf, Bear, Webelos, AoL, Sibling, Adult",
+      example: "lion, tiger, wolf, bear, webelos, aol, sibling, adult",
       required: true })   
   @ApiCreatedResponse({ description: 'Person updated successfully', type: PersonEntity })
   @ApiBadRequestResponse({ description: 'Bad Request' })

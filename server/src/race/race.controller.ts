@@ -52,8 +52,9 @@ export class RaceController {
   async clearRaceTable(): Promise<string> {
     return await this.raceService.clearRaceTable();
   }
+  
   @Post('raceandheats')
-  @ApiOperation({ summary: 'Create semifinal or final race, including any needed deadheats' })
+  @ApiOperation({ summary: 'Create quarterfinal, semifinal or final race, including any needed deadheats' })
   @ApiParam( {
     name: "raceType",
     type: "number",

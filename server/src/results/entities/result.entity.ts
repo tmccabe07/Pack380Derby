@@ -3,4 +3,5 @@ export class Result {
     carId: number | null;
     raceType: number | null;
     aggResults: number | null;
+    carIdandRaceType: string | null;
 }

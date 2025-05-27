@@ -52,6 +52,7 @@ model Race {
 
 model Results {
   id Int @id @default(autoincrement())
+  carIdandRaceType String? @unique
   car Car? @relation(fields: [carId], references: [id])
   carId Int? 
   raceType Int?

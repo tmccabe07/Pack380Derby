@@ -9,6 +9,6 @@ import { RaceGlobalVariableService } from './raceGlobalVariable.service';
   controllers: [RaceController],
   providers: [RaceService, PrismaService, RaceGlobalVariableService],
   imports: [HeatLaneModule],
-  exports: [RaceGlobalVariableService]
+  exports: [RaceGlobalVariableService, RaceService]
 })
 export class RaceModule {}

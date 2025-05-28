@@ -67,6 +67,16 @@ export class CarController {
     return this.carService.findAll();
   }
 
+  @Get('byRole/:inputRole')
+  @ApiResponse({
+      status: 200,
+      description: 'All records by role',
+      type: CarEntity,
+    })
+  async findAllByRole(@Param('inputRole') inputRole: string) : Promise<CarModel[]> {
+    return this.carService.findAllByRole(inputRole);
+  }
+
   @Get(':id')
   @ApiResponse({
       status: 200,

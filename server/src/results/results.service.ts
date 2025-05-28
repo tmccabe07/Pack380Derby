@@ -38,7 +38,7 @@ export class ResultsService {
       },
     })
 
-    console.log("selectHeats of car id ", carId, " :", selectHeats);
+    //console.log("selectHeats of car id ", carId, " :", selectHeats);
       
     //sum up results 
     if(selectHeats.length > 0) {
@@ -89,7 +89,15 @@ export class ResultsService {
   }
   
   async findAll() : Promise<Results[]> {
-    return await this.prisma.results.findMany({}) 
+    return await this.prisma.results.findMany({
+      include: {
+          car: {
+            include: {
+              person : true,
+            }
+          }
+        },
+    }) 
   }
 
   async findOne(id: number): Promise<Results> {
@@ -97,6 +105,13 @@ export class ResultsService {
       where: {
         id: id,
       },
+      include: {
+          car: {
+            include: {
+              person : true,
+            }
+          }
+        },
     });
 
     if (oneValue === null) {
@@ -109,6 +124,13 @@ export class ResultsService {
       return await this.prisma.results.findMany({
         where:{
           raceType: raceType,
+        },
+        include: {
+          car: {
+            include: {
+              person : true,
+            }
+          }
         },
         orderBy: [
           {

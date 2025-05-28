@@ -25,6 +25,24 @@ export class CarService {
     })
   }
 
+  async findAllByRole(inputRole: string) : Promise<Car[]> {
+    return await this.prisma.car.findMany({
+      where: {
+        person: {
+          role: inputRole,
+        }
+      },
+      include: {
+         person: true,
+      },
+      orderBy: [
+        {
+          id: 'asc',
+        }
+      ]
+    })
+  }
+
   async findOne(id: number) : Promise<Car> {
     const oneValue = await this.prisma.car.findUnique({
       where: {

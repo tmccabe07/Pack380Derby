@@ -1,4 +1,4 @@
-export class Result {
+export class Results {
     id: number;
     carId: number | null;
     raceType: number | null;

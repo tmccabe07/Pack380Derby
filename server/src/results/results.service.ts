@@ -3,7 +3,7 @@ import { CreateResultDto } from './dto/create-result.dto';
 import { UpdateResultDto } from './dto/update-result.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { Results } from '@prisma/client';
-import { Result as ResultEntity } from '../results/entities/result.entity';
+import { Results as ResultEntity } from './entities/results.entity';
 
 @Injectable()
 export class ResultsService {
@@ -38,7 +38,7 @@ export class ResultsService {
       },
     })
 
-    console.log("selectHeats of car id ", carId, " :", selectHeats);
+    //console.log("selectHeats of car id ", carId, " :", selectHeats);
       
     //sum up results 
     if(selectHeats.length > 0) {
@@ -88,19 +88,80 @@ export class ResultsService {
     return totalResults;
   }
   
-  findAll() {
-    return `This action returns all results`;
+  async findAll() : Promise<Results[]> {
+    return await this.prisma.results.findMany({
+      include: {
+          car: {
+            include: {
+              person : true,
+            }
+          }
+        },
+    }) 
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} result`;
+  async findOne(id: number): Promise<Results> {
+    const oneValue = await this.prisma.results.findUnique({
+      where: {
+        id: id,
+      },
+      include: {
+          car: {
+            include: {
+              person : true,
+            }
+          }
+        },
+    });
+
+    if (oneValue === null) {
+      return null as any;
+    } 
+    return oneValue; 
   }
 
-  update(id: number, updateResultDto: UpdateResultDto) {
-    return `This action updates a #${id} result`;
+  async findRaceType(raceType: number) : Promise<Results[]> {  
+      return await this.prisma.results.findMany({
+        where:{
+          raceType: raceType,
+        },
+        include: {
+          car: {
+            include: {
+              person : true,
+            }
+          }
+        },
+        orderBy: [
+          {
+            id: 'asc',
+          },
+        ],
+      })
+    }
+
+  async remove(id: number) : Promise<Results> {
+    const checkIndex = await this.prisma.results.findUnique({
+      where: {
+        id: id,
+      },
+    })
+
+    if (checkIndex === null) {
+      return null as any;
+    } 
+    
+    return await this.prisma.results.delete({
+        where: {
+          id: id,
+        },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} result`;
+  async clearResultsTable(): Promise<string> {
+    await this.prisma.$queryRaw`DELETE FROM public."Results"`
+    await this.prisma.$queryRaw`ALTER SEQUENCE public."Results_id_seq" RESTART WITH 1`;
+    return "Results table dropped and sequence restarted";
   }
+
 }

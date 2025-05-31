@@ -6,6 +6,7 @@ const personArray = [
   { name: 'Person 1', den: '8', rank: 'tiger', role: 'cub' },
   { name: 'Person 2', den: '10', rank: 'lion', role: 'cub' },
   { name: 'Person 3', den: 'adult', rank: 'adult', role: 'adult' },
+  { name: 'Person 4', den: 'sibling', rank: 'sibling', role: 'sibling' },
 ];
 
 const onePerson = personArray[0];
@@ -21,6 +22,35 @@ const db = {
     delete: jest.fn().mockResolvedValue(onePerson),
   },
 };
+
+const oneAdult = personArray[2];
+
+const adultdb = {
+  person: {
+    findMany: jest.fn().mockResolvedValue(personArray),
+    findUnique: jest.fn().mockResolvedValue(oneAdult),
+    findFirst: jest.fn().mockResolvedValue(oneAdult),
+    create: jest.fn().mockReturnValue(oneAdult),
+    save: jest.fn(),
+    update: jest.fn().mockResolvedValue(oneAdult),
+    delete: jest.fn().mockResolvedValue(oneAdult),
+  },
+}
+
+const oneSibling = personArray[3];
+
+const siblingdb = {
+  person: {
+    findMany: jest.fn().mockResolvedValue(personArray),
+    findUnique: jest.fn().mockResolvedValue(oneSibling),
+    findFirst: jest.fn().mockResolvedValue(oneSibling),
+    create: jest.fn().mockReturnValue(oneSibling),
+    save: jest.fn(),
+    update: jest.fn().mockResolvedValue(oneSibling),
+    delete: jest.fn().mockResolvedValue(oneSibling),
+  },
+}
+
 
 describe('PersonService', () => {
   let service: PersonService;
@@ -124,4 +154,76 @@ describe('PersonService', () => {
   /*it('should be defined', () => {
     expect(service).toBeDefined();
   });*/
+
+
+});
+
+describe('PersonServiceAdult', () => {
+  let service: PersonService;
+  let prisma: PrismaService;
+
+beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        PersonService,
+        {
+          provide: PrismaService,
+          useValue: adultdb,
+        },
+      ],
+    }).compile();
+
+    service = module.get<PersonService>(PersonService);
+    prisma = module.get<PrismaService>(PrismaService);
+  });
+
+
+  describe('createAdult', () => {
+    it('should successfully create an adult', () => {
+      expect(
+        service.createPerson({
+          name: 'Person 3',
+          den: 'adult',
+          rank: 'adult',
+          role: 'adult',
+        }),
+      ).resolves.toEqual(oneAdult);
+    });
+  });
+
+});
+
+describe('PersonServiceSibling', () => {
+  let service: PersonService;
+  let prisma: PrismaService;
+
+beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        PersonService,
+        {
+          provide: PrismaService,
+          useValue: siblingdb,
+        },
+      ],
+    }).compile();
+
+    service = module.get<PersonService>(PersonService);
+    prisma = module.get<PrismaService>(PrismaService);
+  });
+
+
+  describe('createAdult', () => {
+    it('should successfully create a sibling', () => {
+      expect(
+        service.createPerson({
+          name: 'Person 4',
+          den: 'sibling',
+          rank: 'sibling',
+          role: 'sibling',
+        }),
+      ).resolves.toEqual(oneSibling);
+    });
+  });
+
 });

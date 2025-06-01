@@ -3,16 +3,19 @@ import { useState } from "react";
 import { Racer } from "@/lib/api/racers";
 
 interface RacerFormProps {
+  racer?: Racer; // Optional racer for editing
   onSubmit: (racer: Racer) => void;
 }
 
-export default function RacerForm({ onSubmit }: RacerFormProps) {
-  const [racer, setRacer] = useState<Racer>({
-    name: "",
-    role: "Cub",
-    rank: "lion",
-    den: "",
-  });
+export default function RacerForm({ racer: initialRacer, onSubmit }: RacerFormProps) {
+  const [racer, setRacer] = useState<Racer>(
+    initialRacer || {
+      name: "",
+      role: "cub",
+      rank: "lion",
+      den: "",
+    }
+  );
 
   function handleChange(field: keyof Racer, value: any) {
     setRacer((prev) => ({ ...prev, [field]: value }));
@@ -43,9 +46,9 @@ export default function RacerForm({ onSubmit }: RacerFormProps) {
           value={racer.role}
           onChange={(e) => handleChange("role", e.target.value as Racer["role"])}
         >
-          <option value="Cub">Cub</option>
-          <option value="Sibling">Sibling</option>
-          <option value="Adult">Adult</option>
+          <option value="cub">Cub</option>
+          <option value="sibling">Sibling</option>
+          <option value="adult">Adult</option>
         </select>
       </div>
 

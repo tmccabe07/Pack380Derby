@@ -36,7 +36,7 @@ export default function Home() {
             <DashboardCard title="Racers" count={data.racers} href="/racers" />
           </div>
 
-          <Link href="/racers/register">
+          <Link href="/racers/create">
             <button className="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700">
               Register New Racer
             </button>

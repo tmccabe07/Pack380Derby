@@ -9,7 +9,7 @@ export default function CreateRacerPage() {
   async function handleCreateRacer(racer: any) {
     try {
       await createRacer(racer);
-      router.push("/pages/racers"); // ✅ navigate back to the list
+      router.push("/racers"); // ✅ navigate back to the list
     } catch (error) {
       console.error(error);
       alert("Failed to create racer");

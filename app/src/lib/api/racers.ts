@@ -1,8 +1,9 @@
-// lib/api/racers.js
+// lib/api/Racers.js
 import { DERBY_API_URL } from "@/lib/config/apiConfig";
 
 // Define what a Racer looks like
 export interface Racer {
+    id: string;
     name: string;
     role: "cub" | "sibling" | "adult";
     rank: "lion" | "tiger" | "wolf" | "bear" | "webelos" | "aol";
@@ -12,45 +13,45 @@ export interface Racer {
 export async function getRacer(id: number): Promise<Racer> {
   const res = await fetch(`${DERBY_API_URL}/api/person/${id}`);
   if (!res.ok) {
-    throw new Error("Failed to fetch racer");
+    throw new Error("Failed to fetch Racer");
   }
   return res.json();
 }
 export async function fetchRacers() {
   const res = await fetch(`${DERBY_API_URL}/api/person`);
   if (!res.ok) {
-    throw new Error("Failed to fetch racers");
+    throw new Error("Failed to fetch Racers");
   }
   return res.json();
 }
 
-export async function createRacer(racer: Racer): Promise<Racer> {
+export async function createRacer(Racer: Racer): Promise<Racer> {
   const res = await fetch(`${DERBY_API_URL}/api/person`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(racer),
+    body: JSON.stringify(Racer),
   });
 
   if (!res.ok) {
-    throw new Error("Failed to create racer");
+    throw new Error("Failed to create Racer");
   }
 
   return res.json();
 }
 
-export async function updateRacer(id: number, racer: Racer): Promise<Racer> {
+export async function updateRacer(id: number, Racer: Racer): Promise<Racer> {
   const res = await fetch(`${DERBY_API_URL}/api/person/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(racer),
+    body: JSON.stringify(Racer),
   });
 
   if (!res.ok) {
-    throw new Error("Failed to update racer");
+    throw new Error("Failed to update Racer");
   }
 
   return res.json();
@@ -62,6 +63,6 @@ export async function deleteRacer(id: number): Promise<void> {
   });
 
   if (!res.ok) {
-    throw new Error("Failed to delete racer");
+    throw new Error("Failed to delete Racer");
   }
 }

@@ -1,94 +1,47 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException } from '@nestjs/common';
 import { ResultsService } from './results.service';
 import { CreateResultDto } from './dto/create-result.dto';
-import { UpdateResultDto } from './dto/update-result.dto';
-import { ApiOperation, ApiParam, ApiCreatedResponse, ApiBadRequestResponse, ApiResponse } from '@nestjs/swagger';
-import { Results as ResultsModel } from '@prisma/client';
+import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { Results as ResultsEntity } from './entities/results.entity';
 
 @Controller('results')
 export class ResultsController {
   constructor(private readonly resultsService: ResultsService) {}
 
-  @Post()
-  @ApiOperation({ summary: 'Create result for a car and race type combination'})
-  @ApiParam({
-    name: "carId",
-    type: "Integer",
-    description: "Unique id of a Car",
-    example: "1",
-    required: true 
-  })
-  @ApiParam({
-    name: "raceType",
-    type: "Integer",
-    description: "raceType code",
-    example: "10",
-    required: true
-  })
-  @ApiCreatedResponse({ description: 'Result of car in a race type created successfully', type: ResultsEntity })
-  @ApiBadRequestResponse({ description: 'Bad Request' }) 
-  create(@Body() createResultDto: CreateResultDto) {
-    return this.resultsService.create(createResultDto);
-  }
-
   @Get()
-  @ApiResponse({
-        status: 200,
-        description: 'All records',
-        type: ResultsEntity,
-    })
-  findAll() {
-    return this.resultsService.findAll();
-  }
-
-  @Get(':id')
+  @ApiOperation({ summary: 'Calculate race results based on sumby code and parameters'})
+  @ApiParam( {
+    name: "sumBy",
+    type: "number",
+    description: "race type code to filter races from to calculate results",
+    example: "10 (sum by carId AND raceType), 20 (sum all cars by raceType AND role), 30 (sum all cars in all racetypes by Role)",
+    required: true })
+  @ApiParam( {
+    name: "raceType",
+    type: "number",
+    description: "race type code to filter races from to calculate results",
+    example: "0 (ignore race type), 10 (quarterfinal), 20 (semi), 30 (final), 40 (quarterfinaldeadheat), 50 (semideadheat)",
+    required: true }) 
+  @ApiParam( {
+    name: "carId",
+    type: "Number",
+    description: "unique identifier of the car",
+    example: "1",
+    required: true })
+  @ApiParam({
+    name: "role",
+    type: "String",
+    description: "role to calculate results for",
+    example: "cub, sibling, adult",
+    required: true
+  })  
   @ApiResponse({
       status: 200,
-      description: 'The found record',
+      description: 'Returns calculated race results based on the sumby code',
       type: ResultsEntity,
     })
-  async findOne(@Param('id') id: string) : Promise<ResultsModel> {
-    const oneResults = await this.resultsService.findOne(+id);
-    if (!oneResults) {
-      throw new NotFoundException(`Results with ${id} does not exist.`);
-    }
-    return oneResults;
+  async getRaceResults(@Body() createResultDto: CreateResultDto): Promise<ResultsEntity[]> {
+    return this.resultsService.getRaceResults(createResultDto);
   }
-
-  @Get('byType/:raceType')
-  @ApiResponse({
-      status: 200,
-      description: 'The found records based on raceType',
-      type: ResultsEntity,
-    })
-  async findRaceType(@Param('raceType') raceType: number) : Promise<ResultsModel[]> {
-    const returnedResults = await this.resultsService.findRaceType(raceType);
-    if (!returnedResults) {
-      throw new NotFoundException(`Results with ${raceType} does not exist.`);
-    }
-    return returnedResults;
-  }
-
-  @Delete(':id')
-  @ApiOperation({ summary: 'Remove a Results record' })
-  @ApiResponse({
-    status: 200,
-    description: 'The found record was deleted',
-    type: ResultsEntity,
-  })
-  @ApiBadRequestResponse({ description: 'Bad Request' })
-  async remove(@Param('id') id: string) : Promise<ResultsModel> {
-    const deleteResults = await this.resultsService.remove(+id);
-    if (!deleteResults) {
-      throw new NotFoundException(`Results with ${id} does not exist.`);
-    }
-    return deleteResults;
-  }
-
-  @Delete('deleteall/clear')
-  @ApiOperation({ summary: 'Clear Results table and restart id sequence'})
-  async clearResultsTable(): Promise<string> {
-    return await this.resultsService.clearResultsTable();
-  }
+  
 }

@@ -33,7 +33,7 @@ export class RaceService {
       for(let j = 0; j < 6; j++) {
         const newHeatLane = await this.prisma.heatLane.create({
           data: {
-            result: 99, 
+            result: 0, 
             lane: j+1, 
             carId: cars[counter].id, 
             heatId: i, 

@@ -1,167 +1,145 @@
 import { Injectable } from '@nestjs/common';
 import { CreateResultDto } from './dto/create-result.dto';
-import { UpdateResultDto } from './dto/update-result.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { Results } from '@prisma/client';
 import { Results as ResultEntity } from './entities/results.entity';
 
 @Injectable()
 export class ResultsService {
   
   constructor(private prisma: PrismaService) {}
-  
-  async create(createResultDto: CreateResultDto): Promise<Results> {
 
+  async getRaceResults(createResultDto: CreateResultDto) : Promise<ResultEntity[]> {
+    
+    const sumBy = createResultDto.sumBy;
     const carId = createResultDto.carId;
     const raceType = createResultDto.raceType;
+    const role = createResultDto.role;
+
     let aggResults = 0;
-    //create a unique value to use with prisma where
-    const carIdandRaceType = carId.toString() + raceType.toString();
 
-    //not declaring any type due to match errors; there must be a way to declare as Results though
-    let totalResults = new ResultEntity();
+    let selectHeats;
+    
+    switch(sumBy){
+      case 10: //sum by car id AND race type 
+        //find all heats of cars that match the car id and race type to filter on
+        selectHeats = await this.prisma.heatLane.findMany({
+          select: {
+            result: true,
+            raceId: true,
+            carId: true,
+            id: true,
+          },
+          where: {
+            carId: carId,
+            raceType: raceType,
+          },
+          orderBy: {
+            raceId: 'asc',
+          },
+        })
+        break;
+      case 20: //sum all cars by race type AND role
+        //find all heats of cars that match the race type and role to filter on
+        selectHeats = await this.prisma.heatLane.findMany({
+          select: {
+            result: true,
+            raceId: true,
+            carId: true,
+            id: true,
+          },
+          where: {
+            raceType: raceType,
+            role: role,
+          },
+          orderBy: {
+            raceId: 'asc',
+          },
+        })
+        break;
+      case 30: //sum all races for a role
+        //find all heats of cars that match the role to filter on
+        selectHeats = await this.prisma.heatLane.findMany({
+          select: {
+            result: true,
+            raceId: true,
+            carId: true,
+            id: true,
+          },
+          where: {
+            role: role,
+          },
+          orderBy: {
+            raceId: 'asc',
+          },
+        })
+        break;
+    }
 
-    //find all heats of cars that match the car id and race id to filter on
-    const selectHeats = await this.prisma.heatLane.findMany({
-      select: {
-        result: true,
-        raceId: true,
-        carId: true,
-        id: true,
-      },
-      where: {
+    //initialize total results array
+    const totalResults = [
+      { 
         carId: carId,
         raceType: raceType,
+        role: role,
+        aggResults: 0, 
       },
-      orderBy: {
-        raceId: 'asc',
-      },
-    })
+    ];
 
-    //console.log("selectHeats of car id ", carId, " :", selectHeats);
-      
-    //sum up results 
-    if(selectHeats.length > 0) {
-      //console.log("select Heats is not null");
+    totalResults.length = 0;
 
-      //sum up results  
-      for(let j = 0; j < selectHeats.length; j++){
-        aggResults = aggResults + (selectHeats[j].result ?? 0); 
+
+    let totalResultsIndex = 0;
+
+    let cars = [0];
+
+    cars.length = 0;
+
+    let uniqueCars = [0];
+
+    uniqueCars.length = 0;
+
+    if(selectHeats.length > 0){
+
+      for(let i = 0; i < selectHeats.length; i++){   
+        cars.push(selectHeats[i].carId);
       }
 
-      //check if a result row already exists for this car and race type
-      const oneValue = await this.prisma.results.findUnique({
-        where: {
-          carIdandRaceType: carIdandRaceType,
+      //console.log("cars: " + cars);
+
+      //find number of unique cars in select heats
+      cars.forEach(item => {
+        if (!uniqueCars.includes(item)) {
+          uniqueCars.push(item);
         }
       })
 
-      //if result doesn't exist, create it
-      if(oneValue === null){
-        totalResults = await this.prisma.results.create({
-          data: {
-            carId: carId,
-            raceType: raceType,
-            aggResults: aggResults,
-            carIdandRaceType: carIdandRaceType,
-          },
-        });
-      } //otherwise, update the record
-      else{
-        totalResults = await this.prisma.results.update({
-          where: {
-            carIdandRaceType: carIdandRaceType,
-          },
-          data: {
-            carId: carId,
-            raceType: raceType,
-            aggResults: aggResults,
-            carIdandRaceType: carIdandRaceType,
-          },
+      //console.log("unique cars: " + uniqueCars);
+      
+      for(let i=0; i < uniqueCars.length; i++){
+
+        totalResults.push({
+          carId: uniqueCars[i],
+          raceType: raceType,
+          role: role,
+          aggResults: 0,
         })
+
+        totalResultsIndex = totalResults.length-1;
+
+        //if unique cars is more than one, need to only sum the select heats for that car
+        const specificHeats = selectHeats.filter(element => element.carId === uniqueCars[i]);
+
+        //sum up results for each set of heats for one car at a time 
+        for(let j = 0; j < specificHeats.length; j++){
+            totalResults[totalResultsIndex].aggResults = totalResults[totalResultsIndex].aggResults + (specificHeats[j].result ?? 0); 
+        }
+
+        totalResultsIndex++;
       }
     }
-    
-    //summed up results.  
-    //console.log("totalresults: ", totalResults);
 
     return totalResults;
+
   }
   
-  async findAll() : Promise<Results[]> {
-    return await this.prisma.results.findMany({
-      include: {
-          car: {
-            include: {
-              person : true,
-            }
-          }
-        },
-    }) 
-  }
-
-  async findOne(id: number): Promise<Results> {
-    const oneValue = await this.prisma.results.findUnique({
-      where: {
-        id: id,
-      },
-      include: {
-          car: {
-            include: {
-              person : true,
-            }
-          }
-        },
-    });
-
-    if (oneValue === null) {
-      return null as any;
-    } 
-    return oneValue; 
-  }
-
-  async findRaceType(raceType: number) : Promise<Results[]> {  
-      return await this.prisma.results.findMany({
-        where:{
-          raceType: raceType,
-        },
-        include: {
-          car: {
-            include: {
-              person : true,
-            }
-          }
-        },
-        orderBy: [
-          {
-            id: 'asc',
-          },
-        ],
-      })
-    }
-
-  async remove(id: number) : Promise<Results> {
-    const checkIndex = await this.prisma.results.findUnique({
-      where: {
-        id: id,
-      },
-    })
-
-    if (checkIndex === null) {
-      return null as any;
-    } 
-    
-    return await this.prisma.results.delete({
-        where: {
-          id: id,
-        },
-    });
-  }
-
-  async clearResultsTable(): Promise<string> {
-    await this.prisma.$queryRaw`DELETE FROM public."Results"`
-    await this.prisma.$queryRaw`ALTER SEQUENCE public."Results_id_seq" RESTART WITH 1`;
-    return "Results table dropped and sequence restarted";
-  }
-
 }

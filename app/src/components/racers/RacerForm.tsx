@@ -29,8 +29,9 @@ export default function RacerForm({ racer: initialRacer, onSubmit }: RacerFormPr
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-bold mb-1">Racer Name</label>
+        <label htmlFor="name" className="block text-sm font-bold mb-1">Racer Name</label>
         <input
+          id="name"
           type="text"
           className="border p-2 w-full"
           value={racer.name}
@@ -40,8 +41,9 @@ export default function RacerForm({ racer: initialRacer, onSubmit }: RacerFormPr
       </div>
 
       <div>
-        <label className="block text-sm font-bold mb-1">Role</label>
+        <label  htmlFor="role" className="block text-sm font-bold mb-1">Role</label>
         <select
+          id="role"
           className="border p-2 w-full"
           value={racer.role}
           onChange={(e) => handleChange("role", e.target.value as Racer["role"])}
@@ -53,8 +55,9 @@ export default function RacerForm({ racer: initialRacer, onSubmit }: RacerFormPr
       </div>
 
       <div>
-        <label className="block text-sm font-bold mb-1">Rank</label>
+        <label  htmlFor="rank" className="block text-sm font-bold mb-1">Rank</label>
         <select
+          id="rank"
           className="border p-2 w-full"
           value={racer.rank}
           onChange={(e) => handleChange("rank", e.target.value as Racer["rank"])}
@@ -69,8 +72,9 @@ export default function RacerForm({ racer: initialRacer, onSubmit }: RacerFormPr
       </div>
 
       <div>
-        <label className="block text-sm font-bold mb-1">Den</label>
+        <label  htmlFor="den" className="block text-sm font-bold mb-1">Den</label>
         <input
+          id="den"
           type="text"
           className="border p-2 w-full"
           value={racer.den}
@@ -79,7 +83,7 @@ export default function RacerForm({ racer: initialRacer, onSubmit }: RacerFormPr
         />
       </div>
 
-      <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+      <button name="save" type="submit" className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
         Save Racer
       </button>
     </form>

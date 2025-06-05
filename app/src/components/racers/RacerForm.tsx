@@ -10,6 +10,7 @@ interface RacerFormProps {
 export default function RacerForm({ racer: initialRacer, onSubmit }: RacerFormProps) {
   const [racer, setRacer] = useState<Racer>(
     initialRacer || {
+      id: "1",
       name: "",
       role: "cub",
       rank: "lion",

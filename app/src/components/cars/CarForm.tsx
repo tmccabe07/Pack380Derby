@@ -12,7 +12,7 @@ export default function CarForm({ onSubmit }: CarFormProps) {
     name: "",
     image: "",
     year: new Date().getFullYear(),
-    racerId: 0,
+    personId: 0,
     weight: "",
   });
   const [racers, setRacers] = useState<Racer[]>([]);
@@ -68,8 +68,8 @@ export default function CarForm({ onSubmit }: CarFormProps) {
         <label className="block text-sm font-bold mb-1">Racer</label>
         <select
           className="border p-2 w-full"
-          value={car.racerId}
-          onChange={(e) => handleChange("racerId", parseInt(e.target.value))}
+          value={car.personId}
+          onChange={(e) => handleChange("personId", parseInt(e.target.value))}
           required
         >
           <option value="" disabled>

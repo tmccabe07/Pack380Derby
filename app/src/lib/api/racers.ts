@@ -3,17 +3,17 @@ import { DERBY_API_URL } from "@/lib/config/apiConfig";
 
 // Define what a Racer looks like
 export interface Racer {
-    id: string;
+    id?: string;
     name: string;
     role: "cub" | "sibling" | "adult";
     rank: "lion" | "tiger" | "wolf" | "bear" | "webelos" | "aol";
     den: string;
 }
 
-export async function getRacer(id: number): Promise<Racer> {
-  const res = await fetch(`${DERBY_API_URL}/api/person/${id}`);
+export async function fetchRacerById(personId: string): Promise<Racer> {
+  const res = await fetch(`${DERBY_API_URL}/api/person/${personId}`);
   if (!res.ok) {
-    throw new Error("Failed to fetch Racer");
+    throw new Error("Failed to fetch person");
   }
   return res.json();
 }
@@ -41,7 +41,7 @@ export async function createRacer(Racer: Racer): Promise<Racer> {
   return res.json();
 }
 
-export async function updateRacer(id: number, Racer: Racer): Promise<Racer> {
+export async function updateRacer(id: string, Racer: Racer): Promise<Racer> {
   const res = await fetch(`${DERBY_API_URL}/api/person/${id}`, {
     method: "PATCH",
     headers: {
@@ -57,7 +57,10 @@ export async function updateRacer(id: number, Racer: Racer): Promise<Racer> {
   return res.json();
 }
 
-export async function deleteRacer(id: number): Promise<void> {
+export async function deleteRacerById(id?: string): Promise<void> {
+  if (!id) {
+    throw new Error("Racer ID is required for deletion");
+  }
   const res = await fetch(`${DERBY_API_URL}/api/person/${id}`, {
     method: "DELETE",
   });

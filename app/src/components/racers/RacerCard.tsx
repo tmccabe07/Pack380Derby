@@ -8,6 +8,9 @@ export default function RacerCard({ racer }: { racer: any }) {
     <div className="text-sm text-gray-600">Role: {racer.role}</div>
     <div className="text-sm text-gray-600">Rank: {racer.rank}</div>
     <div className="text-sm text-gray-600">Den: {racer.den}</div>
+    <Link href={`/racers/${racer.id}`}>
+      View
+    </Link> | 
     <Link href={`/racers/${racer.id}/edit`}>
       Edit
     </Link>

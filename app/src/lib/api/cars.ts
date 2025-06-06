@@ -1,4 +1,6 @@
 import { DERBY_API_URL } from "@/lib/config/apiConfig";
+import { fetchRacerById } from "./racers";
+
 export interface Person {
   id: number;
   name: string;
@@ -15,13 +17,6 @@ export interface Car {
   racer?: Person;
 }
 
-export async function fetchPersonById(personId: number): Promise<Person> {
-  const res = await fetch(`${DERBY_API_URL}/api/person/${personId}`);
-  if (!res.ok) {
-    throw new Error("Failed to fetch person");
-  }
-  return res.json();
-}
 
 // Patch fetchCars to attach the getter to each car
 export async function fetchCars() {
@@ -35,7 +30,7 @@ export async function fetchCars() {
     cars.map(async (car) => {
       if (!car.racer && car.personId) {
         try {
-          car.racer = await fetchPersonById(car.personId);
+          car.racer = await fetchRacerById(car.personId);
         } catch (e) {
           car.racer = undefined;
         }

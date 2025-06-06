@@ -1,12 +1,12 @@
 "use client";
 import RacerForm from "@/components/racers/RacerForm";
-import { getRacer, updateRacer } from "@/lib/api/racers";
+import { fetchRacerById, updateRacer, Racer } from "@/lib/api/racers";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function EditRacerPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
-  const [racer, setRacer] = useState(null);
+  const [racer, setRacer] = useState<Racer | null>(null);
   const [id, setId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -22,18 +22,18 @@ export default function EditRacerPage({ params }: { params: Promise<{ id: string
     async function fetchRacer() {
       if (!id) return;
       try {
-        const data = await getRacer(id);
-        setRacer(data);
+        const racer = await fetchRacerById(id);
+        setRacer(racer);
       } catch (error) {
         console.error(error);
-        alert("Failed to load racer data");
+        alert("Failed to load racer");
       }
     }
 
     fetchRacer();
   }, [id]);
 
-  async function handleUpdateRacer(updatedRacer: any) {
+  async function handleUpdateRacer(updatedRacer: Racer) {
     if (!id) return;
     try {
       await updateRacer(id, updatedRacer);

@@ -23,7 +23,7 @@ model Car {
   person Person? @relation(fields: [personId], references: [id])
   personId Int? @unique // relation scaler field, the unique decorator means one to one relationship
   year Int?
-  image String?
+  image String? @db.VarChar(255)
   lane HeatLane[]
 }
 

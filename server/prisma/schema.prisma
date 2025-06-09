@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Person {
+model Racer {
   id Int     @id @default(autoincrement())
   name      String? @db.VarChar(255)
   den       String? @db.VarChar(30)
@@ -20,8 +20,8 @@ model Car {
   id Int     @id @default(autoincrement())
   name      String? @db.VarChar(255)
   weight String? @db.VarChar(30)
-  person Person? @relation(fields: [personId], references: [id])
-  personId Int? @unique // relation scaler field, the unique decorator means one to one relationship
+  racer Racer? @relation(fields: [racerId], references: [id])
+  racerId Int? @unique // relation scaler field, the unique decorator means one to one relationship
   year Int?
   image String? @db.VarChar(255)
   lane HeatLane[]

@@ -1,16 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class Person {
+export class Racer {
 @ApiProperty({
     example: '1',
-    description: 'The unique id of the person',
+    description: 'The unique id of the racer',
 })
 id: number;
 
 
 @ApiProperty({
     example: 'Jane Doe',
-    description: 'The name of the person',
+    description: 'The name of the racer',
 })
 name: string;
 

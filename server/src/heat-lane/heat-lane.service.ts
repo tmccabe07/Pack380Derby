@@ -19,7 +19,7 @@ export class HeatLaneService {
       include: {
         car: {
           include: {
-            person : true,
+            racer : true,
           }
         },
       },
@@ -39,7 +39,7 @@ export class HeatLaneService {
       include: {
         car: {
           include: {
-            person : true,
+            racer : true,
           },
         }
       }
@@ -60,7 +60,7 @@ export class HeatLaneService {
       include: {
         car: {
           include: {
-            person : true,
+            racer : true,
           }
         },
         race: {

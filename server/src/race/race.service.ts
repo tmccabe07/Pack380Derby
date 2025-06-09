@@ -61,13 +61,13 @@ export class RaceService {
     const numCarBlanks = numLanes - numCars % numLanes;
 
     //updating car table and cubs array with blanks
-    //consider - do we need a blank person by role?
+    //consider - do we need a blank racer by role?
     for (let i = 0; i < numCarBlanks; i++){
       const blankCar = await this.prisma.car.create({
         data: {
           name: "blank", 
           weight: "0", 
-          personId: null, 
+          racerId: null, 
           year: 9999, 
           image: "blank", 
         },
@@ -173,13 +173,13 @@ export class RaceService {
           id: i,
         },
         include: {
-          person: true,
+          racer: true,
         }
       });
       if(oneValue !== null){
-        //filter results by role, use the ? since person can be null
+        //filter results by role, use the ? since racer can be null
         //exclude blank cars, which could happen for generating semis
-        checkRole = oneValue.person?.role;
+        checkRole = oneValue.racer?.role;
         if( checkRole === inputRole){
           if( oneValue.name !== "blank"){
             cars.push(oneValue);

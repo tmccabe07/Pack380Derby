@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Person as PersonEntity } from '../../person/entities/person.entity';
+import { Racer as RacerEntity } from '../../racer/entities/racer.entity';
 
 export class Car {
     @ApiProperty({
@@ -22,16 +22,16 @@ export class Car {
     weight: string;
     
     @ApiProperty({ required: false, nullable: true })
-    personId: number | null;
+    racerId: number | null;
 
-    @ApiProperty({ required: false, type: PersonEntity })
-    person?: PersonEntity;
+    @ApiProperty({ required: false, type: RacerEntity })
+    racer?: RacerEntity;
 
-    constructor({ person, ...data }: Partial<Car>) {
+    constructor({ racer, ...data }: Partial<Car>) {
     Object.assign(this, data);
 
-    if (person) {
-      this.person = new PersonEntity();
+    if (racer) {
+      this.racer = new RacerEntity();
     }
 
   }

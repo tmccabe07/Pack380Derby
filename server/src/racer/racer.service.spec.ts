@@ -3,10 +3,10 @@ import { RacerService } from './racer.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 const racerArray = [
-  { name: 'Racer 1', den: '8', rank: 'tiger', role: 'cub' },
-  { name: 'Racer 2', den: '10', rank: 'lion', role: 'cub' },
-  { name: 'Racer 3', den: 'adult', rank: 'adult', role: 'adult' },
-  { name: 'Racer 4', den: 'sibling', rank: 'sibling', role: 'sibling' },
+  { name: 'Racer 1', den: '8', rank: 'tiger'},
+  { name: 'Racer 2', den: '10', rank: 'lion'},
+  { name: 'Racer 3', den: 'adult', rank: 'adult'},
+  { name: 'Racer 4', den: 'sibling', rank: 'sibling'},
 ];
 
 const oneRacer = racerArray[0];
@@ -98,7 +98,6 @@ describe('RacerService', () => {
           name: 'Racer 1',
           den: '8',
           rank: 'tiger',
-          role: 'cub',
         }),
       ).resolves.toEqual(oneRacer);
     });
@@ -107,16 +106,8 @@ describe('RacerService', () => {
       const dbSpy = jest
         .spyOn(prisma.racer, 'create')
         .mockRejectedValueOnce(new Error('Invalid Rank'));
-      expect(service.createRacer({name: 'Racer 1', den: '8', rank: 'tigger', role: 'cub'})).rejects.toThrow('Invalid Rank')
+      expect(service.createRacer({name: 'Racer 1', den: '8', rank: 'tigger'})).rejects.toThrow('Invalid Rank')
     });
-
-    it('should return error message due to invalid role', async () => {
-      const dbSpy = jest
-        .spyOn(prisma.racer, 'create')
-        .mockRejectedValueOnce(new Error('Invalid Role'));
-      expect(service.createRacer({name: 'Racer 1', den: '8', rank: 'tiger', role: 'bear'})).rejects.toThrow('Invalid Role')
-    });
-
   });
 
   describe('updateOne', () => {
@@ -125,7 +116,6 @@ describe('RacerService', () => {
         name: 'Racer 1',
         den: '8',
         rank: 'tiger',
-        role: 'cub'
       });
       expect(cat).toEqual(oneRacer);
     });
@@ -134,7 +124,7 @@ describe('RacerService', () => {
       const dbSpy = jest
         .spyOn(prisma.racer, 'update')
         .mockRejectedValueOnce(new Error('Racer with 4 does not exist.'));
-      expect(service.update(4, {name: 'Racer 1', den: '8', rank: 'tiger', role: 'cub'})).rejects.toThrow('Racer with 4 does not exist.')
+      expect(service.update(4, {name: 'Racer 1', den: '8', rank: 'tiger'})).rejects.toThrow('Racer with 4 does not exist.')
     });
   });
 
@@ -185,7 +175,6 @@ beforeEach(async () => {
           name: 'Racer 3',
           den: 'adult',
           rank: 'adult',
-          role: 'adult',
         }),
       ).resolves.toEqual(oneAdult);
     });
@@ -220,7 +209,6 @@ beforeEach(async () => {
           name: 'Racer 4',
           den: 'sibling',
           rank: 'sibling',
-          role: 'sibling',
         }),
       ).resolves.toEqual(oneSibling);
     });

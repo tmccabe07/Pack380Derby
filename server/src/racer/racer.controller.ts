@@ -29,21 +29,15 @@ export class RacerController {
   @ApiParam( {
       name: "den",
       type: "String",
-      description: "Full den of the racer",
-      example: "8, sibling, adult",
-      required: true }) 
+      description: "Den of the racer",
+      example: "8",
+      required: false }) 
   @ApiParam( {
       name: "rank",
       type: "String",
       description: "Rank of the racer",
       example: "lion, tiger, wolf, bear, webelos, aol, sibling, adult",
       required: true })  
-  @ApiParam( {
-      name: "role",
-      type: "String",
-      description: "Role of the racer",
-      example: "cub, sibling, adult",
-      required: true }) 
   @ApiCreatedResponse({ description: 'racer created successfully', type: RacerEntity })
   @ApiBadRequestResponse({ description: 'Bad Request' })
   async create(@Body() createRacerDto: CreateRacerDto): Promise<RacerModel> {
@@ -101,9 +95,9 @@ export class RacerController {
   @ApiParam( {
       name: "den",
       type: "String",
-      description: "Full den of the racer",
-      example: "8, sibling, adult",
-      required: true }) 
+      description: "Den of the racer",
+      example: "8",
+      required: false }) 
   @ApiParam( {
       name: "rank",
       type: "String",

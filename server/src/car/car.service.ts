@@ -25,11 +25,11 @@ export class CarService {
     })
   }
 
-  async findAllByRole(inputRole: string) : Promise<Car[]> {
+  async findAllByRank(inputRank: string) : Promise<Car[]> {
     return await this.prisma.car.findMany({
       where: {
         racer: {
-          role: inputRole,
+          rank: inputRank,
         }
       },
       include: {

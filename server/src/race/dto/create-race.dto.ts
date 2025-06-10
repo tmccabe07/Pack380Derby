@@ -10,7 +10,7 @@ export class CreateRaceDto {
     raceType: number;
 
     @IsString()
-    @IsIn(['cub','sibling','adult'], { message: 'role must be one of: cub, sibling, adult'})
-    role: string;
+    @IsIn(['cub','sibling','adult'], { message: 'rank must be one of: cub, sibling, adult'})
+    rank: string;
         
 }

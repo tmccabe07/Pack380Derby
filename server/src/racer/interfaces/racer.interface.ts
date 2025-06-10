@@ -3,5 +3,4 @@ export interface Racer {
     name: string;
     den: string;
     rank: string;
-    role: string;
 }

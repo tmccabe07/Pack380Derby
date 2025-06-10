@@ -112,7 +112,7 @@ export class HeatLaneService {
       heatId: checkIndex.heatId,
       raceId: checkIndex.raceId,
       raceType: checkIndex.raceType,
-      role: checkIndex.role
+      rank: checkIndex.rank
     }
 
     return await this.prisma.heatLane.update({

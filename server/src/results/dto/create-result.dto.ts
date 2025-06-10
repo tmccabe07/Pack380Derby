@@ -5,8 +5,8 @@ export class CreateResultDto {
     @IsInt()
     /*
         10 means sum by car id AND race type, 
-        20 means sum all cars by race type AND role, 
-        30 means sum all cars in all races for a role,
+        20 means sum all cars by race type AND rank, 
+        30 means sum all cars in all races for a rank,
         Note: it is not valid to sum by raceId because car only races once per raceId
     */
     @IsIn([10,20, 30])
@@ -19,5 +19,5 @@ export class CreateResultDto {
     raceType: number;
 
     @IsString()
-    role: string;
+    rank: string;
 }

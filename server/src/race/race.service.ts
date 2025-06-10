@@ -21,7 +21,7 @@ export class RaceService {
   }
 
   //reusable function to create heats in a race
-  async createHeats(numHeats: number, cars: Car[], raceId: number, raceType: number, inputRole: string): Promise<HeatLane[]>{
+  async createHeats(numHeats: number, cars: Car[], raceId: number, raceType: number, inputRank: string): Promise<HeatLane[]>{
     
     const heats : HeatLane[] = [];
 
@@ -39,7 +39,7 @@ export class RaceService {
             heatId: i, 
             raceId: raceId,
             raceType: raceType,
-            role: inputRole, 
+            rank: inputRank, 
           },
         });
         heats.push(newHeatLane);
@@ -60,8 +60,10 @@ export class RaceService {
     //find out how many blank cars are needed based on dividing filtered total by numLanes
     const numCarBlanks = numLanes - numCars % numLanes;
 
+    //console.log("numCarBlanks: " + numCarBlanks);
+
     //updating car table and cubs array with blanks
-    //consider - do we need a blank racer by role?
+    //consider - do we need a blank racer by rank?
     for (let i = 0; i < numCarBlanks; i++){
       const blankCar = await this.prisma.car.create({
         data: {
@@ -89,11 +91,8 @@ export class RaceService {
     //first time quarterfinals, then quarterdeadheats
     const raceType = createRaceDto.raceType;
 
-    //set variable for raceId from API parameter input
-    //const raceId = createRaceDto.raceId;
-
-    //set variable for role to filter car table based on API parameter iput
-    const inputRole = createRaceDto.role;
+    //set variable for rank to filter car table based on API parameter input.  Note, role consolidated into rank.
+    const inputRank = createRaceDto.rank;
 
     let numTotalLanes = 0;
     let deadHeatRaceType = 0;
@@ -163,8 +162,8 @@ export class RaceService {
     //initialize found index variable since index number may not match table row number
     let foundIndex = 0; 
 
-    //initialize temp variable to check role as type any; 
-    let checkRole; 
+    //initialize temp variable to check rank as type any; 
+    let checkRank; 
 
     //loop through car table to create array of non-blankcars.  Use foundindex because index may not match row number if row deletions have occurred
     for(let i = 0; foundIndex < carCount._all; i++){
@@ -177,10 +176,19 @@ export class RaceService {
         }
       });
       if(oneValue !== null){
-        //filter results by role, use the ? since racer can be null
+        //filter results by rank, use the ? since racer can be null
         //exclude blank cars, which could happen for generating semis
-        checkRole = oneValue.racer?.role;
-        if( checkRole === inputRole){
+        checkRank = oneValue.racer?.rank;
+
+        //add logic to convert rank after consolidating role and rank
+        if(inputRank == "cub"){
+          if( checkRank != "sibling" && checkRank != "adult" ){
+            if( oneValue.name !== "blank"){
+              cars.push(oneValue);
+            }
+          }
+        }
+        else if( checkRank === inputRank){
           if( oneValue.name !== "blank"){
             cars.push(oneValue);
           }
@@ -196,7 +204,7 @@ export class RaceService {
       const data = {
         raceName: nextRaceName,
         numLanes: createRaceDto.numLanes,
-        role: createRaceDto.role,
+        rank: createRaceDto.rank,
         raceType: nextRaceType
       }
       await this.prisma.race.create({data});
@@ -212,7 +220,7 @@ export class RaceService {
 
         //add blank cars to make full lanes
       //use this syntax to assign async result because async result can't be assigned directly
-      this.addBlankCars(cars, numLanes).then(result => cars = result);
+      await this.addBlankCars(cars, numLanes).then(result => cars = result);
 
       //randomly sort the cars including blanks
       cars = await this.shuffleSort(cars);
@@ -223,7 +231,7 @@ export class RaceService {
       let numHeats = cars.length/numLanes;
 
       //assign lanes
-      return await this.createHeats(numHeats, cars, raceId, nextRaceType, inputRole);
+      return await this.createHeats(numHeats, cars, raceId, nextRaceType, inputRank);
     }
 
     //if not quarter finals, find all the results in a set of races for each non-blank car id
@@ -240,9 +248,10 @@ export class RaceService {
 
     let totalResultsIndex = 0;
 
-    //loop through all heatlanes of non-blank cars that match the input role and the race type to filter on
+    //loop through all heatlanes of non-blank cars that match the input rank and the race type to filter on
     //how to do a nested where?
      for(let i = 0; i < cars.length; i++){
+      
       const selectHeats = await this.prisma.heatLane.findMany({
         select: {
           result: true,
@@ -251,7 +260,7 @@ export class RaceService {
           id: true,
         },
         where: {
-          role: inputRole,
+          rank: inputRank,
           carId: cars[i].id,
           raceType: raceType,
         },
@@ -259,10 +268,10 @@ export class RaceService {
           raceId: 'asc',
         },
       })
-
-      //console.log("selectHeats of car id ", cars[i].id, " :", selectHeats);
       
-      //only sum up results for cars that were found to match the input role and race type
+      console.log("selectHeats of car id ", cars[i].id, " :", selectHeats);
+      
+      //only sum up results for cars that were found to match the input rank and race type
       if(selectHeats.length > 0) {
         //console.log("select Heats is not null");
         totalResults.push({
@@ -272,7 +281,7 @@ export class RaceService {
 
         totalResultsIndex = totalResults.length-1;
 
-        //sum up results for each car that was found for the input role and race type 
+        //sum up results for each car that was found for the input rank and race type 
         for(let j = 0; j < selectHeats.length; j++){
           totalResults[totalResultsIndex].aggResults = totalResults[totalResultsIndex].aggResults + (selectHeats[j].result ?? 0); 
         }
@@ -380,7 +389,7 @@ export class RaceService {
         const data = {
           numLanes: numLanes,
           raceType: deadHeatRaceType,
-          role: inputRole,
+          rank: inputRank,
           raceName: deadHeatRaceName
         }
         await this.prisma.race.create({data});
@@ -398,7 +407,7 @@ export class RaceService {
       
         //console.log("dead heat for race: ", latestRace[0].id, " cars are shuffled: ", deadHeatCars);
 
-        await this.createHeats(numDeadHeats, deadHeatCars, latestRace[0].id, deadHeatRaceType, inputRole).then(result => heats = result);
+        await this.createHeats(numDeadHeats, deadHeatCars, latestRace[0].id, deadHeatRaceType, inputRank).then(result => heats = result);
       }
     }
     //if there isn't any tie, then there's no need for deadheat, because all cars that can advance will advance, and there's no need to care about ties
@@ -461,7 +470,7 @@ export class RaceService {
         const data = {
           numLanes: numLanes,
           raceType: nextRaceType,
-          role: inputRole,
+          rank: inputRank,
           raceName: "semi"
         }
         await this.prisma.race.create({data});
@@ -476,7 +485,7 @@ export class RaceService {
 
         //console.log("advance to next race cars for race: ", latestRace[0].id, " are sorted: ", advanceCars);
        
-        await this.createHeats(numNewRaceHeats, advanceCars, latestRace[0].id, nextRaceType, inputRole).then(result => heats = result);
+        await this.createHeats(numNewRaceHeats, advanceCars, latestRace[0].id, nextRaceType, inputRank).then(result => heats = result);
       }
 
     }
@@ -490,7 +499,7 @@ export class RaceService {
       raceName: raceName,
       numLanes: createRaceDto.numLanes,
       raceType: createRaceDto.raceType,
-      role: createRaceDto.role
+      rank: createRaceDto.rank
     }
 
     return await this.prisma.race.create({data});

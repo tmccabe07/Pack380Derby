@@ -6,5 +6,4 @@ export class UpdateRacerDto extends PartialType(CreateRacerDto) {
     name: string;
     den: string;
     rank: string;
-    role: string;
 }

@@ -34,9 +34,9 @@ export class CarController {
       example: "5.0",
       required: true }) 
   @ApiParam( {
-      name: "personId",
+      name: "racerId",
       type: "Integer",
-      description: "Unique ID of Person that owns this car",
+      description: "Unique ID of racer that owns this car",
       example: "1",
       required: false })  
   @ApiParam( {
@@ -67,14 +67,14 @@ export class CarController {
     return this.carService.findAll();
   }
 
-  @Get('byRole/:inputRole')
+  @Get('byRank/:inputRank')
   @ApiResponse({
       status: 200,
-      description: 'All records by role',
+      description: 'All records by rank',
       type: CarEntity,
     })
-  async findAllByRole(@Param('inputRole') inputRole: string) : Promise<CarModel[]> {
-    return this.carService.findAllByRole(inputRole);
+  async findAllByRank(@Param('inputRank') inputRank: string) : Promise<CarModel[]> {
+    return this.carService.findAllByRank(inputRank);
   }
 
   @Get(':id')
@@ -106,9 +106,9 @@ export class CarController {
     example: "5.0",
     required: true }) 
   @ApiParam( {
-    name: "personId",
+    name: "racerId",
     type: "Integer",
-    description: "Unique ID of Person that owns this car",
+    description: "Unique ID of racer that owns this car",
     example: "1",
     required: false })  
   @ApiParam( {

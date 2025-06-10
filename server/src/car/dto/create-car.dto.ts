@@ -1,5 +1,5 @@
 import { IsString, IsNotEmpty, IsInt } from 'class-validator';
-import { Person } from "../../person/entities/person.entity"
+import { Racer } from "../../racer/entities/racer.entity"
 
 export class CreateCarDto {
     @IsString()
@@ -11,7 +11,7 @@ export class CreateCarDto {
     weight: string;
 
     @IsInt()
-    personId: Person["id"];
+    racerId: Racer["id"];
 
     @IsInt()
     year: number;

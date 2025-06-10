@@ -22,9 +22,9 @@ export class Race {
     
     @ApiProperty({
         example: 'cub',
-        description: 'The role for the race, can be cub, sibling, adult',
+        description: 'The rank for the race, can be cub, sibling, adult',
     })
-    role: String;
+    rank: String;
   
     @ApiProperty({
         example: '6',

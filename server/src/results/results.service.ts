@@ -13,7 +13,7 @@ export class ResultsService {
     const sumBy = createResultDto.sumBy;
     const carId = createResultDto.carId;
     const raceType = createResultDto.raceType;
-    const role = createResultDto.role;
+    const rank = createResultDto.rank;
 
     let aggResults = 0;
 
@@ -38,8 +38,8 @@ export class ResultsService {
           },
         })
         break;
-      case 20: //sum all cars by race type AND role
-        //find all heats of cars that match the race type and role to filter on
+      case 20: //sum all cars by race type AND rank
+        //find all heats of cars that match the race type and rank to filter on
         selectHeats = await this.prisma.heatLane.findMany({
           select: {
             result: true,
@@ -49,15 +49,15 @@ export class ResultsService {
           },
           where: {
             raceType: raceType,
-            role: role,
+            rank: rank,
           },
           orderBy: {
             raceId: 'asc',
           },
         })
         break;
-      case 30: //sum all races for a role
-        //find all heats of cars that match the role to filter on
+      case 30: //sum all races for a rank
+        //find all heats of cars that match the rank to filter on
         selectHeats = await this.prisma.heatLane.findMany({
           select: {
             result: true,
@@ -66,7 +66,7 @@ export class ResultsService {
             id: true,
           },
           where: {
-            role: role,
+            rank: rank,
           },
           orderBy: {
             raceId: 'asc',
@@ -80,7 +80,7 @@ export class ResultsService {
       { 
         carId: carId,
         raceType: raceType,
-        role: role,
+        rank: rank,
         aggResults: 0, 
       },
     ];
@@ -120,7 +120,7 @@ export class ResultsService {
         totalResults.push({
           carId: uniqueCars[i],
           raceType: raceType,
-          role: role,
+          rank: rank,
           aggResults: 0,
         })
 

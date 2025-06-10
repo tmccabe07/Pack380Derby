@@ -14,7 +14,7 @@ export class ResultsController {
     name: "sumBy",
     type: "number",
     description: "race type code to filter races from to calculate results",
-    example: "10 (sum by carId AND raceType), 20 (sum all cars by raceType AND role), 30 (sum all cars in all racetypes by Role)",
+    example: "10 (sum by carId AND raceType), 20 (sum all cars by raceType AND rank), 30 (sum all cars in all racetypes by rank)",
     required: true })
   @ApiParam( {
     name: "raceType",
@@ -29,9 +29,9 @@ export class ResultsController {
     example: "1",
     required: true })
   @ApiParam({
-    name: "role",
+    name: "rank",
     type: "String",
-    description: "role to calculate results for",
+    description: "rank to calculate results for",
     example: "cub, sibling, adult",
     required: true
   })  

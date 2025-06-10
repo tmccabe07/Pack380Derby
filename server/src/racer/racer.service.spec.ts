@@ -1,33 +1,33 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PersonService } from './person.service';
+import { RacerService } from './racer.service';
 import { PrismaService } from '../prisma/prisma.service';
 
-const personArray = [
-  { name: 'Person 1', den: '8', rank: 'tiger', role: 'cub' },
-  { name: 'Person 2', den: '10', rank: 'lion', role: 'cub' },
-  { name: 'Person 3', den: 'adult', rank: 'adult', role: 'adult' },
-  { name: 'Person 4', den: 'sibling', rank: 'sibling', role: 'sibling' },
+const racerArray = [
+  { name: 'Racer 1', den: '8', rank: 'tiger'},
+  { name: 'Racer 2', den: '10', rank: 'lion'},
+  { name: 'Racer 3', den: 'adult', rank: 'adult'},
+  { name: 'Racer 4', den: 'sibling', rank: 'sibling'},
 ];
 
-const onePerson = personArray[0];
+const oneRacer = racerArray[0];
 
 const db = {
-  person: {
-    findMany: jest.fn().mockResolvedValue(personArray),
-    findUnique: jest.fn().mockResolvedValue(onePerson),
-    findFirst: jest.fn().mockResolvedValue(onePerson),
-    create: jest.fn().mockReturnValue(onePerson),
+  racer: {
+    findMany: jest.fn().mockResolvedValue(racerArray),
+    findUnique: jest.fn().mockResolvedValue(oneRacer),
+    findFirst: jest.fn().mockResolvedValue(oneRacer),
+    create: jest.fn().mockReturnValue(oneRacer),
     save: jest.fn(),
-    update: jest.fn().mockResolvedValue(onePerson),
-    delete: jest.fn().mockResolvedValue(onePerson),
+    update: jest.fn().mockResolvedValue(oneRacer),
+    delete: jest.fn().mockResolvedValue(oneRacer),
   },
 };
 
-const oneAdult = personArray[2];
+const oneAdult = racerArray[2];
 
 const adultdb = {
-  person: {
-    findMany: jest.fn().mockResolvedValue(personArray),
+  racer: {
+    findMany: jest.fn().mockResolvedValue(racerArray),
     findUnique: jest.fn().mockResolvedValue(oneAdult),
     findFirst: jest.fn().mockResolvedValue(oneAdult),
     create: jest.fn().mockReturnValue(oneAdult),
@@ -37,11 +37,11 @@ const adultdb = {
   },
 }
 
-const oneSibling = personArray[3];
+const oneSibling = racerArray[3];
 
 const siblingdb = {
-  person: {
-    findMany: jest.fn().mockResolvedValue(personArray),
+  racer: {
+    findMany: jest.fn().mockResolvedValue(racerArray),
     findUnique: jest.fn().mockResolvedValue(oneSibling),
     findFirst: jest.fn().mockResolvedValue(oneSibling),
     create: jest.fn().mockReturnValue(oneSibling),
@@ -52,14 +52,14 @@ const siblingdb = {
 }
 
 
-describe('PersonService', () => {
-  let service: PersonService;
+describe('RacerService', () => {
+  let service: RacerService;
   let prisma: PrismaService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        PersonService,
+        RacerService,
         {
           provide: PrismaService,
           useValue: db,
@@ -67,87 +67,77 @@ describe('PersonService', () => {
       ],
     }).compile();
 
-    service = module.get<PersonService>(PersonService);
+    service = module.get<RacerService>(RacerService);
     prisma = module.get<PrismaService>(PrismaService);
   });
 
   describe('getAll', () => {
-    it('should return an array of person', async () => {
+    it('should return an array of racer', async () => {
       const cats = await service.findAll();
-      expect(cats).toEqual(personArray);
+      expect(cats).toEqual(racerArray);
     });
   });
 
   describe('getOne', () => {
-    it('should get a single person', () => {
-      expect(service.findOne(1)).resolves.toEqual(onePerson);
+    it('should get a single racer', () => {
+      expect(service.findOne(1)).resolves.toEqual(oneRacer);
     });
 
     it('should return error message due to invalid id', () => {
       const dbSpy = jest
-        .spyOn(prisma.person, 'findUnique')
-        .mockRejectedValueOnce(new Error('Person with 4 does not exist.'));
-      expect(service.findOne(4)).rejects.toThrow('Person with 4 does not exist.')
+        .spyOn(prisma.racer, 'findUnique')
+        .mockRejectedValueOnce(new Error('Racer with 4 does not exist.'));
+      expect(service.findOne(4)).rejects.toThrow('Racer with 4 does not exist.')
     });
   });
 
    describe('createOne', () => {
     it('should successfully create a cub', () => {
       expect(
-        service.createPerson({
-          name: 'Person 1',
+        service.createRacer({
+          name: 'Racer 1',
           den: '8',
           rank: 'tiger',
-          role: 'cub',
         }),
-      ).resolves.toEqual(onePerson);
+      ).resolves.toEqual(oneRacer);
     });
 
     it('should return error message due to invalid rank', async () => {
       const dbSpy = jest
-        .spyOn(prisma.person, 'create')
+        .spyOn(prisma.racer, 'create')
         .mockRejectedValueOnce(new Error('Invalid Rank'));
-      expect(service.createPerson({name: 'Person 1', den: '8', rank: 'tigger', role: 'cub'})).rejects.toThrow('Invalid Rank')
+      expect(service.createRacer({name: 'Racer 1', den: '8', rank: 'tigger'})).rejects.toThrow('Invalid Rank')
     });
-
-    it('should return error message due to invalid role', async () => {
-      const dbSpy = jest
-        .spyOn(prisma.person, 'create')
-        .mockRejectedValueOnce(new Error('Invalid Role'));
-      expect(service.createPerson({name: 'Person 1', den: '8', rank: 'tiger', role: 'bear'})).rejects.toThrow('Invalid Role')
-    });
-
   });
 
   describe('updateOne', () => {
     it('should call the update method', async () => {
       const cat = await service.update(2, {
-        name: 'Person 1',
+        name: 'Racer 1',
         den: '8',
         rank: 'tiger',
-        role: 'cub'
       });
-      expect(cat).toEqual(onePerson);
+      expect(cat).toEqual(oneRacer);
     });
 
     it('should return error message due to invalid id', async () => {
       const dbSpy = jest
-        .spyOn(prisma.person, 'update')
-        .mockRejectedValueOnce(new Error('Person with 4 does not exist.'));
-      expect(service.update(4, {name: 'Person 1', den: '8', rank: 'tiger', role: 'cub'})).rejects.toThrow('Person with 4 does not exist.')
+        .spyOn(prisma.racer, 'update')
+        .mockRejectedValueOnce(new Error('Racer with 4 does not exist.'));
+      expect(service.update(4, {name: 'Racer 1', den: '8', rank: 'tiger'})).rejects.toThrow('Racer with 4 does not exist.')
     });
   });
 
   describe('deleteOne', () => {
     it('should return value of deleted', () => {
-      expect(service.remove(1)).resolves.toEqual(onePerson);
+      expect(service.remove(1)).resolves.toEqual(oneRacer);
     });
 
     it('should return error message due to invalid id', () => {
       const dbSpy = jest
-        .spyOn(prisma.person, 'delete')
-        .mockRejectedValueOnce(new Error('Person with 4 does not exist.'));
-      expect(service.remove(4)).rejects.toThrow('Person with 4 does not exist.')
+        .spyOn(prisma.racer, 'delete')
+        .mockRejectedValueOnce(new Error('Racer with 4 does not exist.'));
+      expect(service.remove(4)).rejects.toThrow('Racer with 4 does not exist.')
     });
   });
 
@@ -158,14 +148,14 @@ describe('PersonService', () => {
 
 });
 
-describe('PersonServiceAdult', () => {
-  let service: PersonService;
+describe('RacerServiceAdult', () => {
+  let service: RacerService;
   let prisma: PrismaService;
 
 beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        PersonService,
+        RacerService,
         {
           provide: PrismaService,
           useValue: adultdb,
@@ -173,7 +163,7 @@ beforeEach(async () => {
       ],
     }).compile();
 
-    service = module.get<PersonService>(PersonService);
+    service = module.get<RacerService>(RacerService);
     prisma = module.get<PrismaService>(PrismaService);
   });
 
@@ -181,11 +171,10 @@ beforeEach(async () => {
   describe('createAdult', () => {
     it('should successfully create an adult', () => {
       expect(
-        service.createPerson({
-          name: 'Person 3',
+        service.createRacer({
+          name: 'Racer 3',
           den: 'adult',
           rank: 'adult',
-          role: 'adult',
         }),
       ).resolves.toEqual(oneAdult);
     });
@@ -193,14 +182,14 @@ beforeEach(async () => {
 
 });
 
-describe('PersonServiceSibling', () => {
-  let service: PersonService;
+describe('RacerServiceSibling', () => {
+  let service: RacerService;
   let prisma: PrismaService;
 
 beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        PersonService,
+        RacerService,
         {
           provide: PrismaService,
           useValue: siblingdb,
@@ -208,7 +197,7 @@ beforeEach(async () => {
       ],
     }).compile();
 
-    service = module.get<PersonService>(PersonService);
+    service = module.get<RacerService>(RacerService);
     prisma = module.get<PrismaService>(PrismaService);
   });
 
@@ -216,11 +205,10 @@ beforeEach(async () => {
   describe('createAdult', () => {
     it('should successfully create a sibling', () => {
       expect(
-        service.createPerson({
-          name: 'Person 4',
+        service.createRacer({
+          name: 'Racer 4',
           den: 'sibling',
           rank: 'sibling',
-          role: 'sibling',
         }),
       ).resolves.toEqual(oneSibling);
     });

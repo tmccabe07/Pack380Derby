@@ -15,8 +15,6 @@ export class ResultsService {
     const raceType = createResultDto.raceType;
     const rank = createResultDto.rank;
 
-    let aggResults = 0;
-
     let selectHeats;
     
     switch(sumBy){

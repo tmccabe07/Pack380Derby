@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateRaceDto } from './dto/create-race.dto';
 import { UpdateRaceDto } from './dto/update-race.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { Car, HeatLane, Prisma, Race } from '@prisma/client';
+import { Car, HeatLane, Race } from '@prisma/client';
 import { RaceGlobalVariableService } from './raceGlobalVariable.service';
 
 @Injectable()
@@ -63,7 +63,6 @@ export class RaceService {
     //console.log("numCarBlanks: " + numCarBlanks);
 
     //updating car table and cubs array with blanks
-    //consider - do we need a blank racer by rank?
     for (let i = 0; i < numCarBlanks; i++){
       const blankCar = await this.prisma.car.create({
         data: {

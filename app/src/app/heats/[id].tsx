@@ -1,66 +1,67 @@
+import { useRouter } from "next/router";
 import Layout from "@/components/Layout";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
+import { fetchHeatById, deleteHeat, updateHeat, Heat, HeatEntry } from "@/lib/api/heats";
+import { Car, fetchCars } from "@/lib/api/cars";
+import HeatForm from "@/components/heats/HeatForm";
 
 export default function HeatDetailsPage() {
   const router = useRouter();
   const { id } = router.query;
-  const [heat, setHeat] = useState<any>(null);
+  const [heat, setHeat] = useState<Heat | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [cars, setCars] = useState<Car[]>([]);
 
   useEffect(() => {
     if (id) {
-      fetch(`/api/heats/${id}`)
-        .then(res => res.json())
-        .then(data => setHeat(data));
+      fetchHeatById(id as string).then(setHeat);
+      fetchCars().then(setCars);
     }
   }, [id]);
 
-  async function submitTimes() {
-    const entries = heat.entries.map((entry: any) => ({
-      id: entry.id,
-      time: parseFloat(entry.time),
-    }));
+  async function handleDelete() {
+    if (id && confirm("Delete this heat?")) {
+      await deleteHeat(id as string);
+      router.push("/heats");
+    }
+  }
 
-    await fetch(`/api/heats/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ entries }),
-    });
-
-    alert('Times saved!');
+  async function handleUpdate(entries: HeatEntry[]) {
+    if (!id) return;
+    const updated = await updateHeat(id as string, entries);
+    setHeat(updated);
+    setEditing(false);
   }
 
   if (!heat) return <Layout>Loading...</Layout>;
 
+  if (editing) {
+    return (
+      <Layout>
+        <h1 className="text-3xl font-bold mb-8">Edit Heat #{heat.id}</h1>
+        <HeatForm onCreate={handleUpdate} lanes={heat.entries.length} />
+        <button onClick={() => setEditing(false)} className="mt-4 px-4 py-2 bg-gray-300 rounded">Cancel</button>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <h1 className="text-3xl font-bold mb-8">Heat #{heat.id}</h1>
-
-      <div className="space-y-4 mb-8">
-        {heat.entries.map((entry: any, idx: number) => (
-          <div key={entry.id} className="flex space-x-4">
-            <div className="w-24 font-semibold">Lane {entry.lane}</div>
-            <div className="flex-1">{entry.carName} ({entry.racerName})</div>
-            <input
-              type="number"
-              step="0.001"
-              placeholder="Time (s)"
-              className="border p-2 w-32"
-              value={entry.time ?? ''}
-              onChange={(e) => {
-                const updated = { ...entry, time: e.target.value };
-                const newEntries = [...heat.entries];
-                newEntries[idx] = updated;
-                setHeat({ ...heat, entries: newEntries });
-              }}
-            />
-          </div>
-        ))}
+      <ul className="mb-8">
+        {heat.entries.map((entry) => {
+          const car = cars.find((c) => c.id === entry.carId);
+          return (
+            <li key={entry.lane} className="mb-2">
+              <span className="font-semibold">Lane {entry.lane}:</span> {car ? car.name : entry.carId} {car?.racer ? `(${car.racer.name})` : ""}
+            </li>
+          );
+        })}
+      </ul>
+      <div className="flex space-x-4">
+        <button onClick={() => setEditing(true)} className="bg-yellow-500 text-white px-4 py-2 rounded">Edit</button>
+        <button onClick={handleDelete} className="bg-red-600 text-white px-4 py-2 rounded">Delete</button>
       </div>
-
-      <button onClick={submitTimes} className="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700">
-        Save Times
-      </button>
     </Layout>
   );
 }

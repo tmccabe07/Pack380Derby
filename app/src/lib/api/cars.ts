@@ -7,7 +7,7 @@ export interface Car {
   id: string;
   image: string;
   year: number;
-  personId: string;
+  racerId: string;
   weight: string;
   name: string;
   racer?: Racer;
@@ -24,9 +24,9 @@ export async function fetchCars() {
   // Fetch and attach person for each car if not present
   await Promise.all(
     cars.map(async (car) => {
-      if (!car.racer && car.personId) {
+      if (!car.racer && car.racerId) {
         try {
-          car.racer = await fetchRacerById(car.personId);
+          car.racer = await fetchRacerById(car.racerId);
           car.image = pinewoodKit;
         } catch (e) {
           car.racer = undefined;
@@ -59,9 +59,9 @@ export async function fetchCarById(id: string): Promise<Car | null> {
   const res = await fetch(`${DERBY_API_URL}/api/car/${id}`);
   if (!res.ok) return null;
   const car: Car = await res.json();
-  if (car && car.personId && !car.racer) {
+  if (car && car.racerId && !car.racer) {
     try {
-      car.racer = await fetchRacerById(car.personId);
+      car.racer = await fetchRacerById(car.racerId);
     } catch {
       car.racer = undefined;
     }

@@ -10,15 +10,15 @@ export interface Racer {
     den: string;
 }
 
-export async function fetchRacerById(personId: string): Promise<Racer> {
-  const res = await fetch(`${DERBY_API_URL}/api/person/${personId}`);
+export async function fetchRacerById(racerId: string): Promise<Racer> {
+  const res = await fetch(`${DERBY_API_URL}/api/racer/${racerId}`);
   if (!res.ok) {
-    throw new Error("Failed to fetch person");
+    throw new Error("Failed to fetch racer");
   }
   return res.json();
 }
 export async function fetchRacers() {
-  const res = await fetch(`${DERBY_API_URL}/api/person`);
+  const res = await fetch(`${DERBY_API_URL}/api/racer`);
   if (!res.ok) {
     throw new Error("Failed to fetch Racers");
   }
@@ -26,7 +26,7 @@ export async function fetchRacers() {
 }
 
 export async function createRacer(Racer: Racer): Promise<Racer> {
-  const res = await fetch(`${DERBY_API_URL}/api/person`, {
+  const res = await fetch(`${DERBY_API_URL}/api/racer`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -42,7 +42,7 @@ export async function createRacer(Racer: Racer): Promise<Racer> {
 }
 
 export async function updateRacer(id: string, Racer: Racer): Promise<Racer> {
-  const res = await fetch(`${DERBY_API_URL}/api/person/${id}`, {
+  const res = await fetch(`${DERBY_API_URL}/api/racer/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -61,7 +61,7 @@ export async function deleteRacerById(id?: string): Promise<void> {
   if (!id) {
     throw new Error("Racer ID is required for deletion");
   }
-  const res = await fetch(`${DERBY_API_URL}/api/person/${id}`, {
+  const res = await fetch(`${DERBY_API_URL}/api/racer/${id}`, {
     method: "DELETE",
   });
 

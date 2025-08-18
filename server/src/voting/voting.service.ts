@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateVoteDto } from './dto/create-vote.dto';
 import { CreateVoteCategoryDto } from './dto/create-vote-category.dto';
+import { UpdateVoteCategoryDto } from './dto/update-vote-category.dto';
 import { Vote, VoteCategory } from '@prisma/client';
 
 @Injectable()
@@ -84,6 +85,46 @@ export class VotingService {
             include: {
                 voter: true,
             },
+        });
+    }
+
+    async updateCategory(id: number, updateVoteCategoryDto: UpdateVoteCategoryDto): Promise<VoteCategory> {
+        const category = await this.prisma.voteCategory.findUnique({
+            where: { id },
+        });
+
+        if (!category) {
+            throw new NotFoundException(`Vote category with ID ${id} not found`);
+        }
+
+        return await this.prisma.voteCategory.update({
+            where: { id },
+            data: updateVoteCategoryDto,
+        });
+    }
+
+    async deleteCategory(id: number): Promise<VoteCategory> {
+        const category = await this.prisma.voteCategory.findUnique({
+            where: { id },
+            include: {
+                votes: true,
+            },
+        });
+
+        if (!category) {
+            throw new NotFoundException(`Vote category with ID ${id} not found`);
+        }
+
+        // First delete all votes in this category
+        if (category.votes.length > 0) {
+            await this.prisma.vote.deleteMany({
+                where: { categoryId: id },
+            });
+        }
+
+        // Then delete the category
+        return await this.prisma.voteCategory.delete({
+            where: { id },
         });
     }
 

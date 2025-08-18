@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
 import { VotingService } from './voting.service';
 import { CreateVoteDto } from './dto/create-vote.dto';
 import { CreateVoteCategoryDto } from './dto/create-vote-category.dto';
+import { UpdateVoteCategoryDto } from './dto/update-vote-category.dto';
 import { Vote, VoteCategory } from '@prisma/client';
 
 
@@ -86,6 +87,20 @@ export class VotingController {
         return this.votingService.getVotesByCarId(carId);
     }
 
+    @Patch('category/:id')
+    @ApiOperation({ summary: 'Update a voting category' })
+    @ApiParam({ name: 'id', type: 'number', description: 'ID of the voting category to update' })
+    @ApiBody({ type: UpdateVoteCategoryDto })
+    @ApiResponse({ status: 200, description: 'The voting category has been successfully updated.' })
+    @ApiResponse({ status: 404, description: 'Category not found.' })
+    @ApiResponse({ status: 400, description: 'Bad Request.' })
+    async updateCategory(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() updateVoteCategoryDto: UpdateVoteCategoryDto
+    ): Promise<VoteCategory> {
+        return this.votingService.updateCategory(id, updateVoteCategoryDto);
+    }
+
     @Get('category/:categoryId/scores')
     @ApiOperation({ summary: 'Get sum of vote scores by car for a specific category' })
     @ApiParam({ name: 'categoryId', type: 'number', description: 'ID of the voting category' })
@@ -93,5 +108,14 @@ export class VotingController {
     @ApiResponse({ status: 404, description: 'Category not found' })
     async getSumScoresByCategory(@Param('categoryId', ParseIntPipe) categoryId: number) {
         return this.votingService.getSumScoresByCategory(categoryId);
+    }
+
+    @Delete('category/:id')
+    @ApiOperation({ summary: 'Delete a voting category and all its votes' })
+    @ApiParam({ name: 'id', type: 'number', description: 'ID of the voting category to delete' })
+    @ApiResponse({ status: 200, description: 'The voting category has been successfully deleted.' })
+    @ApiResponse({ status: 404, description: 'Category not found.' })
+    async deleteCategory(@Param('id', ParseIntPipe) id: number): Promise<VoteCategory> {
+        return this.votingService.deleteCategory(id);
     }
 }

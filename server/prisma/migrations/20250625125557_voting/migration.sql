@@ -1,0 +1,16 @@
+-- CreateTable
+CREATE TABLE "Vote" (
+    "id" SERIAL NOT NULL,
+    "score" INTEGER NOT NULL,
+    "carId" INTEGER NOT NULL,
+    "voterId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Vote_pkey" PRIMARY KEY ("id")
+);
+
+-- AddForeignKey
+ALTER TABLE "Vote" ADD CONSTRAINT "Vote_carId_fkey" FOREIGN KEY ("carId") REFERENCES "Car"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Vote" ADD CONSTRAINT "Vote_voterId_fkey" FOREIGN KEY ("voterId") REFERENCES "Racer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

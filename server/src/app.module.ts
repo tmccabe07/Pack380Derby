@@ -8,9 +8,10 @@ import { CarModule } from './car/car.module';
 import { HeatLaneModule } from './heat-lane/heat-lane.module';
 import { RaceModule } from './race/race.module';
 import { ResultsModule } from './results/results.module';
+import { VotingModule } from './voting/voting.module';
 
 @Module({
-  imports: [RacerModule, ConfigModule.forRoot(), PrismaModule, CarModule, HeatLaneModule, RaceModule, ResultsModule],
+  imports: [RacerModule, ConfigModule.forRoot(), PrismaModule, CarModule, HeatLaneModule, RaceModule, ResultsModule, VotingModule],
   controllers: [AppController],
   providers: [AppService],
 })

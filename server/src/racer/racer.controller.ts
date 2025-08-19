@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, ParseIntPipe } from '@nestjs/common';
+import { 
+  Controller, 
+  Get, 
+  Post, 
+  Body, 
+  Patch, 
+  Param, 
+  Delete, 
+  NotFoundException, 
+  ParseIntPipe,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException
+} from '@nestjs/common';
 import {
   ApiOperation,
   ApiParam,
@@ -6,7 +19,10 @@ import {
   ApiBadRequestResponse,
   ApiResponse,
   ApiTags,
+  ApiConsumes,
+  ApiBody,
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateRacerDto } from './dto/create-racer.dto';
 import { UpdateRacerDto } from './dto/update-racer.dto';
 import { Racer as RacerEntity } from './entities/racer.entity';
@@ -122,6 +138,35 @@ export class RacerController {
   async clearPacerTable(): Promise<string> {
     return await this.racerService.clearRacerTable();
   }
+
+  @Post('import')
+  @ApiOperation({ summary: 'Import racers from CSV file' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'CSV file containing racer data'
+        },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  async importRacers(
+    @UploadedFile() file: Express.Multer.File
+  ): Promise<{ success: number; failed: number; errors: string[] }> {
   
-  
+  if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+
+    if (file.mimetype !== 'text/csv') {
+      throw new BadRequestException('File must be a CSV');
+    }
+    
+    return this.racerService.importRacersFromCSV(file.buffer);
+  }
 }

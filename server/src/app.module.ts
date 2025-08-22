@@ -9,9 +9,16 @@ import { HeatLaneModule } from './heat-lane/heat-lane.module';
 import { RaceModule } from './race/race.module';
 import { ResultsModule } from './results/results.module';
 import { VotingModule } from './voting/voting.module';
+import { configuration } from '../configuration';
 
 @Module({
-  imports: [RacerModule, ConfigModule.forRoot(), PrismaModule, CarModule, HeatLaneModule, RaceModule, ResultsModule, VotingModule],
+  imports: [RacerModule, ConfigModule.forRoot(
+    { 
+      envFilePath: `${process.cwd()}/config/env/${process.env.NODE_ENV}.env`,
+      isGlobal: true,
+      load: [configuration] 
+    }
+  ), PrismaModule, CarModule, HeatLaneModule, RaceModule, ResultsModule, VotingModule],
   controllers: [AppController],
   providers: [AppService],
 })

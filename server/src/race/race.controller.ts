@@ -17,12 +17,6 @@ import { Race } from '@prisma/client';
 export class RaceController {
   constructor(private readonly raceService: RaceService) {}
 
-  @Post()
-  @ApiOperation({ summary: 'Create race' })
-  async create(@Body() createRaceDto: CreateRaceDto): Promise<Race> {
-    return await this.raceService.create(createRaceDto);
-  }
-
   @Get()
   @ApiOperation({ summary: 'Get all races'})
   async findAll(): Promise<Race[]>  {
@@ -53,8 +47,8 @@ export class RaceController {
     return await this.raceService.clearRaceTable();
   }
   
-  @Post('raceandheats')
-  @ApiOperation({ summary: 'Create quarterfinal, semifinal or final race, including any needed deadheats' })
+  @Post()
+  @ApiOperation({ summary: 'Create quarterfinal, semifinal or final race, with heats, including any needed deadheats' })
   @ApiParam( {
     name: "raceType",
     type: "number",
@@ -78,11 +72,6 @@ export class RaceController {
   @ApiBadRequestResponse({ description: 'Bad Request' }) 
   async createRaceAndHeats(@Body() createRaceDto: CreateRaceDto) {
     return await this.raceService.createRaceAndHeats(createRaceDto);
-  }
-
-  @Post('newraceandheats')
-  async newcreateRaceAndHeats(@Body() createRaceDto: CreateRaceDto) {
-    return await this.raceService.newcreateRaceAndHeats(createRaceDto);
   }
 
 

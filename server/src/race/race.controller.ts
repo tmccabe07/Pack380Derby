@@ -80,4 +80,10 @@ export class RaceController {
     return await this.raceService.createRaceAndHeats(createRaceDto);
   }
 
+  @Post('newraceandheats')
+  async newcreateRaceAndHeats(@Body() createRaceDto: CreateRaceDto) {
+    return await this.raceService.newcreateRaceAndHeats(createRaceDto);
+  }
+
+
 }

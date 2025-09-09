@@ -4,11 +4,78 @@ import { UpdateRaceDto } from './dto/update-race.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { Car, HeatLane, Race } from '@prisma/client';
 import { RaceGlobalVariableService } from './raceGlobalVariable.service';
+import { RaceStage, RaceResult, RacerType } from '../common/types/race.types';
+import { RaceProgressionService } from './services/race-progression.service';
+import { RaceGenerationService } from './services/race-generation.service';
 
 @Injectable()
 export class RaceService {
 
-  constructor(private prisma: PrismaService, private numAdvances: RaceGlobalVariableService) {}
+  constructor(private prisma: PrismaService, 
+    private numAdvances: RaceGlobalVariableService,
+    private progression: RaceProgressionService,
+    private generator: RaceGenerationService) {}
+
+
+  async newcreateRaceAndHeats(createRaceDto: CreateRaceDto) {
+    const { numLanes, raceType, rank } = createRaceDto;
+    const currentStage = raceType as RaceStage;
+    
+    // To start everything, create the quarterfinals
+    if (currentStage === RaceStage.PRELIMINARY) {
+      return this.generator.createQuarterfinalRace(rank as RacerType, numLanes);
+    }
+
+    // Get results from this current stage and its corresponding deadheat stage
+    const results = await this.getStageResults(currentStage, rank);
+
+    //console.log("results from current stage: ", results);
+
+    const nextStage = this.progression.getNextStage(currentStage);
+      if (!nextStage) {
+        throw new Error(`No next stage defined for ${currentStage}`);
+      }
+
+    // Calculate who advances for the next stage
+    const advancingCount = this.progression.calculateAdvancingCount(nextStage, numLanes);
+
+    //console.log("advancingCount: ", advancingCount);
+
+    const { advancing, needsTiebreaker, tiedCarIds } = 
+      await this.progression.determineAdvancingResults(results, advancingCount);
+
+    //console.log("needsTiebreaker: ", needsTiebreaker);
+    //console.log("tiedCarIds: ", tiedCarIds);
+    //console.log("these cars are advancing: ", advancing);
+
+    // Either handle tie breakers if needed by creating deadheat, or create this stage's race with all the advancers
+    if (needsTiebreaker) {
+      const deadheatStage = this.progression.getDeadheatStage(currentStage);
+      if (!deadheatStage) {
+        throw new Error(`No deadheat stage defined for ${currentStage}`);
+      }
+      return this.generator.createDeadheatRace(
+        tiedCarIds,
+        deadheatStage,
+        numLanes,
+        rank as RacerType
+      );
+    }
+    else{
+
+    // Create next stage race
+      return this.generator.createNextStageRace(
+        advancing,
+        nextStage,
+        numLanes,
+        rank as RacerType
+      );
+
+    }
+
+    
+  
+  }
 
   //reusable function for fisher yates shuffle sort
   async shuffleSort(cars: Car[]): Promise<Car[]> {
@@ -526,6 +593,51 @@ export class RaceService {
     } 
     
     return oneValue;
+  }
+
+  async getStageResults(stage: RaceStage, rank: string): Promise<Array<{ carId: number; totalScore: number }>> {
+    // Get all heat results for this stage and its corresponding deadheat stage
+    const deadheatStage = this.progression.getDeadheatStage(stage);
+    const stages = deadheatStage ? [stage, deadheatStage] : [stage];
+
+    const heatResults = await this.prisma.heatLane.findMany({
+      where: {
+        raceType: {
+          in: stages
+        },
+        rank: rank,
+        car: {
+          name: { not: 'blank' } // Exclude blank cars
+        }
+      },
+      select: {
+        carId: true,
+        result: true,
+        raceId: true,
+        raceType: true
+      },
+      orderBy: [
+        { raceId: 'asc' },
+        { lane: 'asc' }
+      ]
+    });
+
+    // Group results by car and calculate total score
+    const resultMap = new Map<number, number>();
+    
+    for (const heat of heatResults) {
+      if (heat.carId !== null) {  // Ensure carId is not null
+        const currentTotal = resultMap.get(heat.carId) ?? 0;
+        const resultValue = heat.result ?? 0;
+        resultMap.set(heat.carId, currentTotal + resultValue);
+      }
+    }
+
+    // Convert to array of results
+    return Array.from(resultMap.entries()).map(([carId, totalScore]) => ({
+      carId,
+      totalScore
+    }));
   }
   
   async update(id: number, updateRaceDto: UpdateRaceDto): Promise<Race> {

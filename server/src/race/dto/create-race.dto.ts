@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsInt, IsIn } from 'class-validator';
+import { IsString, IsNotEmpty, IsInt, IsIn, IsBoolean } from 'class-validator';
 
 export class CreateRaceDto {
 
@@ -10,7 +10,9 @@ export class CreateRaceDto {
     raceType: number;
 
     @IsString()
-    @IsIn(['cub','sibling','adult'], { message: 'rank must be one of: cub, sibling, adult'})
+    @IsIn(['lion', 'tiger', 'wolf', 'bear', 'webelos', 'aol', 'cub','sibling','adult'], { message: 'rank must be one of: lion, tiger, wolf, bear, webelos, aol, cub, sibling, adult'})
     rank: string;
-        
+    
+    @IsBoolean()
+    groupByRank: boolean;
 }

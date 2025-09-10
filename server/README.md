@@ -58,22 +58,34 @@ POST /api/car
 racerId is the unique id of the person that was created. 
 
 ### To create races
-POST /api/raceandheats 
+POST /api/race 
 {
-    "raceType": "1",
     "numLanes": 6,
-    "role": "cub"
+    "raceType": 1,
+    "rank": "cub",
+    "groupByRank": false
 }
 
-This will create quarternfinals race with a unique race id and as many heats as necessary to race all of the cars associated with the role of cub with the number of lanes specified as 6 per heat.  Repeat this with different raceType to create multiple races with heats. 
+This will create quarternfinals race with a unique race id and as many heats as necessary to race all of the cars associated with the cub with the number of lanes specified as 6 per heat.  Repeat this with different raceType to create multiple races with heats. 
+
+numLanes: number of lanes that are active in a race.  Max is 6.
 
 raceType mapping:
 1 = prelim, which will generate a quarterfinal
 10 = quarterfinal, which will generate a semi or quarterfinaldeadheat
 20 = semi, which will generate a final or semideadheat
 30 = final, not used
-40 = quarterfinaldeadheat, which will generate a semi
-50 = semideadheat, which will generate final
+
+rank: 
+cub = all cub ranks, inclusive of lion, tiger, wolf, bear, webelos, aol
+lion = specific to lion rank (includes all lion dens)
+tiger = specific to tiger rank (includes all tiger dens)
+wolf = specific to wolf rank (includes all wolf dens)
+bear = specific to bear rank (includes all bear dens)
+webelos = specific to webelos rank (includes all webelos dens)
+aol = specific to aol rank (includes all aol dens)
+sibling = all siblings
+adult = all adults
 
 All heats are stored in table "public"."HeatLane".  Race metadata is stored in "public"."Race".
 

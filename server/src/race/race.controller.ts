@@ -74,5 +74,4 @@ export class RaceController {
     return await this.raceService.createRaceAndHeats(createRaceDto);
   }
 
-
 }

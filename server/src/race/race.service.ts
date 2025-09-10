@@ -14,7 +14,6 @@ export class RaceService {
     private progression: RaceProgressionService,
     private generator: RaceGenerationService) {}
 
-
   async createRaceAndHeats(createRaceDto: CreateRaceDto) {
     const { numLanes, raceType, rank } = createRaceDto;
     const currentStage = raceType as RaceStage;
@@ -35,7 +34,7 @@ export class RaceService {
       }
 
     // Calculate who advances for the next stage
-    const advancingCount = this.progression.calculateAdvancingCount(nextStage, numLanes);
+    const advancingCount = await this.progression.calculateAdvancingCount(nextStage, numLanes, rank as RacerType);
 
     //console.log("advancingCount: ", advancingCount);
 

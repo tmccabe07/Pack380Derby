@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { RaceStage, RacerType, RaceResult } from '../../common/types/race.types';
 import { RaceConfiguration } from '../types/race-config.types';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../../prisma/prisma.service';
 import { prependListener } from 'process';
 
 @Injectable()
@@ -45,7 +46,9 @@ export class RaceProgressionService {
     }
   };
 
-  constructor(private configService: ConfigService) {}
+  constructor(private configService: ConfigService,
+    private prisma: PrismaService
+  ) {}
 
   getConfiguration(stage: RaceStage, lanesPerHeat: number): RaceConfiguration {
     const config = this.defaultConfigs[stage];
@@ -59,7 +62,7 @@ export class RaceProgressionService {
     };
   }
 
-  calculateAdvancingCount(stage: RaceStage, lanesPerHeat: number): number {
+  async calculateAdvancingCount(stage: RaceStage, lanesPerHeat: number, racerType: RacerType): Promise<number> {
     const config = this.defaultConfigs[stage];
     if (!config) {
       throw new Error(`Invalid race stage: ${stage}`);
@@ -70,11 +73,34 @@ export class RaceProgressionService {
       return Infinity;
     }
 
-    // Use environment variables if available, otherwise use default multipliers
+    const totalCars = await this.prisma.car.count({
+        where : {
+          racer: {
+          rank: racerType === RacerType.CUB 
+            ? { notIn: [RacerType.SIBLING, RacerType.ADULT] }
+            : { equals: racerType }
+        },
+          name: { not: 'blank' }
+        }
+      });
+
+    if (stage === RaceStage.QUARTERFINAL) {
+      
+      // Calculate total heats needed (rounded up to next integer)
+      const totalHeats = Math.ceil(totalCars / lanesPerHeat);
+      
+      return totalHeats * lanesPerHeat; 
+    }
+
+    //For Semis and Finals, use environment variables if available, otherwise use default multipliers
     const multiplier = this.configService.get<number>(
       `RACE_ADVANCE_MULTIPLIER_${stage}`,
       config.heatMultiplier
     );
+ 
+    if (totalCars <= lanesPerHeat * multiplier) {
+      return lanesPerHeat; // Only one heat worth can advance
+    }
 
     return lanesPerHeat * multiplier;
   }

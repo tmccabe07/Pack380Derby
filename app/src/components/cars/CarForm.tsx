@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Car } from "@/lib/api/cars";
+import { fetchRacers, Racer } from "@/lib/api/racers";
 
 interface CarFormProps {
   onSubmit: (car: Omit<Car, "id">) => void;
@@ -11,9 +12,14 @@ export default function CarForm({ onSubmit }: CarFormProps) {
     name: "",
     image: "",
     year: new Date().getFullYear(),
-    racerId: 0,
+    personId: 0,
     weight: "",
   });
+  const [racers, setRacers] = useState<Racer[]>([]);
+
+  useEffect(() => {
+    fetchRacers().then(setRacers).catch(() => setRacers([]));
+  }, []);
 
   function handleChange(field: keyof Omit<Car, "id">, value: any) {
     setCar((prev) => ({ ...prev, [field]: value }));
@@ -59,14 +65,22 @@ export default function CarForm({ onSubmit }: CarFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-bold mb-1">Racer ID</label>
-        <input
-          type="number"
+        <label className="block text-sm font-bold mb-1">Racer</label>
+        <select
           className="border p-2 w-full"
-          value={car.racerId}
-          onChange={(e) => handleChange("racerId", parseInt(e.target.value))}
+          value={car.personId}
+          onChange={(e) => handleChange("personId", parseInt(e.target.value))}
           required
-        />
+        >
+          <option value="" disabled>
+            Select a racer
+          </option>
+          {racers.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div>
@@ -79,7 +93,10 @@ export default function CarForm({ onSubmit }: CarFormProps) {
         />
       </div>
 
-      <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+      <button
+        type="submit"
+        className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+      >
         Save Car
       </button>
     </form>

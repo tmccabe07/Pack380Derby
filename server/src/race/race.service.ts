@@ -15,12 +15,12 @@ export class RaceService {
     private generator: RaceGenerationService) {}
 
   async createRaceAndHeats(createRaceDto: CreateRaceDto) {
-    const { numLanes, raceType, rank } = createRaceDto;
+    const { numLanes, raceType, rank, groupByRank } = createRaceDto;
     const currentStage = raceType as RaceStage;
     
     // To start everything, create the quarterfinals
     if (currentStage === RaceStage.PRELIMINARY) {
-      return this.generator.createQuarterfinalRace(rank as RacerType, numLanes);
+      return this.generator.createQuarterfinalRace(rank as RacerType, numLanes, groupByRank);
     }
 
     // Get results from this current stage and its corresponding deadheat stage

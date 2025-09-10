@@ -45,8 +45,12 @@ export class RaceGenerationService {
     return filledCars;
   }
 
-  async createQuarterfinalRace(racerType: RacerType, lanesPerHeat: number): Promise<Race> {
-    // Get all eligible cars
+  async createQuarterfinalRace(
+    racerType: RacerType, 
+    lanesPerHeat: number,
+    groupByRank?: boolean
+  ): Promise<Race | Race[]> {
+    // Get all eligible cars for the given racer type
     const cars = await this.prisma.car.findMany({
       where: {
         racer: {
@@ -55,17 +59,55 @@ export class RaceGenerationService {
             : { equals: racerType }
         },
         name: { not: 'blank' }
+      },
+      include: {
+        racer: true
+      },
+      orderBy: {
+        id: 'asc'
       }
     });
 
-    return this.createRace(RaceStage.QUARTERFINAL, cars, lanesPerHeat, racerType);
+    // If grouping by rank is not requested, create a single race
+    if (!groupByRank) {
+      return this.createRace(
+        RaceStage.QUARTERFINAL,
+        cars,
+        lanesPerHeat,
+        racerType
+      );
+    }
+
+    // Group cars by rank
+    const rankGroups = new Map<string, Car[]>();
+    cars.forEach(car => {
+      const rank = car.racer?.rank || 'unknown';
+      if (!rankGroups.has(rank)) {
+        rankGroups.set(rank, []);
+      }
+      rankGroups.get(rank)?.push(car);
+    });
+
+    // Create races for each rank group
+    const races: Race[] = [];
+    for (const [rank, rankCars] of rankGroups) {
+      const race = await this.createRace(
+        RaceStage.QUARTERFINAL,
+        rankCars,
+        lanesPerHeat,
+        rank as RacerType
+      );
+      races.push(race);
+    }
+
+    return races;
   }
 
   async createRace(
     stage: RaceStage,
     cars: Car[],
     lanesPerHeat: number,
-    racerType: RacerType
+    racerType: RacerType,
   ): Promise<Race> {
     const config = this.progression.getConfiguration(stage, lanesPerHeat);
     
@@ -79,16 +121,19 @@ export class RaceGenerationService {
       }
     });
 
-    // Fill lanes with blank cars if needed and shuffle
-    const filledCars = await this.fillLanes(cars, lanesPerHeat);
-    const shuffledCars = await this.shuffleCars(filledCars);
+    // Optionally fill lanes with blank cars if needed
+    let processedCars = cars;
+    processedCars = await this.fillLanes(cars, lanesPerHeat);
+  
+    // Optionally shuffle the cars
+    const finalCars = await this.shuffleCars(processedCars);
 
     // Create heats
-    const numHeats = Math.ceil(shuffledCars.length / lanesPerHeat);
+    const numHeats = Math.ceil(finalCars.length / lanesPerHeat);
     const heatLanes: HeatLane[] = [];
 
     for (let heatIndex = 0; heatIndex < numHeats; heatIndex++) {
-      const heatCars = shuffledCars.slice(
+      const heatCars = finalCars.slice(
         heatIndex * lanesPerHeat,
         (heatIndex + 1) * lanesPerHeat
       );
@@ -123,10 +168,19 @@ export class RaceGenerationService {
         id: {
           in: tiedCarIds
         }
+      },
+      include: {
+        racer: true
       }
     });
 
-    return this.createRace(stage, cars, lanesPerHeat, racerType);
+    // For deadheats, we enforce full lanes but keep groups together
+    return this.createRace(
+      stage, 
+      cars, 
+      lanesPerHeat, 
+      racerType, 
+    );
   }
 
   async createNextStageRace(

@@ -58,34 +58,69 @@ POST /api/car
 racerId is the unique id of the person that was created. 
 
 ### To create races
-POST /api/race 
+POST /api/raceandheats 
 {
-    "raceName": "quarterfinals",
-    "raceId": 3,
+    "raceType": "1",
     "numLanes": 6,
-    "role": "Cub"
+    "role": "cub"
 }
-This will create quarterfinals race with id 3.  Repeat this with different raceIds to create multiple quarterfinals races. 
 
-POST /api/race/semiorfinal
+This will create quarternfinals race with a unique race id and as many heats as necessary to race all of the cars associated with the role of cub with the number of lanes specified as 6 per heat.  Repeat this with different raceType to create multiple races with heats. 
+
+raceType mapping:
+1 = prelim, which will generate a quarterfinal
+10 = quarterfinal, which will generate a semi or quarterfinaldeadheat
+20 = semi, which will generate a final or semideadheat
+30 = final, not used
+40 = quarterfinaldeadheat, which will generate a semi
+50 = semideadheat, which will generate final
+
+All heats are stored in table "public"."HeatLane".  Race metadata is stored in "public"."Race".
+
+### To update results
+POST /api/heat-lane/:id/:result
+e.g. POST /api/heat-lane/1/2
+
+This will update the heat-lane row id of 1 with the result of 2 
+
+### To calculate results
+By Car ID and Race Type:
+
+POST /api/results
 {
-    "raceName": "quarterfinals",
-    "raceId": 1,
-    "numLanes": 6,
-    "role": "Cub"
+     "sumBy": 10,    
+     "carId": 1, 
+     "raceType: 10,
+     "role": "cub"
 }
-This will try to create a semi final race from the quarterfinals race results for Cubs.  
-'deadheat' gets appended to raceName if deadheats are needed, e.g. "quarterfinalsdeadHeat".  
-If a deadheat is generated, re-run this with raceName = "quarterfinalsdeadHeat".
-Note: not elegant, but deadheat will get appended again if there is more than one deadHeat.  
 
+This will calculate the results of all heat-lane rows matching carId of 1 and raceType of 10 (aka quarterfinals).  In other words, sums up the car's results for all heats in cub quarterfinals.  
+
+All Cars By Race Type:
+POST /api/results
 {
-    "raceName": "semi",
-    "raceId": 1,
-    "numLanes": 6,
-    "role": "Cub"
+     "sumBy": 20,    
+     "carId": 0, 
+     "raceType: 10,
+     "role": "cub"
 }
-This will try to create a final race from the semi race results for Cubs. 
-'deadheat' gets appended to raceName if deadheats are needed, e.g. "semideadHeat".
 
-All races are stored in table "public"."HeatLane".
+This will calculate the results of all heat-lane rows matching raceType of 10 (aka quarterfinals) and role of cub.  In other words, sums up results for each car in all cub quarterfinals.
+
+All Cars in All races by Role:
+POST /api/results
+{
+     "sumBy": 30,    
+     "carId": 0, 
+     "raceType: 0,
+     "role": "cub"
+}
+
+This will calculate the results of all heat-lane rows matching role of cub.  In other words, sums up results for each car in all cub races. 
+
+sumBy mapping:
+10 = sum by carId AND raceType
+20 = sum all cars by raceType
+30 = sum all cars by all races by role
+
+

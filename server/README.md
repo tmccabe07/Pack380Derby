@@ -37,9 +37,9 @@ $ npm run test:cov
 ## API Testing
 
 ### To register
-Create person, then create a car linked to that person
+#Create person, then create a car linked to that person
 
-POST /api/person
+#POST /api/person
 {
     "name": "Jane Doe",
     "den": "8",
@@ -47,7 +47,7 @@ POST /api/person
     "role": "Cub"
 }
 
-POST /api/car
+#POST /api/car
 {
         "name": "25 Car",
         "weight": "5.0",
@@ -55,9 +55,10 @@ POST /api/car
         "image": "someurlhere",
         "racerId": 25
 }
-racerId is the unique id of the person that was created. 
+#racerId is the unique id of the person that was created. 
 
 ### To create races
+
 POST /api/race 
 {
     "numLanes": 6,

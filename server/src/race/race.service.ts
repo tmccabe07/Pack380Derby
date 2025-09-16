@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { CreateRaceDto } from './dto/create-race.dto';
 import { UpdateRaceDto } from './dto/update-race.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -185,6 +185,104 @@ export class RaceService {
     await this.prisma.$queryRaw`DELETE FROM public."Race"`
     await this.prisma.$queryRaw`ALTER SEQUENCE public."Race_id_seq" RESTART WITH 1`;
     return "Race table dropped and sequence restarted";
+  }
+
+  async importRacesFromCSV(fileBuffer: Buffer): Promise<{ success: number; failed: number; errors: string[] }> {
+    const results = {
+      success: 0,
+      failed: 0,
+      errors: [] as string[],
+    };
+
+    try {
+      // Convert buffer to string and normalize line endings
+      const content = fileBuffer.toString('utf-8').replace(/\r\n/g, '\n');
+      console.log('Raw content:', content);
+      
+      // Split into lines and remove empty lines
+      const lines = content.split('\n').filter(line => line.trim().length > 0);
+      console.log('Lines after split:', lines);
+      
+      if (lines.length === 0) {
+        throw new BadRequestException('CSV file is empty');
+      }
+
+      // Validate header
+      const header = lines[0].toLowerCase().trim();
+      console.log('Header:', header);
+      if (header !== 'racename,numlanes,racetype,rank') {
+        throw new BadRequestException(
+          `Invalid CSV header. Expected: 'racename,numlanes,racetype,rank', Got: '${header}'`
+        );
+      }
+
+      // Process each line
+      for (const line of lines.slice(1)) {
+        try {
+          console.log('Processing line:', line);
+          
+          const fields = line.split(',').map(field => field.trim());
+          console.log('Split fields:', fields);
+          
+          if (fields.length !== 4) {
+            throw new Error(`Expected 4 fields, but got ${fields.length} fields`);
+          }
+
+          const [raceName, numLanesStr, raceTypeStr, rank] = fields;
+
+          // Validate required name
+          if (!raceName) {
+            throw new Error('Race name is required');
+          }
+
+          // Convert and validate numeric fields
+          const numLanes = parseInt(numLanesStr);
+          if (isNaN(numLanes) || numLanes <= 0) {
+            throw new Error(`Invalid number of lanes: ${numLanesStr}`);
+          }
+
+          const raceType = parseInt(raceTypeStr);
+          if (isNaN(raceType)) {
+            throw new Error(`Invalid race type: ${raceTypeStr}`);
+          }
+
+          // Validate race type is a valid RaceStage
+          if (!Object.values(RaceStage).includes(raceType)) {
+            throw new Error(`Invalid race type: ${raceType}. Must be a valid RaceStage value`);
+          }
+
+          // Validate rank
+          const validRanks = ['lion', 'tiger', 'wolf', 'bear', 'webelos', 'aol', 'sibling', 'adult'];
+          const normalizedRank = rank.toLowerCase();
+          if (!validRanks.includes(normalizedRank)) {
+            throw new Error(`Invalid rank: ${rank}. Must be one of: ${validRanks.join(', ')}`);
+          }
+
+          // Create race
+          await this.prisma.race.create({
+            data: {
+              raceName,
+              numLanes,
+              raceType,
+              rank: normalizedRank
+            }
+          });
+
+          console.log('Successfully created race:', raceName);
+          results.success++;
+        } catch (error) {
+          console.error('Error processing line:', line, error);
+          results.failed++;
+          results.errors.push(`Failed to import race from line: ${line}. Error: ${error.message}`);
+        }
+      }
+    } catch (error) {
+      console.error('Fatal error during import:', error);
+      throw new BadRequestException(`CSV import failed: ${error.message}`);
+    }
+
+    console.log('Import completed:', results);
+    return results;
   }
 
 }

@@ -20,7 +20,7 @@ import {
   ApiResponse,
   ApiTags,
   ApiConsumes,
-  ApiBody,
+  ApiBody
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateRacerDto } from './dto/create-racer.dto';

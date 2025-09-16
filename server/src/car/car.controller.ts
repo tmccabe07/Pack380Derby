@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, NotFoundException } from '@nestjs/common';
+import { 
+  Controller, 
+  Get, 
+  Post, 
+  Body, 
+  Patch, 
+  Param, 
+  Delete, 
+  ParseIntPipe, 
+  NotFoundException, 
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException
+} from '@nestjs/common';
 import {
   ApiOperation,
   ApiParam,
@@ -6,7 +19,10 @@ import {
   ApiBadRequestResponse,
   ApiResponse,
   ApiTags,
+  ApiConsumes,
+  ApiBody
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CarService } from './car.service';
 import { CreateCarDto } from './dto/create-car.dto';
 import { UpdateCarDto } from './dto/update-car.dto';
@@ -154,4 +170,35 @@ export class CarController {
   async clearCarTable(): Promise<string> {
     return await this.carService.clearCarTable();
   }
+
+  @Post('import')
+    @ApiOperation({ summary: 'Import cars from CSV file' })
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+      schema: {
+        type: 'object',
+        properties: {
+          file: {
+            type: 'string',
+            format: 'binary',
+            description: 'CSV file containing car data'
+          },
+        },
+      },
+    })
+    @UseInterceptors(FileInterceptor('file'))
+    async importRacers(
+      @UploadedFile() file: Express.Multer.File
+    ): Promise<{ success: number; failed: number; errors: string[] }> {
+    
+    if (!file) {
+        throw new BadRequestException('No file uploaded');
+      }
+  
+      if (file.mimetype !== 'text/csv') {
+        throw new BadRequestException('File must be a CSV');
+      }
+      
+      return this.carService.importCarsFromCSV(file.buffer);
+    }
 }

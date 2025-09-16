@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException } from '@nestjs/common';
+import { 
+  Controller, 
+  Get, 
+  Post, 
+  Body, 
+  Patch, 
+  Param, 
+  Delete, 
+  NotFoundException,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException 
+} from '@nestjs/common';
 import {
   ApiOperation,
   ApiParam,
@@ -6,7 +18,10 @@ import {
   ApiBadRequestResponse,
   ApiResponse,
   ApiTags,
+  ApiConsumes,
+  ApiBody
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { HeatLaneService } from './heat-lane.service';
 import { CreateHeatLaneDto } from './dto/create-heat-lane.dto';
 import { UpdateHeatLaneDto } from './dto/update-heat-lane.dto';
@@ -201,4 +216,35 @@ export class HeatLaneController {
   async clearHeatLaneTable(): Promise<string> {
     return await this.heatLaneService.clearHeatLaneTable();
   }
+
+   @Post('import')
+    @ApiOperation({ summary: 'Import heat-lanes from CSV file' })
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+      schema: {
+        type: 'object',
+        properties: {
+          file: {
+            type: 'string',
+            format: 'binary',
+            description: 'CSV file containing heat-lane data'
+          },
+        },
+      },
+    })
+    @UseInterceptors(FileInterceptor('file'))
+    async importRacers(
+      @UploadedFile() file: Express.Multer.File
+    ): Promise<{ success: number; failed: number; errors: string[] }> {
+    
+    if (!file) {
+        throw new BadRequestException('No file uploaded');
+      }
+  
+      if (file.mimetype !== 'text/csv') {
+        throw new BadRequestException('File must be a CSV');
+      }
+      
+      return this.heatLaneService.importHeatLanesFromCSV(file.buffer);
+    }
 }

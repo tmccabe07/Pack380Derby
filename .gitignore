@@ -135,3 +135,8 @@ dist
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Terraform
+.terraform/
+.terraform.lock.hcl
+.tfstate.*

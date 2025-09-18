@@ -13,7 +13,6 @@ import {
 } from '@nestjs/common';
 import {
   ApiOperation,
-  ApiParam,
   ApiCreatedResponse,
   ApiBadRequestResponse,
   ApiResponse,
@@ -26,7 +25,7 @@ import { HeatLaneService } from './heat-lane.service';
 import { CreateHeatLaneDto } from './dto/create-heat-lane.dto';
 import { UpdateHeatLaneDto } from './dto/update-heat-lane.dto';
 import { HeatLane as HeatLaneModel} from '@prisma/client';
-import { HeatLane as HeatLaneEntity } from './entities/heat-lane.entity';
+import { HeatLaneResponseDto } from './dto/heat-lane-response.dto';
 
 @ApiTags('heat-lane')
 @Controller('heat-lane')
@@ -35,43 +34,7 @@ export class HeatLaneController {
 
   @Post()
   @ApiOperation({ summary: 'Create heatlane' })
-  @ApiParam( {
-    name: "lane",
-    type: "Integer",
-    description: "Lane number",
-    example: "1, 2, 3, 4, 5, 6",
-    required: true })
-  @ApiParam( {
-    name: "result",
-    type: "Integer",
-    description: "result of race",
-    example: "1, 2, 3, 4, 5, 6, 99",
-    required: true }) 
-  @ApiParam( {
-    name: "carId",
-    type: "Integer",
-    description: "unique id of the car",
-    example: "1",
-    required: false })  
-  @ApiParam( {
-      name: "heatId",
-      type: "Integer",
-      description: "non-unique id of the heat; unique in context of a race",
-      example: "1",
-      required: false }) 
-  @ApiParam( {
-      name: "raceId",
-      type: "Integer",
-      description: "unique id of the race",
-      example: "1",
-      required: false }) 
-  @ApiParam( {
-      name: "raceType",
-      type: "Integer",
-      description: "race type code",
-      example: "1",
-      required: false }) 
-  @ApiCreatedResponse({ description: 'HeatLane created successfully', type: HeatLaneEntity })
+  @ApiCreatedResponse({ description: 'HeatLane created successfully', type: HeatLaneResponseDto })
   @ApiBadRequestResponse({ description: 'Bad Request' }) 
   async create(@Body() createHeatLaneDto: CreateHeatLaneDto) : Promise<HeatLaneModel> {
     return this.heatLaneService.create(createHeatLaneDto);
@@ -81,7 +44,8 @@ export class HeatLaneController {
   @ApiResponse({
       status: 200,
       description: 'All records',
-      type: HeatLaneEntity,
+      type: HeatLaneResponseDto,
+      isArray: true
   })
   async findAll() : Promise<HeatLaneModel[]> {
     return this.heatLaneService.findAll();
@@ -91,7 +55,7 @@ export class HeatLaneController {
   @ApiResponse({
       status: 200,
       description: 'The found record',
-      type: HeatLaneEntity,
+      type: HeatLaneResponseDto
     })
   async findOne(@Param('id') id: string) : Promise<HeatLaneModel> {
     const oneHeatLane = await this.heatLaneService.findOne(+id);
@@ -105,7 +69,8 @@ export class HeatLaneController {
   @ApiResponse({
       status: 200,
       description: 'The found records based on raceType',
-      type: HeatLaneEntity,
+      type: HeatLaneResponseDto,
+      isArray: true
     })
   async findRaceType(@Param('raceType') raceType: number) : Promise<HeatLaneModel[]> {
     const returnedHeatLanes = await this.heatLaneService.findRaceType(raceType);
@@ -117,49 +82,7 @@ export class HeatLaneController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update heatlane' })
-  @ApiParam( {
-    name: "id",
-    type: "Integer",
-    description: "unique id of the heatlane row",
-    example: "1",
-    required: true })
-  @ApiParam( {
-    name: "lane",
-    type: "Integer",
-    description: "Lane number",
-    example: "1, 2, 3, 4, 5, 6",
-    required: true })
-  @ApiParam( {
-    name: "result",
-    type: "Integer",
-    description: "result of race",
-    example: "1, 2, 3, 4, 5, 6, 99",
-    required: true }) 
-  @ApiParam( {
-    name: "carId",
-    type: "Integer",
-    description: "unique id of the car",
-    example: "1",
-    required: true })  
-  @ApiParam( {
-      name: "heatId",
-      type: "Integer",
-      description: "non-unique id of the heat; unique in context of a race",
-      example: "1",
-      required: true }) 
-  @ApiParam( {
-      name: "raceId",
-      type: "Integer",
-      description: "unique id of the race",
-      example: "1",
-      required: true }) 
-  @ApiParam( {
-      name: "raceType",
-      type: "Integer",
-      description: "race type code",
-      example: "1",
-      required: true }) 
-  @ApiCreatedResponse({ description: 'HeatLane updated successfully', type: HeatLaneEntity })
+  @ApiCreatedResponse({ description: 'HeatLane updated successfully', type: HeatLaneResponseDto })
   @ApiBadRequestResponse({ description: 'Bad Request' }) 
   async update(@Param('id') id: string, @Body() updateHeatLaneDto: UpdateHeatLaneDto) : Promise<HeatLaneModel> {
     const updateHeatLane = await this.heatLaneService.update(+id, updateHeatLaneDto);
@@ -171,21 +94,7 @@ export class HeatLaneController {
 
   @Patch(':id/:result')
   @ApiOperation({ summary: 'Update result of a given heatlane id'})
-  @ApiParam({
-    name: "id",
-    type: "Number",
-    description: "unique id of the heatlane",
-    example: "1",
-    required: true
-  })
-  @ApiParam({
-    name: "result",
-    type: "Number",
-    description: "result of race",
-    example: "1",
-    required: true
-  })
-  @ApiCreatedResponse({ description: 'HeatLane updated successfully', type: HeatLaneEntity })
+  @ApiCreatedResponse({ description: 'HeatLane updated successfully', type: HeatLaneResponseDto })
   @ApiBadRequestResponse({ description: 'Bad Request' }) 
   async updateResult(@Param('id') id: number, @Param('result') result: number) : Promise<HeatLaneModel>{
     const updateHeatLane = await this.heatLaneService.updateResult(id, result);
@@ -200,7 +109,7 @@ export class HeatLaneController {
   @ApiResponse({
     status: 200,
     description: 'The found record was deleted',
-    type: HeatLaneEntity,
+    type: HeatLaneResponseDto
   })
   @ApiBadRequestResponse({ description: 'Bad Request' })
   async remove(@Param('id') id: string) : Promise<HeatLaneModel> {

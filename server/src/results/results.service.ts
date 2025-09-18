@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { CreateResultDto } from './dto/create-result.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { Results as ResultEntity } from './entities/results.entity';
+import { ResultsResponseDto } from './dto/results-response.dto';
 
 @Injectable()
 export class ResultsService {
   
   constructor(private prisma: PrismaService) {}
 
-  async getRaceResults(createResultDto: CreateResultDto) : Promise<ResultEntity[]> {
+  async getRaceResults(createResultDto: CreateResultDto) : Promise<ResultsResponseDto[]> {
     
     const sumBy = createResultDto.sumBy;
     const carId = createResultDto.carId;

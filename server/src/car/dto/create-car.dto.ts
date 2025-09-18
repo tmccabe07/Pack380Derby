@@ -1,5 +1,5 @@
 import { IsString, IsNotEmpty, IsInt } from 'class-validator';
-import { Racer } from "../../racer/entities/racer.entity"
+import { Racer } from "@prisma/client";
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCarDto {

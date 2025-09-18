@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Racer as RacerEntity } from '../../racer/entities/racer.entity';
+import { Racer as RacerModel } from '@prisma/client';
+import { RacerResponseDto } from '../../racer/dto/racer-response.dto';
 
 export class Car {
    
@@ -11,20 +12,14 @@ export class Car {
     
     racerId: number | null;
 
-    @ApiProperty({ required: false, type: RacerEntity })
-    racer?: RacerEntity;
+    @ApiProperty({ required: false, type: () => RacerResponseDto })
+    racer?: RacerModel;
 
     constructor({ racer, ...data }: Partial<Car>) {
-    Object.assign(this, data);
-
-    if (racer) {
-      this.racer = new RacerEntity();
+      Object.assign(this, data);
     }
 
-  }
+    year: number;
 
-  year: number;
-
-  
-  image?: string;
+    image?: string;
 }

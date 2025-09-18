@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Car as CarModel } from '@prisma/client';
 
-export class CarResponseDto {
+export class CarResponseDto implements CarModel {
   @ApiProperty()
   id: number;
 
@@ -8,7 +9,7 @@ export class CarResponseDto {
   name: string;
 
   @ApiProperty()
-  weight: number;
+  weight: string;
 
   @ApiProperty()
   racerId: number;

@@ -12,9 +12,9 @@ import {
 } from '@nestjs/common';
 import {
   ApiOperation,
-  ApiParam,
   ApiCreatedResponse,
   ApiBadRequestResponse,
+  ApiResponse,
   ApiTags,
   ApiConsumes,
   ApiBody
@@ -24,6 +24,7 @@ import { RaceService } from './race.service';
 import { CreateRaceDto } from './dto/create-race.dto';
 import { UpdateRaceDto } from './dto/update-race.dto';
 import { Race } from '@prisma/client';
+import { RaceResponseDto } from './dto/race-response.dto';
 
 @ApiTags('race')
 @Controller('race')
@@ -32,24 +33,45 @@ export class RaceController {
 
   @Get()
   @ApiOperation({ summary: 'Get all races'})
+  @ApiResponse({
+    status: 200,
+    description: 'List of all races',
+    type: RaceResponseDto,
+    isArray: true
+  })
   async findAll(): Promise<Race[]>  {
     return await this.raceService.findAll();
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get race by race id'})
+  @ApiResponse({
+    status: 200,
+    description: 'The found race',
+    type: RaceResponseDto
+  })
   async findOne(@Param('id') id: string): Promise<Race> {
     return await this.raceService.findOne(+id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update race by race id'})
+  @ApiResponse({
+    status: 200,
+    description: 'The updated race',
+    type: RaceResponseDto
+  })
   async update(@Param('id') id: string, @Body() updateRaceDto: UpdateRaceDto) {
     return await this.raceService.update(+id, updateRaceDto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete race by race id'})
+  @ApiResponse({
+    status: 200,
+    description: 'The deleted race',
+    type: RaceResponseDto
+  })
   async remove(@Param('id') id: string) {
     return await this.raceService.remove(+id);
   }
@@ -62,26 +84,7 @@ export class RaceController {
   
   @Post()
   @ApiOperation({ summary: 'Create quarterfinal, semifinal or final race, with heats, including any needed deadheats' })
-  @ApiParam( {
-    name: "raceType",
-    type: "number",
-    description: "race type code to filter races from to create new one",
-    example: "1 (prelim, generate quarterfinal), 10 (quarterfinal, generate semi), 20 (semi, generate final), 30 (final, not used), 40 (quarterfinaldeadheat, generate semi), 50 (semideadheat, generate final)",
-    required: true }) 
-  @ApiParam( {
-    name: "numLanes",
-    type: "Number",
-    description: "number of valid lanes per heat",
-    example: "6",
-    required: true })
-  @ApiParam({
-    name: "role",
-    type: "String",
-    description: "role to filter table by",
-    example: "cub, sibling, adult",
-    required: true
-  })  
-  @ApiCreatedResponse({ description: 'Semi or Final Race created successfully', type: CreateRaceDto })
+  @ApiCreatedResponse({ description: 'Semi or Final Race created successfully', type: RaceResponseDto })
   @ApiBadRequestResponse({ description: 'Bad Request' }) 
   async createRaceAndHeats(@Body() createRaceDto: CreateRaceDto) {
     return await this.raceService.createRaceAndHeats(createRaceDto);

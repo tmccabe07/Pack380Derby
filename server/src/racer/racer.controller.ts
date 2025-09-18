@@ -25,9 +25,9 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateRacerDto } from './dto/create-racer.dto';
 import { UpdateRacerDto } from './dto/update-racer.dto';
-import { Racer as RacerEntity } from './entities/racer.entity';
 import { Racer as RacerModel} from '@prisma/client';
 import { RacerService } from './racer.service';
+import { RacerResponseDto } from './dto/racer-response.dto';
 
 @ApiTags('racer')
 @Controller('racer')
@@ -36,25 +36,7 @@ export class RacerController {
 
   @Post()
   @ApiOperation({ summary: 'Create racer' })
-  @ApiParam({
-    name: "name",
-    type: "String",
-    description: "Full Name of the racer",
-    example: "Jane Doe",
-    required: true })
-  @ApiParam( {
-      name: "den",
-      type: "String",
-      description: "Den of the racer",
-      example: "8",
-      required: false }) 
-  @ApiParam( {
-      name: "rank",
-      type: "String",
-      description: "Rank of the racer",
-      example: "lion, tiger, wolf, bear, webelos, aol, sibling, adult",
-      required: true })  
-  @ApiCreatedResponse({ description: 'racer created successfully', type: RacerEntity })
+  @ApiCreatedResponse({ description: 'racer created successfully', type: RacerResponseDto })
   @ApiBadRequestResponse({ description: 'Bad Request' })
   async create(@Body() createRacerDto: CreateRacerDto): Promise<RacerModel> {
     return this.racerService.createRacer(createRacerDto);
@@ -64,7 +46,8 @@ export class RacerController {
   @ApiResponse({
     status: 200,
     description: 'All records',
-    type: RacerEntity,
+    type: RacerResponseDto,
+    isArray: true
   })
   async findAll(): Promise<RacerModel[]> {
     return this.racerService.findAll();
@@ -74,7 +57,7 @@ export class RacerController {
   @ApiResponse({
     status: 200,
     description: 'The found record',
-    type: RacerEntity,
+    type: RacerResponseDto,
   })
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<RacerModel> {
     const oneRacer = await this.racerService.findOne(+id);
@@ -89,7 +72,7 @@ export class RacerController {
   @ApiResponse({
     status: 200,
     description: 'The found record was deleted',
-    type: RacerEntity,
+    type: RacerResponseDto,
   })
   @ApiBadRequestResponse({ description: 'Bad Request' })
   async remove(@Param('id', ParseIntPipe) id: number) : Promise<RacerModel> {
@@ -102,25 +85,7 @@ export class RacerController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update racer' })
-  @ApiParam( {
-    name: "name",
-    type: "String",
-    description: "Full Name of the racer",
-    example: "Jane Doe",
-    required: true })
-  @ApiParam( {
-      name: "den",
-      type: "String",
-      description: "Den of the racer",
-      example: "8",
-      required: false }) 
-  @ApiParam( {
-      name: "rank",
-      type: "String",
-      description: "Rank of the racer",
-      example: "lion, tiger, wolf, bear, webelos, aol, sibling, adult",
-      required: true })   
-  @ApiCreatedResponse({ description: 'Racer updated successfully', type: RacerEntity })
+  @ApiCreatedResponse({ description: 'Racer updated successfully', type: RacerResponseDto })
   @ApiBadRequestResponse({ description: 'Bad Request' })
   async update(
     @Param('id', ParseIntPipe) id: number,

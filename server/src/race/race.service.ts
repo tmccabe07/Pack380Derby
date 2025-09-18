@@ -252,7 +252,7 @@ export class RaceService {
           }
 
           // Validate rank
-          const validRanks = ['lion', 'tiger', 'wolf', 'bear', 'webelos', 'aol', 'sibling', 'adult'];
+          const validRanks = ['lion', 'tiger', 'wolf', 'bear', 'webelos', 'aol', 'cub', 'sibling', 'adult'];
           const normalizedRank = rank.toLowerCase();
           if (!validRanks.includes(normalizedRank)) {
             throw new Error(`Invalid rank: ${rank}. Must be one of: ${validRanks.join(', ')}`);

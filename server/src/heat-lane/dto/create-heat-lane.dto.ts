@@ -1,6 +1,5 @@
 import { IsNotEmpty, IsInt, IsIn, IsString } from 'class-validator';
-import { Car } from "../../car/entities/car.entity";
-import { Race } from "../../race/entities/race.entity"
+import { Car, Race } from "@prisma/client";
 
 export class CreateHeatLaneDto {
     @IsInt()

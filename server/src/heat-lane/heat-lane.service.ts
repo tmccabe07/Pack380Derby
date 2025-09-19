@@ -8,9 +8,21 @@ import { HeatLane, Prisma } from '@prisma/client';
 export class HeatLaneService {
   constructor(private prisma: PrismaService) {}
   
-  async create(data: Prisma.HeatLaneCreateInput) : Promise<HeatLane> {
+  async create(createHeatLaneDto: CreateHeatLaneDto) : Promise<HeatLane> {
     return await this.prisma.heatLane.create({
-      data,
+      data: {
+        lane: createHeatLaneDto.lane,
+        result: createHeatLaneDto.result,
+        heatId: createHeatLaneDto.heatId,
+        raceType: createHeatLaneDto.raceType,
+        rank: createHeatLaneDto.rank,
+        car: createHeatLaneDto.carId ? {
+          connect: { id: createHeatLaneDto.carId }
+        } : undefined,
+        race: createHeatLaneDto.raceId ? {
+          connect: { id: createHeatLaneDto.raceId }
+        } : undefined
+      },
     });
   }
 
@@ -75,7 +87,7 @@ export class HeatLaneService {
     })
   }
 
-  async update(id: number, updateData: Prisma.HeatLaneUpdateInput) : Promise<HeatLane> {
+  async update(id: number, updateHeatLaneDto: UpdateHeatLaneDto) : Promise<HeatLane> {
     const checkIndex = await this.prisma.heatLane.findUnique({
       where: {
         id: id, 
@@ -90,7 +102,7 @@ export class HeatLaneService {
         where: {
           id: id,
         },
-        data: updateData,
+        data: updateHeatLaneDto,
     });
   }
 
@@ -239,9 +251,9 @@ export class HeatLaneService {
           await this.create({
             lane,
             result,
-            car: carId ? { connect: { id: carId } } : undefined,
+            carId,
             heatId,
-            race: { connect: { id: raceId } },
+            raceId,
             raceType,
             rank: normalizedRank
           });

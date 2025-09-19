@@ -21,14 +21,16 @@ export class CreateCarDto {
 
     @ApiProperty({ required: false, nullable: true })
     @IsInt()
-    racerId: Racer["id"];
+    racerId?: number;
 
     @ApiProperty({
         example: '2025',
         description: 'The 4 digit year that this car raced',
+        required: false,
+        nullable: true
     })
     @IsInt()
-    year: number;
+    year?: number;
 
     @ApiProperty({
         example: '...',

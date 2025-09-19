@@ -2,14 +2,14 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { CreateCarDto } from './dto/create-car.dto';
 import { UpdateCarDto } from './dto/update-car.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { Car, Prisma } from '@prisma/client';
+import { Car } from '@prisma/client';
 
 
 @Injectable()
 export class CarService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: Prisma.CarCreateInput) : Promise<Car> {
+  async create(data: CreateCarDto) : Promise<Car> {
     return await this.prisma.car.create({
       data,
     });
@@ -60,7 +60,7 @@ export class CarService {
     return oneValue;
  }
 
-  async update(id: number, updateData: Prisma.CarUpdateInput) : Promise<Car> {
+  async update(id: number, updateCarDto: UpdateCarDto) : Promise<Car> {
     const checkIndex = await this.prisma.car.findUnique({
       where: {
         id: id, 
@@ -75,7 +75,7 @@ export class CarService {
         where: {
           id: id,
         },
-        data: updateData,
+        data: updateCarDto,
     });
   }
 
@@ -173,13 +173,14 @@ export class CarService {
           }
 
           // Create car
-          await this.create({
+          const carDto: CreateCarDto = {
             name,
-            weight: weight || null,
-            racer: racerId ? { connect: { id: racerId } } : undefined,
-            year: year || null,
-            image: image || null
-          });
+            weight,
+            racerId: racerId || undefined,
+            year: year || undefined,
+            image,
+          };
+          await this.create(carDto);
 
           console.log('Successfully created car:', name);
           results.success++;

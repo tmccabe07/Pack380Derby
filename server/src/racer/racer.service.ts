@@ -1,18 +1,20 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Racer, Prisma } from '@prisma/client';
+import { Racer } from '@prisma/client';
+import { CreateRacerDto } from './dto/create-racer.dto';
+import { UpdateRacerDto } from './dto/update-racer.dto';
 
 @Injectable()
 export class RacerService {
   constructor(private prisma: PrismaService) {}
 
-  async createRacer(data: Prisma.RacerCreateInput): Promise<Racer> {
+  async createRacer(data: CreateRacerDto): Promise<Racer> {
     return await this.prisma.racer.create({
       data,
     });
   }
 
-  async update(id: number, updateData: Prisma.RacerUpdateInput): Promise<Racer> {
+  async update(id: number, updateData: UpdateRacerDto): Promise<Racer> {
     const checkIndex = await this.prisma.racer.findUnique({
       where: {
         id: id, 
@@ -137,7 +139,7 @@ export class RacerService {
           // Create racer
           await this.createRacer({
             name,
-            den: den || undefined, // Handle empty den values
+            den: den, 
             rank: normalizedRank,
           });
 

@@ -12,7 +12,7 @@ export class CreateHeatLaneDto {
     result: number;
     
     @IsInt()
-    carId: Car["id"];
+    carId: Car["id"] | null;
 
     @IsInt()
     heatId: number;

@@ -2,8 +2,8 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { CreateRaceDto } from './dto/create-race.dto';
 import { UpdateRaceDto } from './dto/update-race.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { Car, HeatLane, Race } from '@prisma/client';
-import { RaceStage, RaceResult, RacerType } from '../common/types/race.types';
+import { Race } from '@prisma/client';
+import { RaceStage, RacerType } from '../common/types/race.types';
 import { RaceProgressionService } from './services/race-progression.service';
 import { RaceGenerationService } from './services/race-generation.service';
 

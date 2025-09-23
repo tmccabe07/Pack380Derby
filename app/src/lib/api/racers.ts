@@ -68,3 +68,11 @@ export async function deleteRacerById(id?: string): Promise<void> {
     throw new Error("Failed to delete Racer");
   }
 }
+
+export async function searchRacers(query: string): Promise<Racer[]> {
+  const res = await fetch(`${DERBY_API_URL}/api/racer/search?q=${encodeURIComponent(query)}`);
+  if (!res.ok) {
+    throw new Error("Failed to search Racers");
+  }
+  return res.json();
+}

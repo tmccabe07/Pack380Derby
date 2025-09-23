@@ -14,9 +14,12 @@ export interface Car {
 }
 
 
-// Patch fetchCars to attach the getter to each car
-export async function fetchCars() {
-  const res = await fetch(`${DERBY_API_URL}/api/car`);
+// Patch fetchCars to optionally filter by racerId
+export async function fetchCars(racerId?: string) {
+  const url = racerId
+    ? `${DERBY_API_URL}/api/car?racerId=${encodeURIComponent(racerId)}`
+    : `${DERBY_API_URL}/api/car`;
+  const res = await fetch(url);
   if (!res.ok) {
     throw new Error("Failed to fetch cars");
   }
@@ -24,10 +27,11 @@ export async function fetchCars() {
   // Fetch and attach person for each car if not present
   await Promise.all(
     cars.map(async (car) => {
-      if (!car.racer && car.personId) {
+      if (!car.racer && car.racerId) {
         try {
-          car.racer = await fetchRacerById(car.personId);
-          car.image = pinewoodKit;
+          car.racer = await fetchRacerById(car.racerId);
+          // default to pinewood kit if no image
+          car.image = car.image || pinewoodKit;
         } catch (e) {
           car.racer = undefined;
         }

@@ -1,6 +1,8 @@
 "use client";
 
 import { fetchRacerById, deleteRacerById, Racer } from "@/lib/api/racers";
+import { fetchCars, Car } from "@/lib/api/cars";
+import CarCard from "@/components/cars/CarCard";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import RacerCard from "@/components/racers/RacerCard";
@@ -11,13 +13,14 @@ export default function RacerViewPage({ params }: { params: Promise<{ id: string
   const { id }= use(params);
 
   const [racer, setRacer] = useState<Racer | null>(null);
+  const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     let ignore = false;
-    async function loadRacer() {
+    async function loadRacerAndCars() {
       setLoading(true);
       setError(null);
       try {
@@ -30,9 +33,12 @@ export default function RacerViewPage({ params }: { params: Promise<{ id: string
         setError(null);
         // Fetch the racer by ID
         const found = await fetchRacerById(id);
+        // Fetch cars for this racer only
+        const carsForRacer = await fetchCars(id);
         if (!ignore) {
           if (found) setRacer(found);
-          else setError("Car not found");
+          else setError("Racer not found");
+          setCars(carsForRacer);
         }
       } catch {
         if (!ignore) setError("Failed to load racer");
@@ -40,7 +46,7 @@ export default function RacerViewPage({ params }: { params: Promise<{ id: string
         if (!ignore) setLoading(false);
       }
     }
-    loadRacer();
+    loadRacerAndCars();
     return () => { ignore = true; };
   }, [id]);
 
@@ -63,6 +69,16 @@ export default function RacerViewPage({ params }: { params: Promise<{ id: string
     <Layout>
       <div className="max-w-xl mx-auto mt-8">
         <RacerCard racer={racer} />
+        <h2 className="mt-8 mb-2 text-xl font-bold">Cars</h2>
+        {cars.length === 0 ? (
+          <div className="text-gray-500">No cars registered for this racer.</div>
+        ) : (
+          <div className="space-y-4">
+            {cars.map(car => (
+              <CarCard key={car.id} car={car} />
+            ))}
+          </div>
+        )}
         <button
           onClick={handleDelete}
           className="mt-6 bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700"

@@ -2,7 +2,7 @@
 import { fetchCars, Car } from "@/lib/api/cars";
 import { useEffect, useState } from "react";
 
-export default function HeatForm({ onCreate, lanes = 6 }: { onCreate: (entries: any[]) => void, lanes?: number }) {
+export default function HeatForm({ onCreate = () => {}, lanes = 6 }: { onCreate?: (entries: any[]) => void, lanes?: number }) {
   const [entries, setEntries] = useState<{ lane: number; carId: string }[]>(
     Array.from({ length: lanes }, (_, i) => ({ lane: i + 1, carId: "" }))
   );
@@ -57,7 +57,7 @@ export default function HeatForm({ onCreate, lanes = 6 }: { onCreate: (entries: 
                 value={car.id}
                 disabled={selectedCarIds.includes(car.id) && entry.carId !== car.id}
               >
-                {car.name} ({car.racer?.name || car.personId})
+                {car.name} ({car.racer?.name || car.racerId})
               </option>
             ))}
           </select>

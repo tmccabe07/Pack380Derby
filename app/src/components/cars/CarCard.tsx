@@ -13,7 +13,7 @@ export default function CarCard({ car }: { car: Car }) {
         <div className="text-sm">Year: {car.year}</div>
         <div className="text-sm">Weight: {car.weight}</div>
         <div className="text-sm">ID: {car.id}</div>
-        <div className="text-sm">Racer ID: {car.personId}</div>
+        <div className="text-sm">Racer ID: {car.racerId}</div>
         {car.image && (
           <div className="mt-2">
             <Image src={car.image} alt={car.name} width={128} height={80} className="w-32 h-20 object-cover rounded" />

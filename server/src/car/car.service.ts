@@ -136,12 +136,12 @@ export class CarService {
       for (const line of lines.slice(1)) {
         try {
           console.log('Processing line:', line);
-          
-          const fields = line.split(',').map(field => field.trim());
+          const fields = line.split(',').map((field) => field.trim());
           console.log('Split fields:', fields);
-          
           if (fields.length !== 5) {
-            throw new Error(`Expected 5 fields, but got ${fields.length} fields`);
+            throw new Error(
+              `Expected 5 fields, but got ${fields.length} fields`,
+            );
           }
 
           const [name, weight, racerIdStr, yearStr, image] = fields;
@@ -187,7 +187,9 @@ export class CarService {
         } catch (error) {
           console.error('Error processing line:', line, error);
           results.failed++;
-          results.errors.push(`Failed to import car from line: ${line}. Error: ${error.message}`);
+          results.errors.push(
+            `Failed to import car from line: ${line}. Error: ${error.message}`,
+          );
         }
       }
     } catch (error) {
@@ -197,5 +199,14 @@ export class CarService {
 
     console.log('Import completed:', results);
     return results;
+  }
+
+  async findAllByRacerId(racerId: string): Promise<Car[]> {
+    return await this.prisma.car.findMany({
+      where: {
+        racerId: Number(racerId),
+      },
+      orderBy: [{ id: 'asc' }],
+    });
   }
 }

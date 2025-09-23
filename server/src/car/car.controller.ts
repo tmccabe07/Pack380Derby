@@ -10,7 +10,8 @@ import {
   NotFoundException, 
   UseInterceptors,
   UploadedFile,
-  BadRequestException
+  BadRequestException,
+  Query
 } from '@nestjs/common';
 import { CarResponseDto } from './dto/car-response.dto';
 import {
@@ -42,14 +43,17 @@ export class CarController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all cars' })
+  @ApiOperation({ summary: 'Get all cars (optionally filter by racerId)' })
   @ApiResponse({
-      status: 200,
-      description: 'All records',
-      type: CarResponseDto,
-      isArray: true
+    status: 200,
+    description: 'All records',
+    type: CarResponseDto,
+    isArray: true,
   })
-  async findAll() : Promise<CarModel[]> {
+  async findAll(@Query('racerId') racerId?: string): Promise<CarModel[]> {
+    if (racerId) {
+      return this.carService.findAllByRacerId(racerId);
+    }
     return this.carService.findAll();
   }
 

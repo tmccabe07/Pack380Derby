@@ -11,7 +11,6 @@ export default function RacerForm({ racer: initialRacer, onSubmit }: RacerFormPr
   const [racer, setRacer] = useState<Racer>(
     initialRacer || {
       name: "",
-      role: "cub",
       rank: "lion",
       den: "",
     }
@@ -38,20 +37,6 @@ export default function RacerForm({ racer: initialRacer, onSubmit }: RacerFormPr
           onChange={(e) => handleChange("name", e.target.value)}
           required
         />
-      </div>
-
-      <div>
-        <label  htmlFor="role" className="block text-sm font-bold mb-1">Role</label>
-        <select
-          id="role"
-          className="border p-2 w-full"
-          value={racer.role}
-          onChange={(e) => handleChange("role", e.target.value as Racer["role"])}
-        >
-          <option value="cub">Cub</option>
-          <option value="sibling">Sibling</option>
-          <option value="adult">Adult</option>
-        </select>
       </div>
 
       <div>

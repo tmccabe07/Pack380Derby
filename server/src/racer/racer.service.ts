@@ -34,6 +34,16 @@ export class RacerService {
 
   }
 
+  async searchByName(q: string): Promise<Racer[]> {
+    return this.prisma.racer.findMany({
+      where: {
+        name: {
+          contains: q,
+          mode: 'insensitive',
+        },
+      },
+    });
+  }
   async findAll() : Promise<Racer[]> {
     return this.prisma.racer.findMany({
       orderBy: [

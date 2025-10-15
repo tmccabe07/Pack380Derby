@@ -38,22 +38,102 @@ $ npm run test:cov
 
 ### Competition Management
 
-#### Set number of lanes
-POST /api/competition/lanes
+#### Lane Configuration
+
+##### Get complete lane configuration
+GET /api/competition/configuration
+Returns: { numLanes: 6, usableLanes: [1, 2, 3, 4, 5, 6], usableLaneCount: 6 }
+
+##### Set complete lane configuration
+POST /api/competition/configuration
+{
+    "numLanes": 6,
+    "usableLanes": [1, 2, 3, 4, 5, 6]
+}
+
+##### Update complete lane configuration
+PUT /api/competition/configuration
+{
+    "numLanes": 4,
+    "usableLanes": [1, 2, 3, 4]
+}
+
+#### Total Lanes Management
+
+##### Get total number of lanes
+GET /api/competition/total-lanes
+Returns: { numLanes: 6 }
+
+##### Set total number of lanes
+POST /api/competition/total-lanes
 {
     "numLanes": 6
 }
 
-#### Get number of lanes
-GET /api/competition/lanes
-
-#### Update number of lanes
-PUT /api/competition/lanes
+##### Update total number of lanes
+PUT /api/competition/total-lanes
 {
     "numLanes": 4
 }
 
-### To register
+#### Usable Lanes Management
+
+##### Get usable lanes
+GET /api/competition/usable-lanes
+Returns: { usableLanes: [1, 2, 3, 4], usableLaneCount: 4 }
+
+##### Set usable lanes
+POST /api/competition/usable-lanes
+{
+    "usableLanes": [1, 2, 3, 4]
+}
+
+##### Update usable lanes
+PUT /api/competition/usable-lanes
+{
+    "usableLanes": [1, 3, 5]
+}
+
+#### Race Multipliers
+
+##### Get all multipliers
+GET /api/competition/multipliers
+Returns: { semifinalMultiplier: 2, finalMultiplier: 1 }
+
+##### Get semifinal multiplier
+GET /api/competition/semifinal-multiplier
+Returns: { semifinalMultiplier: 2 }
+
+##### Set semifinal multiplier
+POST /api/competition/semifinal-multiplier
+{
+    "multiplier": 2
+}
+
+##### Update semifinal multiplier
+PUT /api/competition/semifinal-multiplier
+{
+    "multiplier": 3
+}
+
+##### Get final multiplier
+GET /api/competition/final-multiplier
+Returns: { finalMultiplier: 1 }
+
+##### Set final multiplier
+POST /api/competition/final-multiplier
+{
+    "multiplier": 1
+}
+
+##### Update final multiplier
+PUT /api/competition/final-multiplier
+{
+    "multiplier": 1
+}
+
+### Registration
+
 Create person, then create a car linked to that person
 
 POST /api/person
@@ -74,17 +154,17 @@ POST /api/car
 }
 racerId is the unique id of the person that was created. 
 
-### To create races
+### Race Creation
+
 POST /api/raceandheats 
 {
     "raceType": "1",
-    "numLanes": 6,
     "role": "cub"
 }
 
-This will create quarternfinals race with a unique race id and as many heats as necessary to race all of the cars associated with the role of cub with the number of lanes specified as 6 per heat.  Repeat this with different raceType to create multiple races with heats. 
+This will create quarternfinals race with a unique race id and as many heats as necessary to race all of the cars associated with the role of cub. The number of lanes per heat is automatically determined from the competition configuration.
 
-Note: The numLanes parameter will now use the value set via the competition API if not specified.
+Note: The numLanes parameter is no longer required as it uses the usable lanes configured via the competition API.
 
 raceType mapping:
 1 = prelim, which will generate a quarterfinal
@@ -96,13 +176,15 @@ raceType mapping:
 
 All heats are stored in table "public"."HeatLane".  Race metadata is stored in "public"."Race".
 
-### To update results
+### Results Management
+
+#### Update results
 POST /api/heat-lane/:id/:result
 e.g. POST /api/heat-lane/1/2
 
 This will update the heat-lane row id of 1 with the result of 2 
 
-### To calculate results
+#### Calculate results
 By Car ID and Race Type:
 
 POST /api/results
@@ -141,5 +223,14 @@ sumBy mapping:
 10 = sum by carId AND raceType
 20 = sum all cars by raceType
 30 = sum all cars by all races by role
+
+## Competition Configuration Notes
+
+- **Total Lanes**: Defines the physical number of lanes on the track (1-6)
+- **Usable Lanes**: Array of lane numbers that are actually usable for racing
+- **Semifinal Multiplier**: Determines how many cars advance from quarterfinals to semifinals (multiplier × lanes per heat)
+- **Final Multiplier**: Determines how many cars advance from semifinals to finals (multiplier × lanes per heat)
+
+The race generation system automatically uses the configured usable lanes and multipliers, so races will only use the lanes specified in the usable lanes configuration and advancement will follow the configured multipliers.
 
 

@@ -3,7 +3,7 @@ import { RaceStage, RacerType, RaceResult } from '../../common/types/race.types'
 import { RaceConfiguration } from '../types/race-config.types';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
-import { prependListener } from 'process';
+import { CompetitionService } from '../../competition/competition.service';
 
 @Injectable()
 export class RaceProgressionService {
@@ -21,33 +21,35 @@ export class RaceProgressionService {
       deadheatStage: RaceStage.QUARTER_DEADHEAT,
     },
     [RaceStage.SEMIFINAL]: {
-      heatMultiplier: 2, // 2 heats worth of cars advance
+      heatMultiplier: 2, // Will be overridden by competition service
       stageName: 'semifinal',
       nextStage: RaceStage.FINAL,
       deadheatStage: RaceStage.SEMI_DEADHEAT,
     },
     [RaceStage.FINAL]: {
-      heatMultiplier: 1, // 1 heat worth of cars advance (winner)
+      heatMultiplier: 1, //Will be overridden by competition service
       stageName: 'final',
       nextStage: null,
       deadheatStage: null,
     },
     [RaceStage.QUARTER_DEADHEAT]: {
-      heatMultiplier: 2,
+      heatMultiplier: 2, //Will be overridden by competition service
       stageName: 'quarter-deadheat',
       nextStage: RaceStage.SEMIFINAL,
       deadheatStage: RaceStage.QUARTER_DEADHEAT,
     },
     [RaceStage.SEMI_DEADHEAT]: {
-      heatMultiplier: 1,
+      heatMultiplier: 1, //Will be overridden by competition service
       stageName: 'semi-deadheat',
       nextStage: RaceStage.FINAL,
       deadheatStage: RaceStage.SEMI_DEADHEAT,
     }
   };
 
-  constructor(private configService: ConfigService,
-    private prisma: PrismaService
+  constructor(
+    private configService: ConfigService,
+    private prisma: PrismaService,
+    private competitionService: CompetitionService
   ) {}
 
   getConfiguration(stage: RaceStage, lanesPerHeat: number): RaceConfiguration {
@@ -85,18 +87,31 @@ export class RaceProgressionService {
       });
 
     if (stage === RaceStage.QUARTERFINAL) {
-      
       // Calculate total heats needed (rounded up to next integer)
       const totalHeats = Math.ceil(totalCars / lanesPerHeat);
       
       return totalHeats * lanesPerHeat; 
     }
 
-    //For Semis and Finals, use environment variables if available, otherwise use default multipliers
-    const multiplier = this.configService.get<number>(
-      `RACE_ADVANCE_MULTIPLIER_${stage}`,
-      config.heatMultiplier
-    );
+    // Use competition service multipliers for semifinals, finals, and their deadheats
+    let multiplier: number;
+    if (stage === RaceStage.SEMIFINAL) {
+      multiplier = this.competitionService.getSemifinalMultiplier();
+    } else if (stage === RaceStage.FINAL) {
+      multiplier = this.competitionService.getFinalMultiplier();
+    } else if (stage === RaceStage.QUARTER_DEADHEAT) {
+      // Use semifinal multiplier for quarter deadheat
+      multiplier = this.competitionService.getSemifinalMultiplier();
+    } else if (stage === RaceStage.SEMI_DEADHEAT) {
+      // Use final multiplier for semi deadheat
+      multiplier = this.competitionService.getFinalMultiplier();
+    } else {
+      // For other stages, use environment variables if available, otherwise use default multipliers
+      multiplier = this.configService.get<number>(
+        `RACE_ADVANCE_MULTIPLIER_${stage}`,
+        config.heatMultiplier
+      );
+    }
  
     if (totalCars <= lanesPerHeat * multiplier) {
       return lanesPerHeat; // Only one heat worth can advance

@@ -6,17 +6,20 @@ import { Race } from '@prisma/client';
 import { RaceStage, RacerType } from '../common/types/race.types';
 import { RaceProgressionService } from './services/race-progression.service';
 import { RaceGenerationService } from './services/race-generation.service';
+import { CompetitionService } from '../competition/competition.service';
 
 @Injectable()
 export class RaceService {
 
   constructor(private prisma: PrismaService, 
     private progression: RaceProgressionService,
-    private generator: RaceGenerationService) {}
+    private generator: RaceGenerationService,
+    private competitionService: CompetitionService) {}
 
   async createRaceAndHeats(createRaceDto: CreateRaceDto) {
-    const { numLanes, raceType, rank, groupByRank } = createRaceDto;
+    const { raceType, rank, groupByRank } = createRaceDto;
     const currentStage = raceType as RaceStage;
+    const numLanes = this.competitionService.getNumLanes();
     
     // To start everything, create the quarterfinals
     if (currentStage === RaceStage.PRELIMINARY) {

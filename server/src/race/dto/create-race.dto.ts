@@ -1,10 +1,6 @@
 import { IsString, IsNotEmpty, IsInt, IsIn, IsBoolean } from 'class-validator';
 
 export class CreateRaceDto {
-
-    @IsInt()
-    numLanes: number;
-
     @IsInt()
     @IsNotEmpty()
     raceType: number;

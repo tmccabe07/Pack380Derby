@@ -36,6 +36,23 @@ $ npm run test:cov
 
 ## API Testing
 
+### Competition Management
+
+#### Set number of lanes
+POST /api/competition/lanes
+{
+    "numLanes": 6
+}
+
+#### Get number of lanes
+GET /api/competition/lanes
+
+#### Update number of lanes
+PUT /api/competition/lanes
+{
+    "numLanes": 4
+}
+
 ### To register
 #Create person, then create a car linked to that person
 
@@ -70,6 +87,8 @@ POST /api/race
 This will create quarternfinals race with a unique race id and as many heats as necessary to race all of the cars associated with the cub with the number of lanes specified as 6 per heat.  Repeat this with different raceType to create multiple races with heats. 
 
 numLanes: number of lanes that are active in a race.  Max is 6.
+
+Note: The numLanes parameter will now use the value set via the competition API if not specified.
 
 raceType mapping:
 1 = prelim, which will generate a quarterfinal

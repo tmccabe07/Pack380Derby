@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CompetitionService } from '../../competition/competition.service';
 import { RaceStage, RacerType } from '../../common/types/race.types';
 import { Race, Car, HeatLane } from '@prisma/client';
 import { RaceProgressionService } from './race-progression.service';
@@ -8,7 +9,8 @@ import { RaceProgressionService } from './race-progression.service';
 export class RaceGenerationService {
   constructor(
     private prisma: PrismaService,
-    private progression: RaceProgressionService
+    private progression: RaceProgressionService,
+    private competitionService: CompetitionService
   ) {}
 
   private async shuffleCars(cars: Car[]): Promise<Car[]> {
@@ -47,9 +49,9 @@ export class RaceGenerationService {
 
   async createQuarterfinalRace(
     racerType: RacerType, 
-    lanesPerHeat: number,
     groupByRank?: boolean
   ): Promise<Race | Race[]> {
+    
     // Get all eligible cars for the given racer type
     const cars = await this.prisma.car.findMany({
       where: {
@@ -73,7 +75,6 @@ export class RaceGenerationService {
       return this.createRace(
         RaceStage.QUARTERFINAL,
         cars,
-        lanesPerHeat,
         racerType
       );
     }
@@ -94,7 +95,6 @@ export class RaceGenerationService {
       const race = await this.createRace(
         RaceStage.QUARTERFINAL,
         rankCars,
-        lanesPerHeat,
         rank as RacerType
       );
       races.push(race);
@@ -106,16 +106,20 @@ export class RaceGenerationService {
   async createRace(
     stage: RaceStage,
     cars: Car[],
-    lanesPerHeat: number,
     racerType: RacerType,
   ): Promise<Race> {
-    const config = this.progression.getConfiguration(stage, lanesPerHeat);
+    const usableLanes = this.competitionService.getUsableLanes();
+     // Use usable lane count instead of the passed parameter
+    const effectiveLanesPerHeat = this.competitionService.getUsableLaneCount();
+    
+    
+    const config = this.progression.getConfiguration(stage, effectiveLanesPerHeat);
     
     // Create the race record
     const race = await this.prisma.race.create({
       data: {
         raceName: config.stageName,
-        numLanes: lanesPerHeat,
+        numLanes: effectiveLanesPerHeat,
         raceType: stage,
         rank: racerType
       }
@@ -123,26 +127,29 @@ export class RaceGenerationService {
 
     // Optionally fill lanes with blank cars if needed
     let processedCars = cars;
-    processedCars = await this.fillLanes(cars, lanesPerHeat);
+    processedCars = await this.fillLanes(cars, effectiveLanesPerHeat);
   
     // Optionally shuffle the cars
     const finalCars = await this.shuffleCars(processedCars);
 
     // Create heats
-    const numHeats = Math.ceil(finalCars.length / lanesPerHeat);
+    const numHeats = Math.ceil(finalCars.length / effectiveLanesPerHeat);
     const heatLanes: HeatLane[] = [];
 
     for (let heatIndex = 0; heatIndex < numHeats; heatIndex++) {
       const heatCars = finalCars.slice(
-        heatIndex * lanesPerHeat,
-        (heatIndex + 1) * lanesPerHeat
+        heatIndex * effectiveLanesPerHeat,
+        (heatIndex + 1) * effectiveLanesPerHeat
       );
 
       for (let laneIndex = 0; laneIndex < heatCars.length; laneIndex++) {
+        // Use the actual usable lane number instead of sequential numbering
+        const actualLaneNumber = usableLanes[laneIndex] || (laneIndex + 1);
+        
         const heatLane = await this.prisma.heatLane.create({
           data: {
             result: 0,
-            lane: laneIndex + 1,
+            lane: actualLaneNumber,
             carId: heatCars[laneIndex].id,
             heatId: heatIndex,
             raceId: race.id,
@@ -160,9 +167,9 @@ export class RaceGenerationService {
   async createDeadheatRace(
     tiedCarIds: number[],
     stage: RaceStage,
-    lanesPerHeat: number,
     racerType: RacerType
   ): Promise<Race> {
+    
     const cars = await this.prisma.car.findMany({
       where: {
         id: {
@@ -178,7 +185,6 @@ export class RaceGenerationService {
     return this.createRace(
       stage, 
       cars, 
-      lanesPerHeat, 
       racerType, 
     );
   }
@@ -186,9 +192,9 @@ export class RaceGenerationService {
   async createNextStageRace(
     advancingCarIds: number[],
     stage: RaceStage,
-    lanesPerHeat: number,
     racerType: RacerType
   ): Promise<Race> {
+    
     const cars = await this.prisma.car.findMany({
       where: {
         id: {
@@ -197,6 +203,6 @@ export class RaceGenerationService {
       }
     });
 
-    return this.createRace(stage, cars, lanesPerHeat, racerType);
+    return this.createRace(stage, cars, racerType);
   }
 }

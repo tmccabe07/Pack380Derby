@@ -9,6 +9,7 @@ import { HeatLaneModule } from './heat-lane/heat-lane.module';
 import { RaceModule } from './race/race.module';
 import { ResultsModule } from './results/results.module';
 import { VotingModule } from './voting/voting.module';
+import { CompetitionModule } from './competition/competition.module';
 import { configuration } from '../configuration';
 
 @Module({
@@ -18,7 +19,7 @@ import { configuration } from '../configuration';
       isGlobal: true,
       load: [configuration] 
     }
-  ), PrismaModule, CarModule, HeatLaneModule, RaceModule, ResultsModule, VotingModule],
+  ), PrismaModule, CarModule, HeatLaneModule, RaceModule, ResultsModule, VotingModule, CompetitionModule],
   controllers: [AppController],
   providers: [AppService],
 })

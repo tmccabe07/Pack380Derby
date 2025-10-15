@@ -23,7 +23,7 @@ export class RaceService {
     
     // To start everything, create the quarterfinals
     if (currentStage === RaceStage.PRELIMINARY) {
-      return this.generator.createQuarterfinalRace(rank as RacerType, numLanes, groupByRank);
+      return this.generator.createQuarterfinalRace(rank as RacerType, groupByRank);
     }
 
     // Get results from this current stage and its corresponding deadheat stage
@@ -57,7 +57,6 @@ export class RaceService {
       return this.generator.createDeadheatRace(
         tiedCarIds,
         deadheatStage,
-        numLanes,
         rank as RacerType
       );
     }
@@ -67,7 +66,6 @@ export class RaceService {
       return this.generator.createNextStageRace(
         advancing,
         nextStage,
-        numLanes,
         rank as RacerType
       );
 

@@ -21,9 +21,9 @@ export class RaceService {
     const currentStage = raceType as RaceStage;
     const numLanes = this.competitionService.getNumLanes();
     
-    // To start everything, create the quarterfinals
-    if (currentStage === RaceStage.PRELIMINARY) {
-      return this.generator.createQuarterfinalRace(rank as RacerType, groupByRank);
+    // To start everything, create the PRELIMINARY
+    if (currentStage === RaceStage.INITIALIZE) {
+      return this.generator.createPreliminaryRace(rank as RacerType, groupByRank);
     }
 
     // Get results from this current stage and its corresponding deadheat stage

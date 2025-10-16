@@ -1,10 +1,10 @@
 // Common enums used across the application
 export enum RaceStage {
-  PRELIMINARY = 1,
-  QUARTERFINAL = 10,
+  INITIALIZE = 1,
+  PRELIMINARY = 10,
   SEMIFINAL = 20,
   FINAL = 30,
-  QUARTER_DEADHEAT = 40,
+  PRELIM_DEADHEAT = 40,
   SEMI_DEADHEAT = 50
 }
 

@@ -8,17 +8,17 @@ import { CompetitionService } from '../../competition/competition.service';
 @Injectable()
 export class RaceProgressionService {
   private readonly defaultConfigs: Record<RaceStage, Omit<RaceConfiguration, 'lanesPerHeat'>> = {
-    [RaceStage.PRELIMINARY]: {
+    [RaceStage.INITIALIZE]: {
       heatMultiplier: Infinity, // All cars advance
-      stageName: 'preliminary',
-      nextStage: RaceStage.QUARTERFINAL,
+      stageName: 'initialize',
+      nextStage: RaceStage.PRELIMINARY,
       deadheatStage: null,
     },
-    [RaceStage.QUARTERFINAL]: {
-      heatMultiplier: 4, // 4 heats worth of cars advance
-      stageName: 'quarterfinal',
+    [RaceStage.PRELIMINARY]: {
+      heatMultiplier: 4, // 4 heats worth of cars advance; overriden based on numlanes
+      stageName: 'preliminary',
       nextStage: RaceStage.SEMIFINAL,
-      deadheatStage: RaceStage.QUARTER_DEADHEAT,
+      deadheatStage: RaceStage.PRELIM_DEADHEAT,
     },
     [RaceStage.SEMIFINAL]: {
       heatMultiplier: 2, // Will be overridden by competition service
@@ -32,11 +32,11 @@ export class RaceProgressionService {
       nextStage: null,
       deadheatStage: null,
     },
-    [RaceStage.QUARTER_DEADHEAT]: {
+    [RaceStage.PRELIM_DEADHEAT]: {
       heatMultiplier: 2, //Will be overridden by competition service
-      stageName: 'quarter-deadheat',
+      stageName: 'prelim-deadheat',
       nextStage: RaceStage.SEMIFINAL,
-      deadheatStage: RaceStage.QUARTER_DEADHEAT,
+      deadheatStage: RaceStage.PRELIM_DEADHEAT,
     },
     [RaceStage.SEMI_DEADHEAT]: {
       heatMultiplier: 1, //Will be overridden by competition service
@@ -70,11 +70,6 @@ export class RaceProgressionService {
       throw new Error(`Invalid race stage: ${stage}`);
     }
 
-    // For preliminary races, all cars advance
-    if (stage === RaceStage.PRELIMINARY) {
-      return Infinity;
-    }
-
     const totalCars = await this.prisma.car.count({
         where : {
           racer: {
@@ -86,7 +81,7 @@ export class RaceProgressionService {
         }
       });
 
-    if (stage === RaceStage.QUARTERFINAL) {
+    if (stage === RaceStage.PRELIMINARY) {
       // Calculate total heats needed (rounded up to next integer)
       const totalHeats = Math.ceil(totalCars / lanesPerHeat);
       
@@ -99,8 +94,8 @@ export class RaceProgressionService {
       multiplier = this.competitionService.getSemifinalMultiplier();
     } else if (stage === RaceStage.FINAL) {
       multiplier = this.competitionService.getFinalMultiplier();
-    } else if (stage === RaceStage.QUARTER_DEADHEAT) {
-      // Use semifinal multiplier for quarter deadheat
+    } else if (stage === RaceStage.PRELIM_DEADHEAT) {
+      // Use semifinal multiplier for prelim deadheat
       multiplier = this.competitionService.getSemifinalMultiplier();
     } else if (stage === RaceStage.SEMI_DEADHEAT) {
       // Use final multiplier for semi deadheat

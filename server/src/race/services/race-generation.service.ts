@@ -47,7 +47,7 @@ export class RaceGenerationService {
     return filledCars;
   }
 
-  async createQuarterfinalRace(
+  async createPreliminaryRace(
     racerType: RacerType, 
     groupByRank?: boolean
   ): Promise<Race | Race[]> {
@@ -73,7 +73,7 @@ export class RaceGenerationService {
     // If grouping by rank is not requested, create a single race
     if (!groupByRank) {
       return this.createRace(
-        RaceStage.QUARTERFINAL,
+        RaceStage.PRELIMINARY,
         cars,
         racerType
       );
@@ -93,7 +93,7 @@ export class RaceGenerationService {
     const races: Race[] = [];
     for (const [rank, rankCars] of rankGroups) {
       const race = await this.createRace(
-        RaceStage.QUARTERFINAL,
+        RaceStage.PRELIMINARY,
         rankCars,
         rank as RacerType
       );

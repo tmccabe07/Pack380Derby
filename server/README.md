@@ -55,7 +55,7 @@ POST /api/competition/configuration
 PUT /api/competition/configuration
 {
     "numLanes": 4,
-    "usableLanes": [1, 2, 3, 4]
+    "usableLanes": [1, 3, 5, 6]
 }
 
 #### Total Lanes Management
@@ -85,7 +85,7 @@ Returns: { usableLanes: [1, 2, 3, 4], usableLaneCount: 4 }
 ##### Set usable lanes
 POST /api/competition/usable-lanes
 {
-    "usableLanes": [1, 2, 3, 4]
+    "usableLanes": [1, 2, 5, 6]
 }
 
 ##### Update usable lanes
@@ -258,6 +258,10 @@ GET /api/voting/results
 Create racer, then create a car linked to that person
 
 POST /api/racer
+### To register
+#Create person, then create a car linked to that person
+
+#POST /api/person
 {
     "name": "Jane Doe",
     "den": "8",
@@ -265,7 +269,7 @@ POST /api/racer
     "role": "Cub"
 }
 
-POST /api/car
+#POST /api/car
 {
         "name": "25 Car",
         "weight": "5.0",
@@ -275,15 +279,19 @@ POST /api/car
 }
 racerId is the unique id of the racer that was created. 
 
-### Race Creation
 
-POST /api/raceandheats 
+### To create races
+
+POST /api/race 
 {
-    "raceType": "1",
-    "role": "cub"
+    "raceType": 1,
+    "rank": "cub",
+    "groupByRank": false
 }
 
-This will create a preliminary race with a unique race id and as many heats as necessary to race all of the cars associated with the role of cub. The number of lanes per heat is automatically determined from the competition configuration.
+This will create a preliminary race with a unique race id and as many heats as necessary to race all of the cars associated with the cub with the number of lanes specified as 6 per heat.  Repeat this with different raceType to create multiple races with heats. 
+
+numLanes: number of lanes that are active in a race.  Max is 6.
 
 Note: The numLanes parameter is no longer required as it uses the usable lanes configured via the competition API.
 
@@ -294,6 +302,17 @@ raceType mapping:
 30 = final, not used
 40 = prelim-deadheat, which will generate a semi
 50 = semi-deadheat, which will generate final
+
+rank: 
+cub = all cub ranks, inclusive of lion, tiger, wolf, bear, webelos, aol
+lion = specific to lion rank (includes all lion dens)
+tiger = specific to tiger rank (includes all tiger dens)
+wolf = specific to wolf rank (includes all wolf dens)
+bear = specific to bear rank (includes all bear dens)
+webelos = specific to webelos rank (includes all webelos dens)
+aol = specific to aol rank (includes all aol dens)
+sibling = all siblings
+adult = all adults
 
 All heats are stored in table "public"."HeatLane".  Race metadata is stored in "public"."Race".
 

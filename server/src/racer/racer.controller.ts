@@ -10,7 +10,8 @@ import {
   ParseIntPipe,
   UseInterceptors,
   UploadedFile,
-  BadRequestException
+  BadRequestException,
+  Query
 } from '@nestjs/common';
 import {
   ApiOperation,
@@ -28,6 +29,7 @@ import { UpdateRacerDto } from './dto/update-racer.dto';
 import { Racer as RacerModel} from '@prisma/client';
 import { RacerService } from './racer.service';
 import { RacerResponseDto } from './dto/racer-response.dto';
+
 
 @ApiTags('racer')
 @Controller('racer')
@@ -51,6 +53,18 @@ export class RacerController {
   })
   async findAll(): Promise<RacerModel[]> {
     return this.racerService.findAll();
+  }
+
+  @Get('search')
+  @ApiOperation({ summary: 'Search racers by name' })
+  @ApiResponse({
+    status: 200,
+    description: 'Racers matching search query',
+    type: RacerResponseDto,
+    isArray: true,
+  })
+  async search(@Query('q') q: string): Promise<RacerModel[]> {
+    return await this.racerService.searchByName(q);
   }
 
   @Get(':id')
@@ -135,3 +149,7 @@ export class RacerController {
     return this.racerService.importRacersFromCSV(file.buffer);
   }
 }
+function search(arg0: any, q: any, string: any) {
+  throw new Error('Function not implemented.');
+}
+

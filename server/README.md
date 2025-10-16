@@ -132,11 +132,132 @@ PUT /api/competition/final-multiplier
     "multiplier": 1
 }
 
+### Racer Management
+
+#### Get all racers
+GET /api/racer
+
+#### Get racer by ID
+GET /api/racer/:id
+
+#### Create new racer
+POST /api/racer
+{
+    "name": "Jane Doe",
+    "den": "8",
+    "rank": "Tiger",
+    "role": "Cub"
+}
+
+#### Update racer
+PATCH /api/racer/:id
+{
+    "name": "John Doe",
+    "den": "7",
+    "rank": "Webelos",
+    "role": "Cub"
+}
+
+#### Delete racer
+DELETE /api/racer/:id
+
+### Car Management
+
+#### Get all cars
+GET /api/car
+
+#### Get car by ID
+GET /api/car/:id
+
+#### Create new car
+POST /api/car
+{
+    "name": "Speed Demon",
+    "weight": "5.0",
+    "year": 2025,
+    "image": "somebase64encodedstringhere",
+    "racerId": 25
+}
+
+#### Update car
+PATCH /api/car/:id
+{
+    "name": "Lightning Bolt",
+    "weight": "4.9",
+    "year": 2025,
+    "image": "updatedbase64string",
+    "racerId": 25
+}
+
+#### Delete car
+DELETE /api/car/:id
+
+#### Get cars by racer ID
+GET /api/car/racer/:racerId
+
+### Heat Lane Management
+
+#### Get all heat lanes
+GET /api/heat-lane
+
+#### Get heat lane by ID
+GET /api/heat-lane/:id
+
+#### Update heat lane result
+POST /api/heat-lane/:id/:result
+e.g. POST /api/heat-lane/1/2
+
+This will update the heat-lane row id of 1 with the result of 2 (where lower numbers are better positions)
+
+This is the key API to use to update scores. 
+
+#### Get heat lanes by race ID
+GET /api/heat-lane/race/:raceId
+
+#### Get heat lanes by heat ID
+GET /api/heat-lane/heat/:heatId
+
+### Voting Management
+
+#### Get all votes
+GET /api/voting
+
+#### Get vote by ID
+GET /api/voting/:id
+
+#### Create new vote
+POST /api/voting
+{
+    "carId": 1,
+    "category": "Most Creative",
+    "voterIdentifier": "user123"
+}
+
+#### Update vote
+PUT /api/voting/:id
+{
+    "carId": 2,
+    "category": "Best Paint Job",
+    "voterIdentifier": "user123"
+}
+
+#### Delete vote
+DELETE /api/voting/:id
+
+#### Get votes by car ID
+GET /api/voting/car/:carId
+
+#### Get votes by category
+GET /api/voting/category/:category
+
+#### Get voting results summary
+GET /api/voting/results
+
 ### Registration
 
-Create person, then create a car linked to that person
+Create racer, then create a car linked to that person
 
-POST /api/person
+POST /api/racer
 {
     "name": "Jane Doe",
     "den": "8",
@@ -149,10 +270,10 @@ POST /api/car
         "name": "25 Car",
         "weight": "5.0",
         "year": 2025,
-        "image": "someurlhere",
+        "image": "somebase64encodedstringhere",
         "racerId": 25
 }
-racerId is the unique id of the person that was created. 
+racerId is the unique id of the racer that was created. 
 
 ### Race Creation
 
@@ -162,17 +283,17 @@ POST /api/raceandheats
     "role": "cub"
 }
 
-This will create quarternfinals race with a unique race id and as many heats as necessary to race all of the cars associated with the role of cub. The number of lanes per heat is automatically determined from the competition configuration.
+This will create a preliminary race with a unique race id and as many heats as necessary to race all of the cars associated with the role of cub. The number of lanes per heat is automatically determined from the competition configuration.
 
 Note: The numLanes parameter is no longer required as it uses the usable lanes configured via the competition API.
 
 raceType mapping:
-1 = prelim, which will generate a quarterfinal
-10 = quarterfinal, which will generate a semi or quarterfinaldeadheat
-20 = semi, which will generate a final or semideadheat
+1 = initialize, which will generate a preliminary
+10 = preliminary, which will generate a semifinal or prelim-deadheat
+20 = semifinal, which will generate a final or semi-deadheat
 30 = final, not used
-40 = quarterfinaldeadheat, which will generate a semi
-50 = semideadheat, which will generate final
+40 = prelim-deadheat, which will generate a semi
+50 = semi-deadheat, which will generate final
 
 All heats are stored in table "public"."HeatLane".  Race metadata is stored in "public"."Race".
 

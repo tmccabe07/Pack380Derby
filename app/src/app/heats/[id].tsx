@@ -1,16 +1,19 @@
 import { useRouter } from "next/router";
 import Layout from "@/components/Layout";
 import { useEffect, useState } from "react";
-import { fetchHeatById, deleteHeat, updateHeat, Heat, HeatEntry } from "@/lib/api/heats";
+import { fetchHeatById, deleteHeat, updateHeat, reportHeat, Heat, HeatEntry } from "@/lib/api/heats";
 import { Car, fetchCars } from "@/lib/api/cars";
 import HeatForm from "@/components/heats/HeatForm";
+import HeatReportForm from "@/components/heats/HeatReportForm";
 
 export default function HeatDetailsPage() {
   const router = useRouter();
   const { id } = router.query;
   const [heat, setHeat] = useState<Heat | null>(null);
   const [editing, setEditing] = useState(false);
+  const [reporting, setReporting] = useState(false);
   const [cars, setCars] = useState<Car[]>([]);
+  const [reportError, setReportError] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -45,6 +48,39 @@ export default function HeatDetailsPage() {
     );
   }
 
+  if (reporting) {
+    // Prepare lane info for report form
+    const lanes = heat.entries.map(entry => {
+      const car = cars.find(c => c.id === entry.carId);
+      return {
+        lane: entry.lane,
+        carId: entry.carId,
+        carName: car ? car.name : entry.carId,
+        racerName: car?.racer ? car.racer.name : ""
+      };
+    });
+    return (
+      <Layout>
+        <h1 className="text-3xl font-bold mb-8">Report Results for Heat #{heat.id}</h1>
+        <HeatReportForm
+          lanes={lanes}
+          onReport={async (results) => {
+            try {
+              setReportError(null);
+              const updated = await reportHeat(heat.id!, results);
+              setHeat(updated);
+              setReporting(false);
+            } catch {
+              setReportError("Failed to report results");
+            }
+          }}
+        />
+        {reportError && <div className="text-red-600 mt-4">{reportError}</div>}
+        <button onClick={() => setReporting(false)} className="mt-4 px-4 py-2 bg-gray-300 rounded">Cancel</button>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <h1 className="text-3xl font-bold mb-8">Heat #{heat.id}</h1>
@@ -54,6 +90,9 @@ export default function HeatDetailsPage() {
           return (
             <li key={entry.lane} className="mb-2">
               <span className="font-semibold">Lane {entry.lane}:</span> {car ? car.name : entry.carId} {car?.racer ? `(${car.racer.name})` : ""}
+              {typeof entry.result === "number" && (
+                <span className="ml-2 text-blue-700">Result: {entry.result}s</span>
+              )}
             </li>
           );
         })}
@@ -61,6 +100,7 @@ export default function HeatDetailsPage() {
       <div className="flex space-x-4">
         <button onClick={() => setEditing(true)} className="bg-yellow-500 text-white px-4 py-2 rounded">Edit</button>
         <button onClick={handleDelete} className="bg-red-600 text-white px-4 py-2 rounded">Delete</button>
+        <button onClick={() => setReporting(true)} className="bg-blue-600 text-white px-4 py-2 rounded">Report Results</button>
       </div>
     </Layout>
   );

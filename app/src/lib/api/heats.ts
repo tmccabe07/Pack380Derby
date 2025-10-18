@@ -1,3 +1,15 @@
+
+export async function reportHeat(id: string, results: { lane: number; result: number }[]): Promise<Heat> {
+  const res = await fetch(`${DERBY_API_URL}/api/heat-lane/${id}/report`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ results }),
+  });
+  if (!res.ok) {
+    throw new Error("Failed to report heat results");
+  }
+  return res.json();
+}
 // lib/api/racers.js
 import { DERBY_API_URL } from "@/lib/config/apiConfig";
 
@@ -13,6 +25,7 @@ export interface Heat {
   id?: string;
   entries: HeatEntry[];
   createdAt?: string;
+  raceId?: string;
 }
 
 export async function fetchHeats() {
@@ -29,11 +42,11 @@ export async function fetchHeatById(id: string): Promise<Heat | null> {
   return res.json();
 }
 
-export async function createHeat(entries: HeatEntry[]): Promise<Heat> {
+export async function createHeat(entries: HeatEntry[], raceId?: string): Promise<Heat> {
   const res = await fetch(`${DERBY_API_URL}/api/heat-lane`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ entries }),
+    body: JSON.stringify(raceId ? { entries, raceId } : { entries }),
   });
   if (!res.ok) {
     throw new Error("Failed to create heat");

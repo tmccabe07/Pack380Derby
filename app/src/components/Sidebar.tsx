@@ -12,6 +12,7 @@ export default function Sidebar() {
         <Link href={withAdmin("/cars")} className="hover:underline">Cars</Link>
         <Link href={withAdmin("/racers")} className="hover:underline">Racers</Link>
         <Link href={withAdmin("/heats")} className="hover:underline">Heats</Link>
+        <Link href={withAdmin("/races")} className="hover:underline">Races</Link>
       </nav>
     </div>
   );

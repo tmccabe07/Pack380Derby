@@ -24,13 +24,13 @@ export async function fetchRacers() {
   return res.json();
 }
 
-export async function createRacer(Racer: Racer): Promise<Racer> {
+export async function createRacer(racer: Racer): Promise<Racer> {
   const res = await fetch(`${DERBY_API_URL}/api/racer`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(Racer),
+    body: JSON.stringify(racer),
   });
 
   if (!res.ok) {
@@ -40,13 +40,13 @@ export async function createRacer(Racer: Racer): Promise<Racer> {
   return res.json();
 }
 
-export async function updateRacer(id: string, Racer: Racer): Promise<Racer> {
+export async function updateRacer(id: string, racer: Racer): Promise<Racer> {
   const res = await fetch(`${DERBY_API_URL}/api/racer/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(Racer),
+    body: JSON.stringify(racer),
   });
 
   if (!res.ok) {

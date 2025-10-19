@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Car } from "@/lib/api/cars";
+import { Car, getCarImage } from "@/lib/api/cars";
 
 export default function CarCard({ car }: { car: Car }) {
 
@@ -9,11 +9,7 @@ export default function CarCard({ car }: { car: Car }) {
       <div className="flex items-center gap-4 p-2">
         {car.image && (
           <Image
-            src={
-              car.image.startsWith("https")
-                ? car.image
-                : `data:image/jpeg;base64,${car.image}`
-            }
+            src={getCarImage(car.image)}
             alt={car.name}
             width={80}
             height={50}

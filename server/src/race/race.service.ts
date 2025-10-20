@@ -151,6 +151,29 @@ export class RaceService {
     });
   }
 
+async findRoundByRaceType(raceType: number) {
+    return await this.prisma.race.findMany({
+      where: {
+        raceType: raceType
+      },
+      orderBy: [
+        { id: 'asc' }
+      ]
+    });
+  }
+
+  async findRoundByRaceTypeAndRank(raceType: number, rank: string) {
+    return await this.prisma.race.findMany({
+      where: {
+        raceType: raceType,
+        rank: rank.toLowerCase()
+      },
+      orderBy: [
+        { id: 'asc' }
+      ]
+    });
+  }
+
   async getStageResults(stage: RaceStage, rank: string): Promise<Array<{ carId: number; totalScore: number }>> {
     // Get all heat results for this stage and its corresponding deadheat stage
     const deadheatStage = this.progression.getDeadheatStage(stage);

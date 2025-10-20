@@ -169,4 +169,44 @@ export class RaceController {
 
     return heatLanes;
   }
+
+  @Get('round/:raceType')
+  @ApiOperation({ summary: 'Get all races for a specific round (race type filter only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'All races for the specified race type',
+    type: RaceResponseDto,
+    isArray: true
+  })
+  async findRoundByRaceType(
+    @Param('raceType', ParseIntPipe) raceType: number
+  ) {
+    const races = await this.raceService.findRoundByRaceType(raceType);
+    
+    if (races.length === 0) {
+      throw new NotFoundException(`No races found for race type ${raceType}.`);
+    }
+    return races;
+  }
+
+  @Get('round/:raceType/:rank')
+  @ApiOperation({ summary: 'Get all races for a specific round (race type and rank combination)' })
+  @ApiResponse({
+    status: 200,
+    description: 'All races for the specified round',
+    type: RaceResponseDto,
+    isArray: true
+  })
+  async findRoundByRaceTypeAndRank(
+    @Param('raceType', ParseIntPipe) raceType: number,
+    @Param('rank') rank: string
+  ) {
+    const races = await this.raceService.findRoundByRaceTypeAndRank(raceType, rank);
+    
+    if (races.length === 0) {
+      throw new NotFoundException(`No races found for race type ${raceType} and rank ${rank}.`);
+    }
+
+    return races;
+  }
 }

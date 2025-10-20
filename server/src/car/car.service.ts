@@ -209,4 +209,28 @@ export class CarService {
       orderBy: [{ id: 'asc' }],
     });
   }
+
+  async findRacesByCarId(carId: number) {
+    return await this.prisma.heatLane.findMany({
+      where: {
+        carId: carId
+      },
+      select: {
+        raceId: true,
+        heatId: true,
+        lane: true,
+        result: true,
+        race: {
+          select: {
+            raceName: true
+          }
+        }
+      },
+      orderBy: [
+        { raceId: 'asc' },
+        { heatId: 'asc' },
+        { lane: 'asc' }
+      ]
+    });
+  }
 }

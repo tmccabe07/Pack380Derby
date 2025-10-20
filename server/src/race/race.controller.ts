@@ -5,10 +5,12 @@ import {
   Body, 
   Patch, 
   Param, 
-  Delete,
+  Delete, 
   UseInterceptors,
   UploadedFile,
-  BadRequestException 
+  BadRequestException,
+  ParseIntPipe, 
+  NotFoundException
 } from '@nestjs/common';
 import {
   ApiOperation,
@@ -120,5 +122,25 @@ export class RaceController {
       
       return this.raceService.importRacesFromCSV(file.buffer);
     }
+ 
 
+  @Get(':id/heats')
+  @ApiOperation({ summary: 'Get all heats for a specific race' })
+  @ApiResponse({
+    status: 200,
+    description: 'All heat lanes for the specified race',
+    isArray: true
+  })
+  async findHeatsForRace(@Param('id', ParseIntPipe) id: number) {
+    
+    // First verify the race exists
+    const race = await this.raceService.findOne(id);
+    if (!race) {
+      throw new NotFoundException(`Race with ID ${id} does not exist.`);
+    }
+
+    const heats = await this.raceService.findHeatsForRace(id);
+ 
+    return heats;
+  }
 }

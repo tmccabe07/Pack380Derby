@@ -99,6 +99,32 @@ export class RaceService {
     return oneValue;
   }
 
+  async findHeatsForRace(raceId: number) {
+    return await this.prisma.heatLane.findMany({
+      where: {
+        raceId: raceId
+      },
+      include: {
+        car: {
+          select: {
+            id: true,
+            name: true,
+            racerId: true,
+            racer: {
+              select: {
+                name: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: [
+        { heatId: 'asc' },
+        { lane: 'asc' }
+      ]
+    });
+  }
+
   async getStageResults(stage: RaceStage, rank: string): Promise<Array<{ carId: number; totalScore: number }>> {
     // Get all heat results for this stage and its corresponding deadheat stage
     const deadheatStage = this.progression.getDeadheatStage(stage);

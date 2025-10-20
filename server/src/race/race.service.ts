@@ -99,6 +99,81 @@ export class RaceService {
     return oneValue;
   }
 
+  async findHeatsForRace(raceId: number) {
+    return await this.prisma.heatLane.findMany({
+      where: {
+        raceId: raceId
+      },
+      include: {
+        car: {
+          select: {
+            id: true,
+            name: true,
+            racerId: true,
+            racer: {
+              select: {
+                name: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: [
+        { heatId: 'asc' },
+        { lane: 'asc' }
+      ]
+    });
+  }
+
+  async findHeatLanesByHeatAndRace(heatId: number, raceId: number) {
+    return await this.prisma.heatLane.findMany({
+      where: {
+        heatId: heatId,
+        raceId: raceId
+      },
+      include: {
+        car: {
+          select: {
+            id: true,
+            name: true,
+            racerId: true,
+            racer: {
+              select: {
+                name: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: [
+        { lane: 'asc' }
+      ]
+    });
+  }
+
+async findRoundByRaceType(raceType: number) {
+    return await this.prisma.race.findMany({
+      where: {
+        raceType: raceType
+      },
+      orderBy: [
+        { id: 'asc' }
+      ]
+    });
+  }
+
+  async findRoundByRaceTypeAndRank(raceType: number, rank: string) {
+    return await this.prisma.race.findMany({
+      where: {
+        raceType: raceType,
+        rank: rank.toLowerCase()
+      },
+      orderBy: [
+        { id: 'asc' }
+      ]
+    });
+  }
+
   async getStageResults(stage: RaceStage, rank: string): Promise<Array<{ carId: number; totalScore: number }>> {
     // Get all heat results for this stage and its corresponding deadheat stage
     const deadheatStage = this.progression.getDeadheatStage(stage);

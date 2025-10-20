@@ -148,4 +148,22 @@ export class CarController {
       
     return this.carService.importCarsFromCSV(file.buffer);
   }
+
+  @Get(':id/races')
+  @ApiOperation({ summary: 'Get races for a specific car (race id, heat id, lane, result)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Races for the specified car',
+    isArray: true
+  })
+  async findRacesByCarId(@Param('id', ParseIntPipe) id: number) {
+    // First verify the car exists
+    const car = await this.carService.findOne(id);
+    if (!car) {
+      throw new NotFoundException(`Car with ID ${id} does not exist.`);
+    }
+
+    const races = await this.carService.findRacesByCarId(id);
+    return races;
+  }
 }

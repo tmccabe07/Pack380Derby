@@ -143,4 +143,30 @@ export class RaceController {
  
     return heats;
   }
+
+  @Get(':raceId/heat/:heatId')
+  @ApiOperation({ summary: 'Get heat lanes for a specific heat within a race' })
+  @ApiResponse({
+    status: 200,
+    description: 'Heat lanes for the specified heat and race',
+    isArray: true
+  })
+  async findHeatLanesByHeatAndRace(
+    @Param('raceId', ParseIntPipe) raceId: number,
+    @Param('heatId', ParseIntPipe) heatId: number
+  ) {
+    // First verify the race exists
+    const race = await this.raceService.findOne(raceId);
+    if (!race) {
+      throw new NotFoundException(`Race with ID ${raceId} does not exist.`);
+    }
+
+    const heatLanes = await this.raceService.findHeatLanesByHeatAndRace(heatId, raceId);
+    
+    if (heatLanes.length === 0) {
+      throw new NotFoundException(`No heat lanes found for heat ID ${heatId} in race ID ${raceId}.`);
+    }
+
+    return heatLanes;
+  }
 }

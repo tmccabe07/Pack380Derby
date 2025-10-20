@@ -125,6 +125,32 @@ export class RaceService {
     });
   }
 
+  async findHeatLanesByHeatAndRace(heatId: number, raceId: number) {
+    return await this.prisma.heatLane.findMany({
+      where: {
+        heatId: heatId,
+        raceId: raceId
+      },
+      include: {
+        car: {
+          select: {
+            id: true,
+            name: true,
+            racerId: true,
+            racer: {
+              select: {
+                name: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: [
+        { lane: 'asc' }
+      ]
+    });
+  }
+
   async getStageResults(stage: RaceStage, rank: string): Promise<Array<{ carId: number; totalScore: number }>> {
     // Get all heat results for this stage and its corresponding deadheat stage
     const deadheatStage = this.progression.getDeadheatStage(stage);

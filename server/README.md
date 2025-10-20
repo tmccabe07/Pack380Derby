@@ -195,6 +195,86 @@ DELETE /api/car/:id
 #### Get cars by racer ID
 GET /api/car/racer/:racerId
 
+#### Get race history for a car
+GET /api/car/:id/races
+Returns race history for a specific car including race ID, heat ID, lane, result, and race name.
+
+### Race Management
+
+#### To create races
+
+POST /api/race 
+{
+    "raceType": 1,
+    "rank": "cub",
+    "groupByRank": false
+}
+
+This will create a preliminary race with a unique race id and as many heats as necessary to race all of the cars associated with the cub with the number of lanes specified as 6 per heat.  Repeat this with different raceType to create multiple races with heats. 
+
+numLanes: number of lanes that are active in a race.  Max is 6.
+
+Note: The numLanes parameter is no longer required as it uses the usable lanes configured via the competition API.
+
+raceType mapping:
+1 = initialize, which will generate a preliminary
+10 = preliminary, which will generate a semifinal or prelim-deadheat
+20 = semifinal, which will generate a final or semi-deadheat
+30 = final, not used
+40 = prelim-deadheat, which will generate a semi
+50 = semi-deadheat, which will generate final
+
+rank: 
+cub = all cub ranks, inclusive of lion, tiger, wolf, bear, webelos, aol
+lion = specific to lion rank (includes all lion dens)
+tiger = specific to tiger rank (includes all tiger dens)
+wolf = specific to wolf rank (includes all wolf dens)
+bear = specific to bear rank (includes all bear dens)
+webelos = specific to webelos rank (includes all webelos dens)
+aol = specific to aol rank (includes all aol dens)
+sibling = all siblings
+adult = all adults
+
+All heats are stored in table "public"."HeatLane".  Race metadata is stored in "public"."Race".
+
+#### Get all races
+GET /api/race
+
+Retrieves race metadata
+
+#### Get race by ID
+GET /api/race/:id
+
+Retrieves race metadata
+
+#### Delete race
+DELETE /api/race/:id
+
+#### Clear all races
+DELETE /api/race/deleteall/clear
+
+Note, clearing heatlanes needs to be done separately.
+
+#### Import races from CSV
+POST /api/race/import
+Upload CSV file with header: racename,numlanes,racetype,rank
+
+#### Get all heats for a race
+GET /api/race/:id/heats
+Returns all heat lanes for a specific race including car and racer information.
+
+#### Get heat lanes for specific heat and race
+GET /api/race/:raceId/heat/:heatId
+Returns heat lanes for a specific heat within a race.
+
+#### Get races by race type (round)
+GET /api/race/round/:raceType
+Returns all races for a specific race type (e.g., all preliminaries, semifinals, etc.).
+
+#### Get races by race type and rank (round)
+GET /api/race/round/:raceType/:rank
+Returns all races for a specific race type and rank combination (e.g., all cub preliminaries).
+
 ### Heat Lane Management
 
 #### Get all heat lanes
@@ -280,41 +360,6 @@ POST /api/racer
 racerId is the unique id of the racer that was created. 
 
 
-### To create races
-
-POST /api/race 
-{
-    "raceType": 1,
-    "rank": "cub",
-    "groupByRank": false
-}
-
-This will create a preliminary race with a unique race id and as many heats as necessary to race all of the cars associated with the cub with the number of lanes specified as 6 per heat.  Repeat this with different raceType to create multiple races with heats. 
-
-numLanes: number of lanes that are active in a race.  Max is 6.
-
-Note: The numLanes parameter is no longer required as it uses the usable lanes configured via the competition API.
-
-raceType mapping:
-1 = initialize, which will generate a preliminary
-10 = preliminary, which will generate a semifinal or prelim-deadheat
-20 = semifinal, which will generate a final or semi-deadheat
-30 = final, not used
-40 = prelim-deadheat, which will generate a semi
-50 = semi-deadheat, which will generate final
-
-rank: 
-cub = all cub ranks, inclusive of lion, tiger, wolf, bear, webelos, aol
-lion = specific to lion rank (includes all lion dens)
-tiger = specific to tiger rank (includes all tiger dens)
-wolf = specific to wolf rank (includes all wolf dens)
-bear = specific to bear rank (includes all bear dens)
-webelos = specific to webelos rank (includes all webelos dens)
-aol = specific to aol rank (includes all aol dens)
-sibling = all siblings
-adult = all adults
-
-All heats are stored in table "public"."HeatLane".  Race metadata is stored in "public"."Race".
 
 ### Results Management
 

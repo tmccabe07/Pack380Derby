@@ -16,9 +16,9 @@ import { DERBY_API_URL } from "@/lib/config/apiConfig";
 // Define what a Heat looks like
 export interface HeatEntry {
   lane: number;
-  carId: string;
+  carId: string | number;
   result?: number;
-  car?: any; // Optionally populated with car details
+  car?: { id?: number | string; name?: string; racerId?: number | string; racer?: { id?: number | string; name?: string } };
 }
 
 export interface Heat {

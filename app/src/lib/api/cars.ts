@@ -26,6 +26,20 @@ export interface Car {
   racer?: Racer;
 }
 
+export interface CarRaceEntry {
+  raceId: number;
+  heatId: number;
+  lane: number;
+  result?: number;
+  raceType?: number;
+}
+
+export async function fetchCarRaces(id: string | number): Promise<CarRaceEntry[]> {
+  const res = await fetch(`${DERBY_API_URL}/api/car/${id}/races`);
+  if (!res.ok) throw new Error("Failed to fetch car races");
+  return res.json();
+}
+
 // Normalize car image: if base64 without data URI prefix, add jpeg prefix.
 export function getCarImage(image?: string): string {
   if (!image) return "";

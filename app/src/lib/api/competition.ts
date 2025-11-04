@@ -1,28 +1,91 @@
-import { DERBY_API_URL } from "@/lib/config/apiConfig";
-
+// Unified configuration updater
+export async function updateConfiguration({ numLanes, usableLanes }: { numLanes: number; usableLanes: number[] }) {
+  // Update total lanes and usable lanes in parallel
+  await Promise.all([
+    updateTotalLanes(numLanes),
+    updateUsableLanes(usableLanes)
+  ]);
+  // Return updated config
+  return getConfiguration();
+}
+// Unified configuration fetcher
 export async function getConfiguration() {
-  const res = await fetch(`${DERBY_API_URL}/api/competition/laneconfig`);
-  if (!res.ok) throw new Error("Failed to fetch configuration");
+  // Fetch total lanes, usable lanes, and optionally voting categories
+  const [total, usable, cats] = await Promise.all([
+    getTotalLanes(),
+    getUsableLanes(),
+    getVotingCategories()
+  ]);
+  return {
+    numLanes: total.numLanes,
+    usableLanes: usable.usableLanes,
+    votingCategories: cats.categories || []
+  };
+}
+// Voting Categories API (now at /api/voting/category)
+export async function getVotingCategories() {
+  const res = await fetch(`${DERBY_API_URL}/api/voting/category`);
+  if (!res.ok) throw new Error("Failed to fetch voting categories");
   return res.json();
 }
-export async function setConfiguration(data: { numLanes: number; usableLanes: number[] }) {
-  const res = await fetch(`${DERBY_API_URL}/api/competition/laneconfig`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error("Failed to set configuration");
-  return res.json();
+
+export type VotingCategoryInput = { name: string; description: string };
+
+export async function setVotingCategories(categories: VotingCategoryInput[]) {
+  // Fetch existing categories
+  const existingRes = await fetch(`${DERBY_API_URL}/api/voting/category`);
+  if (!existingRes.ok) throw new Error("Failed to fetch existing voting categories");
+  const existing = await existingRes.json();
+  const categoryList: { id?: number; name: string; description?: string }[] = Array.isArray(existing)
+    ? existing
+    : existing.categories || [];
+  const existingNames = categoryList.map(cat => cat.name);
+
+  // Delete categories not in the new list
+  for (const cat of categoryList) {
+    if (!categories.some(c => c.name === cat.name)) {
+      if (cat.id !== undefined) {
+        await fetch(`${DERBY_API_URL}/api/voting/category/${cat.id}`, {
+          method: "DELETE",
+        });
+      }
+    }
+  }
+
+  // Create or update categories
+  for (const cat of categories) {
+    const existingCat = categoryList.find(c => c.name === cat.name);
+    if (!existingCat) {
+      // Create new category
+      await fetch(`${DERBY_API_URL}/api/voting/category`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: cat.name, description: cat.description }),
+      });
+    } else if (existingCat.description !== cat.description) {
+      // Update description if changed
+      await fetch(`${DERBY_API_URL}/api/voting/category/${existingCat.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: cat.description }),
+      });
+    }
+  }
+
+  // Return updated categories
+  return getVotingCategories();
 }
-export async function updateConfiguration(data: { numLanes: number; usableLanes: number[] }) {
-  const res = await fetch(`${DERBY_API_URL}/api/competition/laneconfig`, {
+
+export async function updateVotingCategories(categories: string[]) {
+  const res = await fetch(`${DERBY_API_URL}/api/voting/category`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
+    body: JSON.stringify({ categories }),
   });
-  if (!res.ok) throw new Error("Failed to update configuration");
+  if (!res.ok) throw new Error("Failed to update voting categories");
   return res.json();
 }
+import { DERBY_API_URL } from "@/lib/config/apiConfig";
 export async function getTotalLanes() {
   const res = await fetch(`${DERBY_API_URL}/api/competition/total-lanes`);
   if (!res.ok) throw new Error("Failed to fetch total lanes");

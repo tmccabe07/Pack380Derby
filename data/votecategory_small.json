@@ -1,0 +1,6 @@
+[
+  { "id": 1, "name": "Best Design", "description": "Most creative car design" },
+  { "id": 2, "name": "Fastest Looking", "description": "Car that looks the fastest" },
+  { "id": 3, "name": "Best Paint", "description": "Best paint job" },
+  { "id": 4, "name": "Most Original", "description": "Most original concept" }
+]

@@ -53,17 +53,24 @@ export async function createHeat(entries: HeatEntry[], raceId?: string): Promise
   }
   return res.json();
 }
-
-export async function updateHeat(id: string, entries: HeatEntry[]): Promise<Heat> {
-  const res = await fetch(`${DERBY_API_URL}/api/heat-lane/${id}` , {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ entries }),
-  });
-  if (!res.ok) {
-    throw new Error("Failed to update heat");
+export async function updateHeat(id: string, entries: HeatEntry[]): Promise<Heat[]> {
+  const results: Heat[] = [];
+  for (const entry of entries) {
+    // Exclude 'carId' and 'lane' if you only want to send updatable fields, or specifically exclude 'id'
+    // Here, we'll exclude 'carId', 'lane', and any 'id' property from the entry
+    const { id, carId, raceId, car, result, ...rest } = entry;
+    const body = { ...(result !== undefined ? { result } : {}), ...rest };
+    const res = await fetch(`${DERBY_API_URL}/api/heat-lane/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      throw new Error("Failed to update heat entry");
+    }
+    results.push(await res.json());
   }
-  return res.json();
+  return results;
 }
 
 export async function deleteHeat(id: string): Promise<boolean> {

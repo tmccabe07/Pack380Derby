@@ -1,0 +1,12 @@
+{
+	"servers": {
+		"my-mcp-server-c6402057": {
+			"type": "stdio",
+			"command": "node",
+			"args": [
+				"./mcpserver/build/index.js"
+			]
+		},
+	},
+	"inputs": []
+}

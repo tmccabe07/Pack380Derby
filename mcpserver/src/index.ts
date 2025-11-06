@@ -59,5 +59,26 @@ server.resource(
     })
 );
 
-const transport = new StdioServerTransport();
-server.connect(transport);
+server.prompt(
+    "search-for-racer",
+    { code: z.string() },
+    ({ code }) => ({
+        messages: [{
+            role: "user",
+            content: {
+                type: "text",
+                text: `Find racer with name: ${code}`
+            }
+        }]
+    })
+);
+
+async function main(){
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    console.error("MCP Server is running on stdin/stdout");
+}
+main().catch((error) => {
+    console.error("Error starting MCP Server:", error);
+    process.exit(1);
+});

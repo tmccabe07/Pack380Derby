@@ -1,0 +1,22 @@
+{
+  "name": "mcpserver",
+  "version": "1.0.0",
+  "description": "sample server for Model Context Protocol",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node ./build/index.js",
+    "client": "tsc && node build/client.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.21.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "typescript": "^5.9.3"
+  }
+}

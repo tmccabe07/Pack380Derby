@@ -86,22 +86,24 @@ export default function RaceRoundsPage() {
                             </thead>
                             <tbody>
                               {(race.heats || []).map((heat: HeatLane[], idx: number) => {
-                                const lanes = heat;
-                                console.log("lanes", lanes)
+                                const lanes = Array.isArray(heat) ? heat : [];
                                 return (
                                   <tr key={idx} className="border-t">
                                     <td className="py-2 px-2 align-top">Heat {idx + 1}</td>
                                     <td className="py-2 px-2">
                                       <ul className="space-y-1">
-                                        {[].map((lane: HeatLane, li: number) => (
-                                          <li key={li} className="flex gap-2">
+                                        {lanes.map((lane: HeatLane, li: number) => (
+                                          <li key={li} className="flex gap-2 items-center">
                                             <span className="font-mono">Lane {lane.lane}</span>
-                                            {lane.carId && (
-                                              <>
-                                                <Link href={`/cars/${lane.carId}`} className="text-blue-600 hover:underline">Car #{lane.carId}</Link>
-                                                {lane.racer?.id && <Link href={`/racers/${lane.racer.id}`} className="text-green-600 hover:underline">Racer #{lane.racer.id}</Link>}
-                                                <span className="text-gray-600">Place: {lane.result ?? 0}</span>
-                                              </>
+                                            {lane.carId && lane.car?.name ? (
+                                              <Link href={`/cars/${lane.carId}`} className="text-blue-600 hover:underline">{lane.car.name}</Link>
+                                            ) : lane.carId ? (
+                                              <Link href={`/cars/${lane.carId}`} className="text-blue-600 hover:underline">Car #{lane.carId}</Link>
+                                            ) : (
+                                              <span className="text-gray-400">No Car</span>
+                                            )}
+                                            {typeof lane.result === 'number' && (
+                                              <span className="text-gray-600 ml-2">Place: {lane.result ?? 0}</span>
                                             )}
                                           </li>
                                         ))}

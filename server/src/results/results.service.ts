@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateResultDto } from './dto/create-result.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { ResultsResponseDto } from './dto/results-response.dto';
+import { RankResultsResponseDto } from './dto/rank-results-response.dto';
 
 @Injectable()
 export class ResultsService {
@@ -138,6 +139,55 @@ export class ResultsService {
 
     return totalResults;
 
+  }
+
+  async getResultsByRank(rank: string, raceType: number): Promise<RankResultsResponseDto[]> {
+  
+    //console.log(`getResultsByRank called with rank=${rank}, raceType=${raceType}`);
+    // Get all heat lanes for the specified rank and race type
+    const heatLanes = await this.prisma.heatLane.findMany({
+      select: {
+        carId: true,
+        result: true,
+        rank: true,
+        raceType: true,
+      },
+      where: {
+        rank: rank,
+        raceType: raceType,
+        /*result: {
+          not: 0, // Only include records with actual results
+        },*/ //commenting out until confirm with Andy on desired behavior
+      },
+    });
+
+    //console.log("getResultsByRank - heatLanes:", heatLanes);
+
+    // Group results by carId and sum the places
+    const carResults = new Map<number, { rank: string; raceType: number; totalPlace: number }>();
+
+    heatLanes.forEach((lane) => {
+      if (lane.carId && lane.result !== null) {
+        const existing = carResults.get(lane.carId);
+        if (existing) {
+          existing.totalPlace += lane.result;
+        } else {
+          carResults.set(lane.carId, {
+            rank: lane.rank || rank,
+            raceType: lane.raceType || raceType,
+            totalPlace: lane.result,
+          });
+        }
+      }
+    });
+
+    // Convert to response DTOs and add 100 to each place if place is not 0
+    return Array.from(carResults.entries()).map(([carId, data]) => ({
+      carId,
+      rank: data.rank,
+      raceType: data.raceType,
+      totalPlace: data.totalPlace === 0 ? 0 : data.totalPlace + 100,
+    }));
   }
   
 }

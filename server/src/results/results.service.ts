@@ -155,38 +155,39 @@ export class ResultsService {
       where: {
         rank: rank,
         raceType: raceType,
-        /*result: {
-          not: 0, // Only include records with actual results
-        },*/ //commenting out until confirm with Andy on desired behavior
+        result: {
+          not: 0, // Only include records with actual results, since 0 would weight as 0 anyway
+        }, 
       },
     });
 
     //console.log("getResultsByRank - heatLanes:", heatLanes);
 
-    // Group results by carId and sum the places
+    // Group results by carId and calculate weighted score (100 * original lane result)
     const carResults = new Map<number, { rank: string; raceType: number; totalPlace: number }>();
 
     heatLanes.forEach((lane) => {
       if (lane.carId && lane.result !== null) {
+        const weightedScore = lane.result * 100; // Calculate weighted score: 100 * original lane result
         const existing = carResults.get(lane.carId);
         if (existing) {
-          existing.totalPlace += lane.result;
+          existing.totalPlace += weightedScore;
         } else {
           carResults.set(lane.carId, {
             rank: lane.rank || rank,
             raceType: lane.raceType || raceType,
-            totalPlace: lane.result,
+            totalPlace: weightedScore,
           });
         }
       }
     });
 
-    // Convert to response DTOs and add 100 to each place if place is not 0
+    // Convert to response DTOs
     return Array.from(carResults.entries()).map(([carId, data]) => ({
       carId,
       rank: data.rank,
       raceType: data.raceType,
-      totalPlace: data.totalPlace === 0 ? 0 : data.totalPlace + 100,
+      totalPlace: data.totalPlace,
     }));
   }
   

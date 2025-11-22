@@ -1,11 +1,12 @@
 import { DERBY_API_URL } from "@/lib/config/apiConfig";
+import type { VoteSubmission } from "@/types/VoteSubmission";
 
 // Submit a vote for a car in a category, with voterIdentifier
-export async function submitVote({ carId, category, voterIdentifier }: { carId: string | number; category: string; voterIdentifier: string }) {
+export async function submitVote(vote: VoteSubmission) {
   const res = await fetch(`${DERBY_API_URL}/api/voting`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ carId, category, voterIdentifier }),
+    body: JSON.stringify(vote),
   });
   if (!res.ok) throw new Error("Failed to submit vote");
   return res.json();

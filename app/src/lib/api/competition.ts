@@ -29,9 +29,9 @@ export async function getVotingCategories() {
   return res.json();
 }
 
-export type VotingCategoryInput = { name: string; description: string };
+import type { VotingCategory } from "@/types/VotingCategory";
 
-export async function setVotingCategories(categories: VotingCategoryInput[]) {
+export async function updateVotingCategories(categories: VotingCategory[]) {
   // Fetch existing categories
   const existingRes = await fetch(`${DERBY_API_URL}/api/voting/category`);
   if (!existingRes.ok) throw new Error("Failed to fetch existing voting categories");
@@ -39,7 +39,6 @@ export async function setVotingCategories(categories: VotingCategoryInput[]) {
   const categoryList: { id?: number; name: string; description?: string }[] = Array.isArray(existing)
     ? existing
     : existing.categories || [];
-  const existingNames = categoryList.map(cat => cat.name);
 
   // Delete categories not in the new list
   for (const cat of categoryList) {
@@ -76,15 +75,6 @@ export async function setVotingCategories(categories: VotingCategoryInput[]) {
   return getVotingCategories();
 }
 
-export async function updateVotingCategories(categories: string[]) {
-  const res = await fetch(`${DERBY_API_URL}/api/voting/category`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ categories }),
-  });
-  if (!res.ok) throw new Error("Failed to update voting categories");
-  return res.json();
-}
 import { DERBY_API_URL } from "@/lib/config/apiConfig";
 export async function getTotalLanes() {
   const res = await fetch(`${DERBY_API_URL}/api/competition/total-lanes`);

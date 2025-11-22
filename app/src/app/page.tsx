@@ -7,6 +7,8 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { useState } from "react";
 import RegistrationForm from "@/components/registration/RegistrationForm";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { Leaderboard } from "@/components/results/Leaderboard";
+import { RaceType, RankType } from "@/lib/api/races";
 
 export default function Home() {
   const { data, loading, refreshing, error, lastUpdated } = useDashboardData();
@@ -39,6 +41,25 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <DashboardCard title="Cars" count={data.cars} href="/cars" />
             <DashboardCard title="Racers" count={data.racers} href="/racers" />
+          </div>
+
+          {/* Overall Leaderboard */}
+          <div className="mb-8">
+            <Leaderboard raceType={RaceType.Preliminary} rank={RankType.Cub} />
+          </div>
+
+          {/* Sibling and Adult Leaderboards */}
+          <div className="mb-8">
+            <Leaderboard raceType={RaceType.Preliminary} rank={RankType.Adult} />
+          </div>
+
+          <div className="mb-8">
+            <Leaderboard raceType={RaceType.Preliminary} rank={RankType.Sibling} />
+          </div>
+
+          {/* Den Leaderboard */}
+          <div className="mb-8">
+            <Leaderboard raceType={RaceType.Preliminary} rank={RankType.Den} />
           </div>
 
           {isAdmin && (

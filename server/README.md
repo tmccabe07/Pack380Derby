@@ -370,44 +370,13 @@ e.g. POST /api/heat-lane/1/2
 This will update the heat-lane row id of 1 with the result of 2 
 
 #### Calculate results
-By Car ID and Race Type:
 
-POST /api/results
-{
-     "sumBy": 10,    
-     "carId": 1, 
-     "raceType: 10,
-     "role": "cub"
-}
+/api/results/by-rank/:raceType/:rank
 
-This will calculate the results of all heat-lane rows matching carId of 1 and raceType of 10 (aka quarterfinals).  In other words, sums up the car's results for all heats in cub quarterfinals.  
+For example:
+/api/results/by-rank/10/cub
 
-All Cars By Race Type:
-POST /api/results
-{
-     "sumBy": 20,    
-     "carId": 0, 
-     "raceType: 10,
-     "role": "cub"
-}
-
-This will calculate the results of all heat-lane rows matching raceType of 10 (aka quarterfinals) and role of cub.  In other words, sums up results for each car in all cub quarterfinals.
-
-All Cars in All races by Role:
-POST /api/results
-{
-     "sumBy": 30,    
-     "carId": 0, 
-     "raceType: 0,
-     "role": "cub"
-}
-
-This will calculate the results of all heat-lane rows matching role of cub.  In other words, sums up results for each car in all cub races. 
-
-sumBy mapping:
-10 = sum by carId AND raceType
-20 = sum all cars by raceType
-30 = sum all cars by all races by role
+will return the weighted score of total place for each car that has heatlanes that match that racetype and rank, which in this case is racetype = 10 for preliminary and rank = cub.  So all cub prelims. 
 
 #### Get results by rank and race type
 GET /api/results/by-rank/:raceType/:rank

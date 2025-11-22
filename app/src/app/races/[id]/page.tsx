@@ -1,9 +1,10 @@
 "use client";
 import Layout from "@/components/Layout";
 import { useEffect, useState, use } from "react";
-import { fetchRaceById, Race, fetchHeatsForRace, HeatLane, RACE_TYPE_LABELS } from "@/lib/api/races";
+import { fetchRaceById, Race, fetchHeatsForRace, HeatLane, RACE_TYPE_LABELS, RankType } from "@/lib/api/races";
 import HeatLanesTable from "@/components/heats/HeatLanesTable";
 import Link from "next/link";
+import { Leaderboard } from "@/components/results/Leaderboard";
 
 // Group flat heat lane list into a record keyed by heatId
 function groupHeatLanes(lanes: HeatLane[]): Record<string, HeatLane[]> {
@@ -20,7 +21,7 @@ export default function RaceDetailsPage({ params }: { params: Promise<{ id: stri
   const { id } = use(params);
   const [race, setRace] = useState<Race | null>(null);
   const [loading, setLoading] = useState(true);
-  const [lanes, setLanes] = useState<HeatLane[]>([]);
+  const [flatHeats, setFlatHeats] = useState<Record<string, HeatLane[]>>({});
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -34,8 +35,15 @@ export default function RaceDetailsPage({ params }: { params: Promise<{ id: stri
         }
         if (!cancelled) setRace(r);
         try {
-          const heatLaneData = await fetchHeatsForRace(Number(id));
-          if (!cancelled) setLanes(heatLaneData);
+          const heatsByRank = await fetchHeatsForRace(Number(id));
+          // Flatten all heats from all ranks into a single object by heatId
+          const flat: Record<string, HeatLane[]> = {};
+          Object.values(heatsByRank).forEach(heatsObj => {
+            Object.entries(heatsObj).forEach(([heatId, lanes]) => {
+              flat[heatId] = lanes;
+            });
+          });
+          if (!cancelled) setFlatHeats(flat);
         } catch {
           // ignore
         }
@@ -63,14 +71,22 @@ export default function RaceDetailsPage({ params }: { params: Promise<{ id: stri
         <li>Group By Rank: {race.groupByRank ? "Yes" : "No"}</li>
       </ul>
       <HeatLanesTable
-        groups={Object.entries(groupHeatLanes(lanes)).map(([heatId, arr]) => ({
-          heatId,
-          entries: arr.map(l => ({ ...l }))
-        }))}
+        groups={Object.entries(flatHeats)
+          .filter(([_, arr]) => Array.isArray(arr))
+          .map(([heatId, arr]) => ({
+            heatId,
+            entries: (arr as HeatLane[]).map(l => ({ ...l }))
+          }))}
         raceId={id}
         showStatus
         emptyMessage="No heats for this race."
       />
+      {/* Leaderboards for each rank */}
+      <div className="mt-10 space-y-8">
+        <Leaderboard raceType={race.raceType} rank={RankType.Cub} />
+        <Leaderboard raceType={race.raceType} rank={RankType.Sibling} />
+        <Leaderboard raceType={race.raceType} rank={RankType.Adult} />
+      </div>
       <Link href={`/rounds`} className="text-blue-600 hover:underline">Back to Rounds</Link>
     </Layout>
   );

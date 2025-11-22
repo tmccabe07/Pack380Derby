@@ -1,4 +1,5 @@
 "use client";
+import { VotingCategory } from "@/types/VotingCategory";
 import { useEffect, useState } from "react";
 import {
   getConfiguration,
@@ -7,25 +8,26 @@ import {
   updateSemifinalMultiplier,
   updateFinalMultiplier,
   getVotingCategories,
-  setVotingCategories,
+  updateVotingCategories,
 } from "@/lib/api/competition";
 import { useAdmin } from "@/hooks/useAdmin";
 
 export default function CompetitionConfig() {
   const [config, setConfig] = useState<{ numLanes: number; usableLanes: number[] } | null>(null);
   const [multipliers, setMultipliers] = useState<{ semifinalMultiplier: number; finalMultiplier: number } | null>(null);
-  const [votingCategories, setVotingCategories] = useState<{ name: string; description: string }[]>([]);
+  const [votingCategories, setVotingCategories] = useState<VotingCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { isAdmin } = useAdmin();
 
   useEffect(() => {
     Promise.all([getConfiguration(), getMultipliers(), getVotingCategories()])
-      .then(([cfg, mult, cats]) => {
+      .then(([cfg, mult, categories]) => {
         setConfig(cfg);
         setMultipliers(mult);
         // cats.categories is expected to be array of { name, description }
-        setVotingCategories(cats.categories || []);
+        console.log("Fetched voting categories:", categories);
+        setVotingCategories(categories || []);
       })
       .catch(() => setError("Failed to load competition config"))
       .finally(() => setLoading(false));
@@ -41,7 +43,7 @@ export default function CompetitionConfig() {
       description: descriptions[idx]?.value.trim() || ""
     })).filter(cat => cat.name);
     try {
-      await setVotingCategories(categories);
+      await updateVotingCategories(categories);
       setVotingCategories(categories);
     } catch {
       setError("Failed to update voting categories");

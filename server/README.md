@@ -409,6 +409,27 @@ sumBy mapping:
 20 = sum all cars by raceType
 30 = sum all cars by all races by role
 
+#### Get results by rank and race type
+GET /api/results/by-rank/:raceType/:rank
+
+Returns summed places (weighted by 100) for all cars by rank and race type.
+
+Example: GET /api/results/by-rank/10/cub
+Returns results for all cub rank cars in preliminary races (raceType 10)
+Note: rank in this context is cub, sibling or adult, which is the rank value in the heatlane table. 
+
+#### Get final results by rank (excluding finalists)
+GET /api/results/final-by-rank/:rank
+
+Returns the top result(s) for the specified rank across all race types, excluding any cars that made it to the finals race (raceType 30). If multiple cars are tied for the best score, all tied cars are returned.
+
+Example: GET /api/results/final-by-rank/lion
+Returns the best performing lion rank car(s) that did not make it to finals
+
+This endpoint is useful for determining "best of the rest" or consolation awards for cars that performed well but didn't advance to finals. The score aggregates weighted results (result × 100) across all preliminary, semifinal, and deadheat races.
+
+Note: This endpoint uses the rank stored in the Racer table (via car.racer.rank), not the rank field in HeatLane.
+
 ## Competition Configuration Notes
 
 - **Total Lanes**: Defines the physical number of lanes on the track (1-6)

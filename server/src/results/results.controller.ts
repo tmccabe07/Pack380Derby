@@ -48,5 +48,25 @@ export class ResultsController {
   ): Promise<RankResultsResponseDto[]> {
     return this.resultsService.getResultsByRank(rank, raceType);
   }
+
+  @Get('final-by-rank/:rank')
+  @ApiOperation({ summary: 'Get top result by rank across all races, excluding cars that are in finals' })
+  @ApiParam({
+    name: 'rank',
+    description: 'The rank to get results for',
+    example: 'lion',
+    enum: ['lion', 'tiger', 'wolf', 'bear', 'webelos', 'aol', 'cub', 'sibling', 'adult'],
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns the top result(s) for the specified rank across all race types, excluding cars in finals. Returns all cars if there is a tie for the best score.',
+    type: RankResultsResponseDto,
+    isArray: true,
+  })
+  async getFinalResultsByRank(
+    @Param('rank') rank: string
+  ): Promise<RankResultsResponseDto[]> {
+    return this.resultsService.getFinalResultsByRank(rank);
+  }
   
 }

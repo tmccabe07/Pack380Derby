@@ -27,7 +27,16 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ raceType, rank }) => {
     fetchResultsByRank(raceType, rank)
       .then((results) => {
       // Assume results is an array of { carId, carName, racerId, racerName, totalPlace }
-      setEntries(results.sort((a: LeaderboardEntry, b: LeaderboardEntry) => a.totalPlace - b.totalPlace));
+      const leaderboardEntries: LeaderboardEntry[] = results
+        .sort((a, b) => a.totalPlace - b.totalPlace)
+        .map((result) => ({
+          carId: result.carId,
+          carName: result.carName,
+          racerId: result.racerId,
+          racerName: result.racerName,
+          totalPlace: result.totalPlace, // or use another property if needed
+        }));
+      setEntries(leaderboardEntries);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -55,7 +64,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ raceType, rank }) => {
             <th className="py-2 px-2 text-left">Place</th>
             <th className="py-2 px-2 text-left">Car</th>
             <th className="py-2 px-2 text-left">Racer</th>
-            <th className="py-2 px-2 text-left">Score</th>
+            <th className="py-2 px-2 text-left">Score (lower is better)</th>
           </tr>
         </thead>
         <tbody>

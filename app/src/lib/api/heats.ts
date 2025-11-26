@@ -144,7 +144,6 @@ export async function updateHeat(id: string, entries: HeatEntry[]): Promise<Heat
   for (const entry of entries) {
     // Only send updatable fields (e.g., result and any additional fields in HeatEntry)
     const { result, ...rest } = entry;
-    const body = { ...(result !== undefined ? { result } : {}), ...rest };
     const res = await fetch(`${DERBY_API_URL}/api/heat-lane/${entry.id}/${result}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },

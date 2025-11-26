@@ -15,7 +15,6 @@ export interface HeatLanesGroup {
 interface HeatLanesTableProps {
   groups: HeatLanesGroup[]; // one or many heats
   raceId?: string | number;
-  showStatus?: boolean;
   emptyMessage?: string;
   compact?: boolean;
 }
@@ -28,7 +27,6 @@ function computeStatus(entries: CompatibleHeatEntry[]): "Upcoming" | "Completed"
 const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
   groups,
   raceId,
-  showStatus,
   emptyMessage,
   compact,
 }) => {
@@ -127,7 +125,7 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
             <th className="py-2 px-2 text-left">Place</th>
             <th className="py-2 px-2 text-left">Car</th>
             <th className="py-2 px-2 text-left">Racer</th>
-            {showStatus && <th className="py-2 px-2 text-left">Status</th>}
+            <th className="py-2 px-2 text-left">Status</th>
           </tr>
         </thead>
         <tbody>
@@ -183,7 +181,7 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
                 </td>
                 <td className="py-2 px-2">{entry.carId ? <Link href={`/cars/${entry.carId}`} className="text-blue-600 hover:underline">{entry.car?.name}</Link> : '—'}</td>
                 <td className="py-2 px-2">{entry.car?.racer ? <Link href={`/racers/${entry.car?.racerId}`} className="text-green-600 hover:underline">{entry.car?.racer?.name}</Link> : '—'}</td>
-                {showStatus && idx === 0 && (
+                {idx === 0 && (
                   <td className="py-2 px-2 align-top" rowSpan={group.entries.length}>{status}</td>
                 )}
               </tr>

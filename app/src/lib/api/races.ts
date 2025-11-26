@@ -77,6 +77,13 @@ export interface HeatLane {
 export interface CarSummary { id: number; name?: string; image?: string; racerId?: number; racer?: RacerSummary; }
 export interface RacerSummary { id: number; name?: string; rank?: string; }
 
+type CompatibleHeatEntry = HeatEntry & { carId: string | number; };
+
+function computeStatus(entries: CompatibleHeatEntry[]): "Upcoming" | "Completed" {
+  const allWithResult = entries.length > 0 && entries.every(e => typeof e.result === "number" && e.result > 0);
+  return allWithResult ? "Completed" : "Upcoming";
+}
+
 export async function fetchHeatsForRace(raceId: number): Promise<Record<RankType, Record<number, HeatLane[]>>> {
   const res = await fetch(`${DERBY_API_URL}/api/race/${raceId}/heats`);
   if (!res.ok) throw new Error(`Failed to fetch heats for race ${raceId}`);
@@ -92,7 +99,14 @@ export async function fetchHeatsForRace(raceId: number): Promise<Record<RankType
     [RankType.Adult]: {},
     [RankType.Sibling]: {},
   };
-  
+
+  // Helper to compute status for a heat
+  function computeStatus(lanes: HeatLane[]): "Upcoming" | "Completed" {
+    return lanes.length > 0 && lanes.every(l => typeof l.result === "number" && l.result > 0)
+      ? "Completed"
+      : "Upcoming";
+  }
+
   const hl = heatLanes.reduce<Record<RankType, Record<number, HeatLane[]>>>((acc, lane) => {
     const rank: RankType = (lane.car?.racer?.rank as RankType) || RankType.Cub;
     if (!acc[rank]) acc[rank] = {};
@@ -103,7 +117,17 @@ export async function fetchHeatsForRace(raceId: number): Promise<Record<RankType
     return acc;
   }, initialAcc);
 
-  console.log("Grouped heat lanes by rank and heatId:", hl);
+  // Add status to each heat group
+  Object.entries(hl).forEach(([rank, heatsById]) => {
+    Object.entries(heatsById).forEach(([heatId, lanes]) => {
+      const status = computeStatus(lanes);
+      lanes.forEach(lane => {
+        lane.status = status;
+      });
+    });
+  });
+
+  console.log("Grouped heat lanes by rank and heatId with status:", hl);
   return hl;
 }
 

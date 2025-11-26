@@ -1,7 +1,7 @@
 "use client";
 import Layout from "@/components/Layout";
 import { useEffect, useState } from "react";
-import { fetchRacesByType, fetchHeatsForRace, RACE_TYPE_LABELS, Race, HeatLane } from "@/lib/api/races";
+import { fetchRacesByType, fetchHeatsForRace, Race, HeatLane, RACE_TYPE_LABELS} from "@/lib/api/races";
 import Link from "next/link";
 import { useAdmin } from "@/hooks/useAdmin";
 
@@ -91,38 +91,58 @@ export default function RacesPage() {
                                 <thead>
                                   <tr className="bg-gray-100">
                                     <th className="py-2 px-2 text-left">Heat</th>
-                                    <th className="py-2 px-2 text-left">Cars (lane order)</th>
+                                    <th className="py-2 px-2 text-left">Cars (Completed: Place, Upcoming: lane order)</th>
+                                    <th className="py-2 px-2 text-left">Status</th>
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {Object.entries(heatsById).map(([heatId, lanes]) => (
-                                    <tr key={heatId} className="border-t">
-                                      <td className="py-2 px-2 align-top">
-                                        Heat {heatId}
-                                        {races.length > 0 && (
-                                          <>
-                                            {' '}
-                                            <Link href={withAdmin(`/races/${race.id}/heats/${heatId}`)} className="text-blue-600 hover:underline text-xs ml-2">View Heat</Link>
-                                          </>
-                                        )}
-                                      </td>
-                                      <td className="py-2 px-2">
-                                        {lanes
-                                          .sort((a, b) => a.lane - b.lane)
-                                          .map((lane, idx) => (
-                                            <span key={lane.carId}>
-                                              {/* Admin-only: wrap car name with link */}
-                                              <span className="admin">
-                                                <Link href={withAdmin(`/cars/${lane.carId}`)} className="text-blue-600 hover:underline">
-                                                  {lane.car?.name || `Car #${lane.carId}`}
-                                                </Link>
+                                  {Object.entries(heatsById).map(([heatId, lanes]) => {
+                                    // Status is stored on each lane, but all lanes in a heat have the same status
+                                    const status = lanes.length > 0 ? lanes[0].status : "";
+                                    return (
+                                      <tr key={heatId} className="border-t">
+                                        <td className="py-2 px-2 align-top">
+                                          Heat {heatId}
+                                          {races.length > 0 && (
+                                            <>
+                                              {' '}
+                                              <Link href={withAdmin(`/races/${race.id}/heats/${heatId}`)} className="text-blue-600 hover:underline text-xs ml-2">View Heat</Link>
+                                            </>
+                                          )}
+                                        </td>
+                                        <td className="py-2 px-2">
+                                          {lanes
+                                            .slice() // copy array
+                                            .sort((a, b) => {
+                                              // If both have valid result, sort by result (place)
+                                              const aHasResult = typeof a.result === 'number' && a.result > 0;
+                                              const bHasResult = typeof b.result === 'number' && b.result > 0;
+                                              if (aHasResult && bHasResult) {
+                                                return a.result! - b.result!;
+                                              }
+                                              // If neither has result, sort by lane
+                                              if (!aHasResult && !bHasResult) {
+                                                return a.lane - b.lane;
+                                              }
+                                              // If only one has result, that one comes first
+                                              return aHasResult ? -1 : 1;
+                                            })
+                                            .map((lane, idx, arr) => (
+                                              <span key={lane.carId}>
+                                                {/* Admin-only: wrap car name with link */}
+                                                <span className="admin">
+                                                  <Link href={withAdmin(`/cars/${lane.carId}`)} className="text-blue-600 hover:underline">
+                                                    {lane.car?.name || `Car #${lane.carId}`}
+                                                  </Link>
+                                                </span>
+                                                {idx < arr.length - 1 && (status === "Completed" ? " > " : " | ")}
                                               </span>
-                                              {idx < lanes.length - 1 && ", "}
-                                            </span>
-                                          ))}
-                                      </td>
-                                    </tr>
-                                  ))}
+                                            ))}
+                                        </td>
+                                        <td className="py-2 px-2">{status}</td>
+                                      </tr>
+                                    );
+                                  })}
                                 </tbody>
                               </table>
                             </div>

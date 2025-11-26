@@ -21,7 +21,8 @@ import {
   ApiResponse,
   ApiTags,
   ApiConsumes,
-  ApiBody
+  ApiBody,
+  ApiBearerAuth
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateRacerDto } from './dto/create-racer.dto';
@@ -32,6 +33,7 @@ import { RacerResponseDto } from './dto/racer-response.dto';
 
 
 @ApiTags('racer')
+@ApiBearerAuth('bearer')
 @Controller('racer')
 export class RacerController {
   constructor(private racerService: RacerService) {}

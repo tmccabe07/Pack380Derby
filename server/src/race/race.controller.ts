@@ -19,7 +19,8 @@ import {
   ApiResponse,
   ApiTags,
   ApiConsumes,
-  ApiBody
+  ApiBody,
+  ApiBearerAuth
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RaceService } from './race.service';
@@ -29,6 +30,7 @@ import { Race } from '@prisma/client';
 import { RaceResponseDto } from './dto/race-response.dto';
 
 @ApiTags('race')
+@ApiBearerAuth('bearer')
 @Controller('race')
 export class RaceController {
   constructor(private readonly raceService: RaceService) {}

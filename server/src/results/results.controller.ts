@@ -1,11 +1,12 @@
 import { Controller, Get, Body, Param, ParseIntPipe } from '@nestjs/common';
 import { ResultsService } from './results.service';
 import { CreateResultDto } from './dto/create-result.dto';
-import { ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { ResultsResponseDto } from './dto/results-response.dto';
 import { RankResultsResponseDto } from './dto/rank-results-response.dto';
 
 @ApiTags('results')
+@ApiBearerAuth('bearer')
 @Controller('results')
 export class ResultsController {
   constructor(private readonly resultsService: ResultsService) {}

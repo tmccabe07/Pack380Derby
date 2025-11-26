@@ -1,13 +1,11 @@
 "use client";
 import { useState } from "react";
-import { createRace } from "@/lib/api/races";
+import { RACE_TYPE_LABELS } from "@/lib/api/races";
 
-const raceTypes = [
-  { value: 1, label: "Prelim" },
-  { value: 10, label: "Quarterfinal" },
-  { value: 20, label: "Semi" },
-  { value: 30, label: "Final" },
-];
+const raceTypeOptions = Object.entries(RACE_TYPE_LABELS).map(([value, label]) => ({
+  value: Number(value),
+  label
+}));
 const ranks = [
   "cub", "lion", "tiger", "wolf", "bear", "webelos", "aol", "sibling", "adult"
 ];
@@ -38,7 +36,9 @@ export default function RaceForm({ onCreate }: { onCreate: (race: any) => void }
       <div>
         <label className="block font-bold mb-1">Race Type</label>
         <select value={raceType} onChange={e => setRaceType(Number(e.target.value))} className="border p-2 w-full">
-          {raceTypes.map(rt => <option key={rt.value} value={rt.value}>{rt.label}</option>)}
+          {raceTypeOptions.map((rt: { value: number; label: string }) => (
+            <option key={rt.value} value={rt.value}>{rt.label}</option>
+          ))}
         </select>
       </div>
       <div>

@@ -1,12 +1,23 @@
 // lib/api/Racers.js
 import { DERBY_API_URL } from "@/lib/config/apiConfig";
 
+export enum RankType {
+  Lion = "lion",
+  Tiger = "tiger",
+  Wolf = "wolf",
+  Bear = "bear",
+  Webelos = "webelos",
+  AOL = "aol",
+  Sibling = "sibling",
+  Adult = "adult"
+}
+
 // Define what a Racer looks like
 export interface Racer {
-    id?: string;
-    name: string;
-    rank: "lion" | "tiger" | "wolf" | "bear" | "webelos" | "aol" | "sibling" | "adult";
-    den: string;
+  id?: string;
+  name: string;
+  rank: RankType;
+  den: string;
 }
 
 export async function fetchRacerById(racerId: string): Promise<Racer> {

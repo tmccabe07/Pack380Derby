@@ -1,4 +1,49 @@
+/**
+ * Group flat heat lane list into a record keyed by heatId
+ * @param lanes Array of HeatLane objects
+ * @returns Record keyed by heatId
+ */
+export function groupHeatLanes(lanes: HeatEntry[]): Record<string, HeatEntry[]> {
+  return lanes.reduce<Record<string, HeatEntry[]>>((acc, lane) => {
+    const key = String((lane as any).heatId ?? "unknown");
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(lane);
+    return acc;
+  }, {});
+}
 
+/**
+ * Fetch all heats for a given raceId
+ * @param raceId Race ID
+ * @returns Array of Heat objects
+ */
+export async function fetchHeatsByRace(raceId: string): Promise<Heat[]> {
+  const res = await fetch(`${DERBY_API_URL}/api/heat-lane?raceId=${raceId}`);
+  if (!res.ok) throw new Error("Failed to fetch heats for race");
+  return res.json();
+}
+
+/**
+ * Fetch heats grouped by rank for a given raceId
+ * @param raceId Race ID
+ * @returns Record of heats grouped by rank
+ */
+export async function fetchHeatsByRank(raceId: string): Promise<Record<string, Heat[]>> {
+  const heats = await fetchHeatsByRace(raceId);
+  return heats.reduce<Record<string, Heat[]>>((acc, heat) => {
+    const rank = (heat as any).rank ?? "unknown";
+    if (!acc[rank]) acc[rank] = [];
+    acc[rank].push(heat);
+    return acc;
+  }, {});
+}
+
+/**
+ * Report results for a heat by ID.
+ * @param id - Heat ID
+ * @param results - Array of lane/result objects
+ * @returns Updated Heat object
+ */
 export async function reportHeat(id: string, results: { lane: number; result: number }[]): Promise<Heat> {
   const res = await fetch(`${DERBY_API_URL}/api/heat-lane/${id}/report`, {
     method: "POST",
@@ -28,6 +73,10 @@ export interface Heat {
   raceId?: string;
 }
 
+/**
+ * Fetch all heats.
+ * @returns Array of Heat objects
+ */
 export async function fetchHeats() {
   const res = await fetch(`${DERBY_API_URL}/api/heat-lane`);
   if (!res.ok) {
@@ -36,12 +85,24 @@ export async function fetchHeats() {
   return res.json();
 }
 
+/**
+ * Fetch a heat by its ID.
+ * @param id - Heat ID
+ * @returns Heat object or null if not found
+ */
 export async function fetchHeatById(id: string): Promise<Heat | null> {
   const res = await fetch(`${DERBY_API_URL}/api/heat-lane/${id}`);
   if (!res.ok) return null;
   return res.json();
 }
 
+
+/**
+ * Create a new heat with entries and optional raceId.
+ * @param entries - Array of HeatEntry objects
+ * @param raceId - Optional race ID
+ * @returns Created Heat object
+ */
 export async function createHeat(entries: HeatEntry[], raceId?: string): Promise<Heat> {
   const res = await fetch(`${DERBY_API_URL}/api/heat-lane`, {
     method: "POST",
@@ -53,12 +114,17 @@ export async function createHeat(entries: HeatEntry[], raceId?: string): Promise
   }
   return res.json();
 }
+/**
+ * Update heat entries by ID.
+ * @param id - Heat ID
+ * @param entries - Array of HeatEntry objects to update
+ * @returns Array of updated Heat objects
+ */
 export async function updateHeat(id: string, entries: HeatEntry[]): Promise<Heat[]> {
   const results: Heat[] = [];
   for (const entry of entries) {
-    // Exclude 'carId' and 'lane' if you only want to send updatable fields, or specifically exclude 'id'
-    // Here, we'll exclude 'carId', 'lane', and any 'id' property from the entry
-    const { id, carId, raceId, car, result, ...rest } = entry;
+    // Only send updatable fields (e.g., result and any additional fields in HeatEntry)
+    const { result, ...rest } = entry;
     const body = { ...(result !== undefined ? { result } : {}), ...rest };
     const res = await fetch(`${DERBY_API_URL}/api/heat-lane/${id}`, {
       method: "PATCH",
@@ -73,6 +139,11 @@ export async function updateHeat(id: string, entries: HeatEntry[]): Promise<Heat
   return results;
 }
 
+/**
+ * Delete a heat by its ID.
+ * @param id - Heat ID
+ * @returns True if deleted, false otherwise
+ */
 export async function deleteHeat(id: string): Promise<boolean> {
   const res = await fetch(`${DERBY_API_URL}/api/heat-lane/${id}`, { method: "DELETE" });
   return res.ok;

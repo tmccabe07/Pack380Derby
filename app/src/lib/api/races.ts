@@ -2,14 +2,7 @@
 export interface RaceWithRankedHeats extends Race {
   heatsByRank?: Record<RankType, Record<number, HeatLane[]>>;
 }
-// RankType enum based on server README
-export enum RankType {
-  Overall = "overall",
-  Den = "den",
-  Adult = "adult",
-  Sibling = "sibling",
-  Cub = "cub",
-}
+import { RankType } from "./racers";
 
 import { DERBY_API_URL } from "../config/apiConfig";
 
@@ -95,7 +88,8 @@ export async function fetchHeatsForRace(raceId: number): Promise<Record<RankType
     [RankType.Sibling]: {},
     [RankType.Cub]: {},
   };
-  let hl = heatLanes.reduce<Record<RankType, Record<number, HeatLane[]>>>((acc, lane) => {
+  
+  const hl = heatLanes.reduce<Record<RankType, Record<number, HeatLane[]>>>((acc, lane) => {
     const rank: RankType = (lane.car?.racer?.rank as RankType) || RankType.Cub;
     if (!acc[rank]) acc[rank] = {};
     if (lane.heatId !== undefined) {

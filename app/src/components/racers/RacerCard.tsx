@@ -5,7 +5,7 @@ import { memo } from "react";
 interface RacerCardData {
   id?: string | number;
   name: string;
-  rank: string;
+  rank: import("@/lib/api/racers").RankType;
   den: string;
 }
 
@@ -22,7 +22,7 @@ const rankColors: Record<string, { bg: string; text: string; label?: string }> =
   adult: { bg: 'bg-gray-200', text: 'text-gray-800' },
 };
 
-function RankBadge({ rank }: { rank: string }) {
+function RankBadge({ rank }: { rank: import("@/lib/api/racers").RankType }) {
   const cfg = rankColors[rank] || { bg: 'bg-gray-100', text: 'text-gray-700' };
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${cfg.bg} ${cfg.text} shadow-sm border border-white/40`}

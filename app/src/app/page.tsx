@@ -8,7 +8,8 @@ import { useState } from "react";
 import RegistrationForm from "@/components/registration/RegistrationForm";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { Leaderboard } from "@/components/results/Leaderboard";
-import { RaceType, RankType } from "@/lib/api/races";
+import { RaceType } from "@/lib/api/races";
+import { RankType } from "@/lib/api/racers";
 
 export default function Home() {
   const { data, loading, refreshing, error, lastUpdated } = useDashboardData();

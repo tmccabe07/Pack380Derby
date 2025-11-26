@@ -1,20 +1,12 @@
 "use client";
 import Layout from "@/components/Layout";
 import { useEffect, useState, use } from "react";
-import { fetchRaceById, Race, fetchHeatsForRace, HeatLane, RACE_TYPE_LABELS, RankType } from "@/lib/api/races";
+import { fetchRaceById, Race, fetchHeatsForRace, HeatLane, RACE_TYPE_LABELS } from "@/lib/api/races";
+import { RankType } from "@/lib/api/racers";
+
 import HeatLanesTable from "@/components/heats/HeatLanesTable";
 import Link from "next/link";
 import { Leaderboard } from "@/components/results/Leaderboard";
-
-// Group flat heat lane list into a record keyed by heatId
-function groupHeatLanes(lanes: HeatLane[]): Record<string, HeatLane[]> {
-  return lanes.reduce<Record<string, HeatLane[]>>((acc, lane) => {
-    const key = String(lane.heatId ?? "unknown");
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(lane);
-    return acc;
-  }, {});
-}
 
 export default function RaceDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   // Unwrap promised route params (Next.js 15+ provides params as a Promise in client components)

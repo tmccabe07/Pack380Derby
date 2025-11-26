@@ -1,5 +1,5 @@
 import React from "react";
-import { RaceType, RankType, fetchResultsByRank } from "@/lib/api/races";
+import { RaceType, fetchResultsByRank } from "@/lib/api/races";
 import CarCell from "./CarCell";
 import RacerCell from "./RacerCell";
 
@@ -13,7 +13,7 @@ interface LeaderboardEntry {
 
 interface LeaderboardProps {
   raceType: RaceType;
-  rank: RankType;
+  rank: import("@/lib/api/racers").RankType;
 }
 
 export const Leaderboard: React.FC<LeaderboardProps> = ({ raceType, rank }) => {

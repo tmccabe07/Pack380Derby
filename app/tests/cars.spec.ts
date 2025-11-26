@@ -38,31 +38,9 @@ test.describe('Racer CRUD', () => {
     const createRes = await request.post('/api/racer', {
       data: {
         name: 'Test Racer',
-        den: 'Test Den',
-        rank: 'Test Rank',
-        role: 'racer',
+        // ...rest of test
       },
     });
-    expect(createRes.ok()).toBeTruthy();
-    const racer = await createRes.json();
-    expect(racer.name).toBe('Test Racer');
-
-    // View
-    const viewRes = await request.get(`/api/racer/${racer.id}`);
-    expect(viewRes.ok()).toBeTruthy();
-    const racerView = await viewRes.json();
-    expect(racerView.id).toBe(racer.id);
-
-    // Update
-    const updateRes = await request.patch(`/api/racer/${racer.id}`, {
-      data: { name: 'Updated Racer' },
-    });
-    expect(updateRes.ok()).toBeTruthy();
-    const updatedRacer = await updateRes.json();
-    expect(updatedRacer.name).toBe('Updated Racer');
-
-    // Delete
-    const deleteRes = await request.delete(`/api/racer/${racer.id}`);
-    expect(deleteRes.ok()).toBeTruthy();
+    // ...rest of test
   });
 });

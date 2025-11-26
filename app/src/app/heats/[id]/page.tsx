@@ -64,7 +64,7 @@ export default function HeatDetailsPage({ params }: { params: Promise<{ id: stri
     });
     return (
       <Layout>
-        <h1 className="text-3xl font-bold mb-8">Report Results for Heat #{heat.id}</h1>
+        <h1 className="text-3xl font-bold mb-8">Report Results for Heat #{Number(heat.id) + 1}</h1>
         <HeatReportForm
           lanes={lanes}
           onReport={async (results) => {
@@ -86,7 +86,7 @@ export default function HeatDetailsPage({ params }: { params: Promise<{ id: stri
 
   return (
     <Layout>
-      <h1 className="text-3xl font-bold mb-8">Heat #{heat.id}</h1>
+      <h1 className="text-3xl font-bold mb-8">Heat #{Number(heat.id) + 1}</h1>
       <ul className="mb-8">
         {heat.entries.map((entry) => {
           const car = cars.find((c) => c.id === entry.carId);

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Racer, createRacer, searchRacers } from "@/lib/api/racers";
-import { Car, createCar, fetchCarForRacer, updateCar } from "@/lib/api/cars";
+import { Car, createCar, fetchCars, updateCar } from "@/lib/api/cars";
 import CarForm from "@/components/cars/CarForm";
 
 type RoleType = "scout" | "sibling" | "adult";
@@ -54,7 +54,9 @@ export default function RegistrationForm({ onRegistered }: { onRegistered?: () =
     async function loadCar() {
       if (selectedScout) {
         try {
-          const existing = await fetchCarForRacer(String(selectedScout.id));
+          const cars = await fetchCars(String(selectedScout.id));
+          const existing = cars.find(c => c.year === currentYear);
+          
           if (existing) {
             setExistingCarId(existing.id);
             setCar({
@@ -164,7 +166,7 @@ export default function RegistrationForm({ onRegistered }: { onRegistered?: () =
                         className={`p-2 cursor-pointer hover:bg-blue-100 ${selectedScout?.id === s.id ? "bg-blue-200" : ""}`}
                         onClick={() => setSelectedScout(s)}
                       >
-                        {s.name} (Rank: {s.rank}{s.den ? `, Den: ${s.den}` : ""})
+                        {s.name} (Rank: {s.rank as import("@/lib/api/racers").RankType}{s.den ? `, Den: ${s.den}` : ""})
                       </li>
                     ))}
                   </ul>

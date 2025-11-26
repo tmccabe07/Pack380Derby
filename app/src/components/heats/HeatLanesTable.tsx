@@ -136,7 +136,7 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
                 {idx === 0 && (
                   <td className="py-2 px-2 align-top" rowSpan={group.entries.length}>
                     <div className="flex flex-col gap-1">
-                      <span>Heat {group.heatId}</span>
+                      <span>Heat {Number(group.heatId) + 1}</span>
                       {raceId && (
                         <Link href={`/races/${raceId}/heats/${group.heatId}`} className="text-blue-600 hover:underline text-xs">View Heat</Link>
                       )}

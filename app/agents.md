@@ -6,5 +6,5 @@
   - Web Components wrap views of objects
   - App only provides URL routing and composition of components
 - Add unit and functional tests as appropriate for coverage
-- Use playwright as much as possible for testing
+- Use playwright as much as possible for testingg
 - always include useful comments for future developers

@@ -13,8 +13,9 @@ export default function Sidebar() {
         <Link href={withAdmin("/racers")} className="hover:underline">🧑‍🎤 Racers</Link>
         <Link href={withAdmin("/races")} className="hover:underline">🏁 Races</Link>
         <Link href={withAdmin("/voting")} className="hover:underline">🗳️ Voting</Link>
+        <Link href={withAdmin("/results")} className="hover:underline">🏆 Results</Link>
         {isAdmin && (
-          <Link href={withAdmin("/competition")} className="hover:underline">🏆 Competition</Link>
+          <Link href={withAdmin("/competition")} className="hover:underline">⚙️ Competition</Link>
         )}
       </nav>
     </div>

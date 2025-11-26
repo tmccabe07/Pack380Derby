@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { RacerModule } from './racer/racer.module';
@@ -10,6 +11,7 @@ import { RaceModule } from './race/race.module';
 import { ResultsModule } from './results/results.module';
 import { VotingModule } from './voting/voting.module';
 import { CompetitionModule } from './competition/competition.module';
+import { AuthGuard } from './common/guards/auth.guard';
 import { configuration } from '../configuration';
 
 @Module({
@@ -21,6 +23,12 @@ import { configuration } from '../configuration';
     }
   ), PrismaModule, CarModule, HeatLaneModule, RaceModule, ResultsModule, VotingModule, CompetitionModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ],
 })
 export class AppModule {}

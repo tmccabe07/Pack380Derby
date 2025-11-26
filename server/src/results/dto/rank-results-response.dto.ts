@@ -16,9 +16,11 @@ export class RankResultsResponseDto {
 
     @ApiProperty({
         example: 10,
-        description: 'Race type code (10=preliminary, 20=semi, 30=final, 40=preliminarydeadheat, 50=semideadheat)',
+        description: 'Race type code (10=preliminary, 20=semi, 30=final, 40=preliminarydeadheat, 50=semideadheat). Null when aggregating across all race types.',
+        required: false,
+        nullable: true,
     })
-    raceType: number;
+    raceType?: number | null;
 
     @ApiProperty({
         example: 106,

@@ -1,11 +1,12 @@
 import { Controller, Get, Body, Param, ParseIntPipe } from '@nestjs/common';
 import { ResultsService } from './results.service';
 import { CreateResultDto } from './dto/create-result.dto';
-import { ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { ResultsResponseDto } from './dto/results-response.dto';
 import { RankResultsResponseDto } from './dto/rank-results-response.dto';
 
 @ApiTags('results')
+@ApiBearerAuth('bearer')
 @Controller('results')
 export class ResultsController {
   constructor(private readonly resultsService: ResultsService) {}
@@ -47,6 +48,26 @@ export class ResultsController {
     @Param('rank') rank: string
   ): Promise<RankResultsResponseDto[]> {
     return this.resultsService.getResultsByRank(rank, raceType);
+  }
+
+  @Get('final-by-rank/:rank')
+  @ApiOperation({ summary: 'Get top result by rank across all races, excluding cars that are in finals' })
+  @ApiParam({
+    name: 'rank',
+    description: 'The rank to get results for',
+    example: 'lion',
+    enum: ['lion', 'tiger', 'wolf', 'bear', 'webelos', 'aol', 'cub', 'sibling', 'adult'],
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns the top result(s) for the specified rank across all race types, excluding cars in finals. Returns all cars if there is a tie for the best score.',
+    type: RankResultsResponseDto,
+    isArray: true,
+  })
+  async getFinalResultsByRank(
+    @Param('rank') rank: string
+  ): Promise<RankResultsResponseDto[]> {
+    return this.resultsService.getFinalResultsByRank(rank);
   }
   
 }

@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Put, Body, HttpException, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CompetitionService } from './competition.service';
 import { SetLanesDto } from './dto/set-lanes.dto';
 import { SetTotalLanesDto } from './dto/set-total-lanes.dto';
@@ -7,6 +7,7 @@ import { SetUsableLanesDto } from './dto/set-usable-lanes.dto';
 import { SetMultiplierDto } from './dto/set-multiplier.dto';
 
 @ApiTags('competition')
+@ApiBearerAuth('bearer')
 @Controller('competition')
 export class CompetitionController {
   constructor(private readonly competitionService: CompetitionService) {}

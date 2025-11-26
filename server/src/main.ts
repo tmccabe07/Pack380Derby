@@ -24,6 +24,15 @@ async function bootstrap() {
     .setDescription('Web Service for managing Pinewood Derby information.')
     .setVersion('1.0')
     .addTag('')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'Token',
+        description: 'Enter your API bearer token',
+      },
+      'bearer',
+    )
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, documentFactory);

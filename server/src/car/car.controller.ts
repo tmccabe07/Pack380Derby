@@ -21,7 +21,8 @@ import {
   ApiResponse,
   ApiTags,
   ApiConsumes,
-  ApiBody
+  ApiBody,
+  ApiBearerAuth
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CarService } from './car.service';
@@ -30,6 +31,7 @@ import { UpdateCarDto } from './dto/update-car.dto';
 import { Car as CarModel } from '@prisma/client';
 
 @ApiTags('car')
+@ApiBearerAuth('bearer')
 @Controller('car')
 export class CarController {
   constructor(private readonly carService: CarService) {}

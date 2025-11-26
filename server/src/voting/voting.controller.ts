@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Patch, Body, Param, Delete, ParseIntPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { VotingService } from './voting.service';
 import { CreateVoteDto } from './dto/create-vote.dto';
 import { CreateVoteCategoryDto } from './dto/create-vote-category.dto';
@@ -10,6 +10,7 @@ import { VoteCategoryResponseDto } from './dto/vote-category-response.dto';
 
 
 @ApiTags('voting')
+@ApiBearerAuth('bearer')
 @Controller('voting')
 export class VotingController {
     constructor(private readonly votingService: VotingService) {}

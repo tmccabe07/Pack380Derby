@@ -18,7 +18,8 @@ import {
   ApiResponse,
   ApiTags,
   ApiConsumes,
-  ApiBody
+  ApiBody,
+  ApiBearerAuth
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { HeatLaneService } from './heat-lane.service';
@@ -28,6 +29,7 @@ import { HeatLane as HeatLaneModel} from '@prisma/client';
 import { HeatLaneResponseDto } from './dto/heat-lane-response.dto';
 
 @ApiTags('heat-lane')
+@ApiBearerAuth('bearer')
 @Controller('heat-lane')
 export class HeatLaneController {
   constructor(private readonly heatLaneService: HeatLaneService) {}

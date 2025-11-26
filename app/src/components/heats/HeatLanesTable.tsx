@@ -32,7 +32,7 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
   emptyMessage,
   compact,
 }) => {
-  const { isAdmin } = useAdmin();
+  const { isAdmin, withAdmin } = useAdmin();
   const [editResults, setEditResults] = useState<{ [key: string]: number }>({});
   const [saving, setSaving] = useState<{ [key: string]: boolean }>({});
   // savedState: 'false' | 'true' | 'failure'
@@ -40,6 +40,7 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
   const [localGroups, setLocalGroups] = useState(groups);
+  const [heatId, setHeatId] = useState<string | number>(groups.length === 1 ? groups[0].heatId : '');
 
   // Keep localGroups in sync if groups prop changes
   React.useEffect(() => {
@@ -50,6 +51,7 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
       initialState[`${g.heatId}`] = 'false';
     });
     setSavedState(initialState);
+    setHeatId(groups.length === 1 ? groups[0].heatId : '');
   }, [groups]);
 
   if (!localGroups || localGroups.length === 0) {
@@ -138,7 +140,10 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
                     <div className="flex flex-col gap-1">
                       <span>Heat {Number(group.heatId) + 1}</span>
                       {raceId && (
-                        <Link href={`/races/${raceId}/heats/${group.heatId}`} className="text-blue-600 hover:underline text-xs">View Heat</Link>
+                        <div className="flex flex-col gap-1">
+                          <Link href={withAdmin(`/races/${raceId}/heats/${group.heatId}`)} className="text-blue-600 hover:underline text-xs">View Heat</Link>
+                          <Link href={withAdmin(`/races/${raceId}`)} className="text-blue-600 hover:underline text-xs">View Race</Link>
+                        </div>
                       )}
                     </div>
                   </td>

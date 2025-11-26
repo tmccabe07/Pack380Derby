@@ -18,9 +18,24 @@ export function groupHeatLanes(lanes: HeatEntry[]): Record<string, HeatEntry[]> 
  * @returns Array of Heat objects
  */
 export async function fetchHeatsByRace(raceId: string): Promise<Heat[]> {
-  const res = await fetch(`${DERBY_API_URL}/api/heat-lane?raceId=${raceId}`);
+  const res = await fetch(`${DERBY_API_URL}/api/race/${raceId}/heats`);
   if (!res.ok) throw new Error("Failed to fetch heats for race");
-  return res.json();
+  const heats = await res.json();
+  console.log(`fetchHeatsByRace( ${raceId} ) -> `, heats);
+  return heats;
+}
+
+/**
+ * Fetch specific heat for a given raceId
+ * @param raceId Race ID
+ * @returns Array of Heat objects
+ */
+export async function fetchHeatByRaceHeat(raceId: string, heatId: string): Promise<Heat[]> {
+  const res = await fetch(`${DERBY_API_URL}/api/race/${raceId}/heat/${heatId}`);
+  if (!res.ok) throw new Error(`Failed to fetch heat ${heatId} for race ${raceId}`);
+  const heat = {heatId: heatId, entries: await res.json()};
+  console.log(`fetchHeatByRaceHeat( ${raceId} ) -> `, heat);
+  return heat;
 }
 
 /**
@@ -93,7 +108,11 @@ export async function fetchHeats() {
 export async function fetchHeatById(id: string): Promise<Heat | null> {
   const res = await fetch(`${DERBY_API_URL}/api/heat-lane/${id}`);
   if (!res.ok) return null;
-  return res.json();
+
+  const heat = await res.json();
+  console.log(`Fetched heat ID: ${id}`, heat);
+
+  return heat;
 }
 
 
@@ -126,10 +145,9 @@ export async function updateHeat(id: string, entries: HeatEntry[]): Promise<Heat
     // Only send updatable fields (e.g., result and any additional fields in HeatEntry)
     const { result, ...rest } = entry;
     const body = { ...(result !== undefined ? { result } : {}), ...rest };
-    const res = await fetch(`${DERBY_API_URL}/api/heat-lane/${id}`, {
+    const res = await fetch(`${DERBY_API_URL}/api/heat-lane/${entry.id}/${result}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
     });
     if (!res.ok) {
       throw new Error("Failed to update heat entry");

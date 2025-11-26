@@ -47,7 +47,9 @@ export async function createRace(data: {
 export async function fetchRaces(): Promise<Race[]> {
   const res = await fetch(`${DERBY_API_URL}/api/race`);
   if (!res.ok) throw new Error("Failed to fetch races");
-  return res.json();
+  const races = await res.json();
+  console.log("fetchRaces() -> ", races);
+  return races
 }
 
 export async function fetchRaceById(id: string): Promise<Race | null> {
@@ -81,12 +83,14 @@ export async function fetchHeatsForRace(raceId: number): Promise<Record<RankType
   const heatLanes: HeatLane[] = await res.json();
 
   // Group by rankType, then by heatId
+  // Explicitly initialize all RankType keys to ensure type safety
   const initialAcc: Record<RankType, Record<number, HeatLane[]>> = {
-    [RankType.Overall]: {},
-    [RankType.Den]: {},
+    [RankType.Lion]: {},
+    [RankType.Tiger]: {},
+    [RankType.Wolf]: {},
+    [RankType.Bear]: {},
     [RankType.Adult]: {},
     [RankType.Sibling]: {},
-    [RankType.Cub]: {},
   };
   
   const hl = heatLanes.reduce<Record<RankType, Record<number, HeatLane[]>>>((acc, lane) => {

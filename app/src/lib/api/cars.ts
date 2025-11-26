@@ -1,4 +1,4 @@
-import { DERBY_API_URL } from "@/lib/config/apiConfig";
+import { fetchPinewoodAPI } from "./api";
 import { fetchRacerById } from "./racers";
 import { Racer } from "./racers";
 import { pinewoodKit } from "@/assets/images";
@@ -27,7 +27,7 @@ export interface CarRaceEntry {
  * @returns Car object or null if not found
  */
 export async function fetchCarById(carId: string): Promise<Car | null> {
-  const res = await fetch(`${DERBY_API_URL}/api/car/${carId}`);
+  const res = await fetchPinewoodAPI(`/api/car/${carId}`);
   if (!res.ok) return null;
   const car: Car = await res.json();
   if (car && car.racerId && !car.racer) {
@@ -47,9 +47,9 @@ export async function fetchCarById(carId: string): Promise<Car | null> {
  */
 export async function fetchCars(racerId?: string) {
   const url = racerId
-    ? `${DERBY_API_URL}/api/car?racerId=${encodeURIComponent(racerId)}`
-    : `${DERBY_API_URL}/api/car`;
-  const res = await fetch(url);
+    ? `/api/car?racerId=${encodeURIComponent(racerId)}`
+    : `/api/car`;
+  const res = await fetchPinewoodAPI(url);
   if (!res.ok) {
     throw new Error("Failed to fetch cars");
   }
@@ -86,7 +86,7 @@ export async function fetchCars(racerId?: string) {
  */
 export async function createCar(newCar: Omit<Car, "id">): Promise<Car> {
 console.log("Creating car:", newCar);
-  const res = await fetch(`${DERBY_API_URL}/api/car`, {
+  const res = await fetchPinewoodAPI(`/api/car`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -109,7 +109,7 @@ console.log("Creating car:", newCar);
  * @returns Updated Car object
  */
 export async function updateCar(id: string, car: Omit<Car, "id">): Promise<Car> {
-  const res = await fetch(`${DERBY_API_URL}/api/car/${id}`, {
+  const res = await fetchPinewoodAPI(`/api/car/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -128,7 +128,7 @@ export async function updateCar(id: string, car: Omit<Car, "id">): Promise<Car> 
  * @returns Array of CarRaceEntry objects
  */
 export async function fetchCarRaces(carId: string | number): Promise<CarRaceEntry[]> {
-  const res = await fetch(`${DERBY_API_URL}/api/car/${carId}/races`);
+  const res = await fetchPinewoodAPI(`/api/car/${carId}/races`);
   if (!res.ok) throw new Error("Failed to fetch car races");
   return res.json();
 }
@@ -153,6 +153,6 @@ export function getCarImage(image?: string): string {
  * @returns True if deleted, false otherwise
  */
 export async function deleteCarById(carId: string): Promise<boolean> {
-  const res = await fetch(`${DERBY_API_URL}/api/car/${carId}`, { method: "DELETE" });
+  const res = await fetchPinewoodAPI(`/api/car/${carId}`, { method: "DELETE" });
   return res.ok;
 }

@@ -1,5 +1,5 @@
 // lib/api/Racers.js
-import { DERBY_API_URL } from "@/lib/config/apiConfig";
+import { fetchPinewoodAPI } from "./api";
 
 export enum RankType {
   Lion = "lion",
@@ -22,14 +22,14 @@ export interface Racer {
 }
 
 export async function fetchRacerById(racerId: string): Promise<Racer> {
-  const res = await fetch(`${DERBY_API_URL}/api/racer/${racerId}`);
+  const res = await fetchPinewoodAPI(`/api/racer/${racerId}`);
   if (!res.ok) {
     throw new Error("Failed to fetch racer");
   }
   return res.json();
 }
 export async function fetchRacers() {
-  const res = await fetch(`${DERBY_API_URL}/api/racer`);
+  const res = await fetchPinewoodAPI(`/api/racer`);
   if (!res.ok) {
     throw new Error("Failed to fetch Racers");
   }
@@ -37,7 +37,7 @@ export async function fetchRacers() {
 }
 
 export async function createRacer(racer: Racer): Promise<Racer> {
-  const res = await fetch(`${DERBY_API_URL}/api/racer`, {
+  const res = await fetchPinewoodAPI(`/api/racer`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -53,7 +53,7 @@ export async function createRacer(racer: Racer): Promise<Racer> {
 }
 
 export async function updateRacer(id: string, racer: Racer): Promise<Racer> {
-  const res = await fetch(`${DERBY_API_URL}/api/racer/${id}`, {
+  const res = await fetchPinewoodAPI(`/api/racer/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -72,7 +72,7 @@ export async function deleteRacerById(id?: string): Promise<void> {
   if (!id) {
     throw new Error("Racer ID is required for deletion");
   }
-  const res = await fetch(`${DERBY_API_URL}/api/racer/${id}`, {
+  const res = await fetchPinewoodAPI(`/api/racer/${id}`, {
     method: "DELETE",
   });
 
@@ -82,7 +82,7 @@ export async function deleteRacerById(id?: string): Promise<void> {
 }
 
 export async function searchRacers(query: string): Promise<Racer[]> {
-  const res = await fetch(`${DERBY_API_URL}/api/racer/search?q=${encodeURIComponent(query)}`);
+  const res = await fetchPinewoodAPI(`/api/racer/search?q=${encodeURIComponent(query)}`);
   if (!res.ok) {
     throw new Error("Failed to search Racers");
   }

@@ -1,3 +1,5 @@
+import { fetchPinewoodAPI } from "./api";
+
 /**
  * Group flat heat lane list into a record keyed by heatId
  * @param lanes Array of HeatLane objects
@@ -18,7 +20,7 @@ export function groupHeatLanes(lanes: HeatEntry[]): Record<string, HeatEntry[]> 
  * @returns Array of Heat objects
  */
 export async function fetchHeatsByRace(raceId: string): Promise<Heat[]> {
-  const res = await fetch(`${DERBY_API_URL}/api/race/${raceId}/heats`);
+  const res = await fetchPinewoodAPI(`/api/race/${raceId}/heats`);
   if (!res.ok) throw new Error("Failed to fetch heats for race");
   const heats = await res.json();
   console.log(`fetchHeatsByRace( ${raceId} ) -> `, heats);
@@ -31,7 +33,7 @@ export async function fetchHeatsByRace(raceId: string): Promise<Heat[]> {
  * @returns Array of Heat objects
  */
 export async function fetchHeatByRaceHeat(raceId: string, heatId: string): Promise<Heat[]> {
-  const res = await fetch(`${DERBY_API_URL}/api/race/${raceId}/heat/${heatId}`);
+  const res = await fetchPinewoodAPI(`/api/race/${raceId}/heat/${heatId}`);
   if (!res.ok) throw new Error(`Failed to fetch heat ${heatId} for race ${raceId}`);
   const heat = {heatId: heatId, entries: await res.json()};
   console.log(`fetchHeatByRaceHeat( ${raceId} ) -> `, heat);
@@ -60,7 +62,7 @@ export async function fetchHeatsByRank(raceId: string): Promise<Record<string, H
  * @returns Updated Heat object
  */
 export async function reportHeat(id: string, results: { lane: number; result: number }[]): Promise<Heat> {
-  const res = await fetch(`${DERBY_API_URL}/api/heat-lane/${id}/report`, {
+  const res = await fetchPinewoodAPI(`/api/heat-lane/${id}/report`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ results }),
@@ -70,9 +72,6 @@ export async function reportHeat(id: string, results: { lane: number; result: nu
   }
   return res.json();
 }
-// lib/api/racers.js
-import { DERBY_API_URL } from "@/lib/config/apiConfig";
-
 // Define what a Heat looks like
 export interface HeatEntry {
   lane: number;
@@ -93,7 +92,7 @@ export interface Heat {
  * @returns Array of Heat objects
  */
 export async function fetchHeats() {
-  const res = await fetch(`${DERBY_API_URL}/api/heat-lane`);
+  const res = await fetchPinewoodAPI(`/api/heat-lane`);
   if (!res.ok) {
     throw new Error("Failed to fetch heats");
   }
@@ -106,7 +105,7 @@ export async function fetchHeats() {
  * @returns Heat object or null if not found
  */
 export async function fetchHeatById(id: string): Promise<Heat | null> {
-  const res = await fetch(`${DERBY_API_URL}/api/heat-lane/${id}`);
+  const res = await fetchPinewoodAPI(`/api/heat-lane/${id}`);
   if (!res.ok) return null;
 
   const heat = await res.json();
@@ -123,7 +122,7 @@ export async function fetchHeatById(id: string): Promise<Heat | null> {
  * @returns Created Heat object
  */
 export async function createHeat(entries: HeatEntry[], raceId?: string): Promise<Heat> {
-  const res = await fetch(`${DERBY_API_URL}/api/heat-lane`, {
+  const res = await fetchPinewoodAPI(`/api/heat-lane`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(raceId ? { entries, raceId } : { entries }),
@@ -144,7 +143,7 @@ export async function updateHeat(id: string, entries: HeatEntry[]): Promise<Heat
   for (const entry of entries) {
     // Only send updatable fields (e.g., result and any additional fields in HeatEntry)
     const { result, ...rest } = entry;
-    const res = await fetch(`${DERBY_API_URL}/api/heat-lane/${entry.id}/${result}`, {
+    const res = await fetchPinewoodAPI(`/api/heat-lane/${entry.id}/${result}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
     });
@@ -162,6 +161,6 @@ export async function updateHeat(id: string, entries: HeatEntry[]): Promise<Heat
  * @returns True if deleted, false otherwise
  */
 export async function deleteHeat(id: string): Promise<boolean> {
-  const res = await fetch(`${DERBY_API_URL}/api/heat-lane/${id}`, { method: "DELETE" });
+  const res = await fetchPinewoodAPI(`/api/heat-lane/${id}`, { method: "DELETE" });
   return res.ok;
 }

@@ -1,10 +1,10 @@
+import { fetchPinewoodAPI } from "./api";
+import { RankType } from "./racers";
+
 // Race with heats grouped by rankType and heatId
 export interface RaceWithRankedHeats extends Race {
   heatsByRank?: Record<RankType, Record<number, HeatLane[]>>;
 }
-import { RankType } from "./racers";
-
-import { DERBY_API_URL } from "../config/apiConfig";
 
 // RaceType enum based on server README
 export enum RaceType {
@@ -35,17 +35,16 @@ export async function createRace(data: {
   rank: RankType;
   groupByRank: boolean;
 }): Promise<Race> {
-  const res = await fetch(`${DERBY_API_URL}/api/race`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
+    const res = await fetchPinewoodAPI(`/api/race`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
   if (!res.ok) throw new Error("Failed to create race");
   return res.json();
 }
 
 export async function fetchRaces(): Promise<Race[]> {
-  const res = await fetch(`${DERBY_API_URL}/api/race`);
+  const res = await fetchPinewoodAPI(`/api/race`);
   if (!res.ok) throw new Error("Failed to fetch races");
   const races = await res.json();
   console.log("fetchRaces() -> ", races);
@@ -53,13 +52,13 @@ export async function fetchRaces(): Promise<Race[]> {
 }
 
 export async function fetchRaceById(id: string): Promise<Race | null> {
-  const res = await fetch(`${DERBY_API_URL}/api/race/${id}`);
+  const res = await fetchPinewoodAPI(`/api/race/${id}`);
   if (!res.ok) return null;
   return res.json();
 }
 
 export async function fetchRacesByType(raceType: RaceType): Promise<Race[]> {
-  const res = await fetch(`${DERBY_API_URL}/api/race/round/${raceType}`);
+  const res = await fetchPinewoodAPI(`/api/race/round/${raceType}`);
   if (!res.ok) throw new Error(`Failed to fetch races for raceType ${raceType}`);
   return res.json();
 }
@@ -85,7 +84,7 @@ function computeStatus(entries: CompatibleHeatEntry[]): "Upcoming" | "Completed"
 }
 
 export async function fetchHeatsForRace(raceId: number): Promise<Record<RankType, Record<number, HeatLane[]>>> {
-  const res = await fetch(`${DERBY_API_URL}/api/race/${raceId}/heats`);
+  const res = await fetchPinewoodAPI(`/api/race/${raceId}/heats`);
   if (!res.ok) throw new Error(`Failed to fetch heats for race ${raceId}`);
   const heatLanes: HeatLane[] = await res.json();
 
@@ -132,7 +131,7 @@ export async function fetchHeatsForRace(raceId: number): Promise<Record<RankType
 }
 
 export async function fetchHeatLanes(raceId: number, heatId: number): Promise<HeatLane[]> {
-  const res = await fetch(`${DERBY_API_URL}/api/race/${raceId}/heat/${heatId}`);
+  const res = await fetchPinewoodAPI(`/api/race/${raceId}/heat/${heatId}`);
   if (!res.ok) throw new Error(`Failed to fetch heat lanes for heat ${heatId} race ${raceId}`);
   return res.json();
 }
@@ -152,7 +151,7 @@ export async function fetchResultsByRank(
   raceType: RaceType,
   rank: RankType
 ): Promise<RaceResult[]> {
-  const res = await fetch(`${DERBY_API_URL}/api/results/by-rank/${raceType}/${rank}`);
+    const res = await fetchPinewoodAPI(`/api/results/by-rank/${raceType}/${rank}`);
   if (!res.ok) throw new Error(`Failed to fetch results for raceType ${raceType} and rank ${rank}`);
   return res.json();
 }

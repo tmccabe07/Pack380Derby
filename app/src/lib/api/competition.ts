@@ -1,3 +1,5 @@
+import { fetchPinewoodAPI } from "./api";
+
 // Unified configuration updater
 export async function updateConfiguration({ numLanes, usableLanes }: { numLanes: number; usableLanes: number[] }) {
   // Update total lanes and usable lanes in parallel
@@ -24,7 +26,7 @@ export async function getConfiguration() {
 }
 // Voting Categories API (now at /api/voting/category)
 export async function getVotingCategories() {
-  const res = await fetch(`${DERBY_API_URL}/api/voting/category`);
+  const res = await fetchPinewoodAPI(`/api/voting/category`);
   if (!res.ok) throw new Error("Failed to fetch voting categories");
   return res.json();
 }
@@ -33,7 +35,7 @@ import type { VotingCategory } from "@/types/VotingCategory";
 
 export async function updateVotingCategories(categories: VotingCategory[]) {
   // Fetch existing categories
-  const existingRes = await fetch(`${DERBY_API_URL}/api/voting/category`);
+  const existingRes = await fetchPinewoodAPI(`/api/voting/category`);
   if (!existingRes.ok) throw new Error("Failed to fetch existing voting categories");
   const existing = await existingRes.json();
   const categoryList: { id?: number; name: string; description?: string }[] = Array.isArray(existing)
@@ -44,7 +46,7 @@ export async function updateVotingCategories(categories: VotingCategory[]) {
   for (const cat of categoryList) {
     if (!categories.some(c => c.name === cat.name)) {
       if (cat.id !== undefined) {
-        await fetch(`${DERBY_API_URL}/api/voting/category/${cat.id}`, {
+        await fetchPinewoodAPI(`/api/voting/category/${cat.id}`, {
           method: "DELETE",
         });
       }
@@ -56,14 +58,14 @@ export async function updateVotingCategories(categories: VotingCategory[]) {
     const existingCat = categoryList.find(c => c.name === cat.name);
     if (!existingCat) {
       // Create new category
-      await fetch(`${DERBY_API_URL}/api/voting/category`, {
+      await fetchPinewoodAPI(`/api/voting/category`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: cat.name, description: cat.description }),
       });
     } else if (existingCat.description !== cat.description) {
       // Update description if changed
-      await fetch(`${DERBY_API_URL}/api/voting/category/${existingCat.id}`, {
+      await fetchPinewoodAPI(`/api/voting/category/${existingCat.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ description: cat.description }),
@@ -75,14 +77,13 @@ export async function updateVotingCategories(categories: VotingCategory[]) {
   return getVotingCategories();
 }
 
-import { DERBY_API_URL } from "@/lib/config/apiConfig";
 export async function getTotalLanes() {
-  const res = await fetch(`${DERBY_API_URL}/api/competition/total-lanes`);
+  const res = await fetchPinewoodAPI(`/api/competition/total-lanes`);
   if (!res.ok) throw new Error("Failed to fetch total lanes");
   return res.json();
 }
 export async function setTotalLanes(numLanes: number) {
-  const res = await fetch(`${DERBY_API_URL}/api/competition/total-lanes`, {
+  const res = await fetchPinewoodAPI(`/api/competition/total-lanes`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ numLanes }),
@@ -91,7 +92,7 @@ export async function setTotalLanes(numLanes: number) {
   return res.json();
 }
 export async function updateTotalLanes(numLanes: number) {
-  const res = await fetch(`${DERBY_API_URL}/api/competition/total-lanes`, {
+  const res = await fetchPinewoodAPI(`/api/competition/total-lanes`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ numLanes }),
@@ -100,12 +101,12 @@ export async function updateTotalLanes(numLanes: number) {
   return res.json();
 }
 export async function getUsableLanes() {
-  const res = await fetch(`${DERBY_API_URL}/api/competition/usable-lanes`);
+  const res = await fetchPinewoodAPI(`/api/competition/usable-lanes`);
   if (!res.ok) throw new Error("Failed to fetch usable lanes");
   return res.json();
 }
 export async function setUsableLanes(usableLanes: number[]) {
-  const res = await fetch(`${DERBY_API_URL}/api/competition/usable-lanes`, {
+  const res = await fetchPinewoodAPI(`/api/competition/usable-lanes`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ usableLanes }),
@@ -114,7 +115,7 @@ export async function setUsableLanes(usableLanes: number[]) {
   return res.json();
 }
 export async function updateUsableLanes(usableLanes: number[]) {
-  const res = await fetch(`${DERBY_API_URL}/api/competition/usable-lanes`, {
+  const res = await fetchPinewoodAPI(`/api/competition/usable-lanes`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ usableLanes }),
@@ -123,12 +124,12 @@ export async function updateUsableLanes(usableLanes: number[]) {
   return res.json();
 }
 export async function getMultipliers() {
-  const res = await fetch(`${DERBY_API_URL}/api/competition/multipliers`);
+  const res = await fetchPinewoodAPI(`/api/competition/multipliers`);
   if (!res.ok) throw new Error("Failed to fetch multipliers");
   return res.json();
 }
 export async function setSemifinalMultiplier(multiplier: number) {
-  const res = await fetch(`${DERBY_API_URL}/api/competition/semifinal-multiplier`, {
+  const res = await fetchPinewoodAPI(`/api/competition/semifinal-multiplier`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ multiplier }),
@@ -137,7 +138,7 @@ export async function setSemifinalMultiplier(multiplier: number) {
   return res.json();
 }
 export async function updateSemifinalMultiplier(multiplier: number) {
-  const res = await fetch(`${DERBY_API_URL}/api/competition/semifinal-multiplier`, {
+  const res = await fetchPinewoodAPI(`/api/competition/semifinal-multiplier`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ multiplier }),
@@ -146,7 +147,7 @@ export async function updateSemifinalMultiplier(multiplier: number) {
   return res.json();
 }
 export async function setFinalMultiplier(multiplier: number) {
-  const res = await fetch(`${DERBY_API_URL}/api/competition/final-multiplier`, {
+  const res = await fetchPinewoodAPI(`/api/competition/final-multiplier`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ multiplier }),
@@ -155,7 +156,7 @@ export async function setFinalMultiplier(multiplier: number) {
   return res.json();
 }
 export async function updateFinalMultiplier(multiplier: number) {
-  const res = await fetch(`${DERBY_API_URL}/api/competition/final-multiplier`, {
+  const res = await fetchPinewoodAPI(`/api/competition/final-multiplier`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ multiplier }),

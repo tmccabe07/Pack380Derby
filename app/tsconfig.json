@@ -23,5 +23,6 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "../tests/racers-ui.spec.ts"],
+  "types": ["vitest"],
   "exclude": ["node_modules"]
 }

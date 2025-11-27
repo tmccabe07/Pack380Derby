@@ -6,7 +6,9 @@
     "start:dev": "next dev -p 3001 --turbopack",
     "build": "next build",
     "app:start": "next start -p 3001",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@material-tailwind/react": "^2.1.10",
@@ -25,6 +27,8 @@
     "eslint-config-next": "15.3.1",
     "@playwright/test": "^1.52.0",
     "tailwindcss": "^4.1.4",
-    "typescript": "^5"    
+    "typescript": "^5",
+    "vitest": "^2.1.4",
+    "@vitest/coverage-v8": "^2.1.4"
   }
 }

@@ -370,44 +370,34 @@ e.g. POST /api/heat-lane/1/2
 This will update the heat-lane row id of 1 with the result of 2 
 
 #### Calculate results
-By Car ID and Race Type:
 
-POST /api/results
-{
-     "sumBy": 10,    
-     "carId": 1, 
-     "raceType: 10,
-     "role": "cub"
-}
+/api/results/by-rank/:raceType/:rank
 
-This will calculate the results of all heat-lane rows matching carId of 1 and raceType of 10 (aka quarterfinals).  In other words, sums up the car's results for all heats in cub quarterfinals.  
+For example:
+/api/results/by-rank/10/cub
 
-All Cars By Race Type:
-POST /api/results
-{
-     "sumBy": 20,    
-     "carId": 0, 
-     "raceType: 10,
-     "role": "cub"
-}
+will return the weighted score of total place for each car that has heatlanes that match that racetype and rank, which in this case is racetype = 10 for preliminary and rank = cub.  So all cub prelims. 
 
-This will calculate the results of all heat-lane rows matching raceType of 10 (aka quarterfinals) and role of cub.  In other words, sums up results for each car in all cub quarterfinals.
+#### Get results by rank and race type
+GET /api/results/by-rank/:raceType/:rank
 
-All Cars in All races by Role:
-POST /api/results
-{
-     "sumBy": 30,    
-     "carId": 0, 
-     "raceType: 0,
-     "role": "cub"
-}
+Returns summed places (weighted by 100) for all cars by rank and race type.
 
-This will calculate the results of all heat-lane rows matching role of cub.  In other words, sums up results for each car in all cub races. 
+Example: GET /api/results/by-rank/10/cub
+Returns results for all cub rank cars in preliminary races (raceType 10)
+Note: rank in this context is cub, sibling or adult, which is the rank value in the heatlane table. 
 
-sumBy mapping:
-10 = sum by carId AND raceType
-20 = sum all cars by raceType
-30 = sum all cars by all races by role
+#### Get final results by rank (excluding finalists)
+GET /api/results/final-by-rank/:rank
+
+Returns the top result(s) for the specified rank across all race types, excluding any cars that made it to the finals race (raceType 30). If multiple cars are tied for the best score, all tied cars are returned.
+
+Example: GET /api/results/final-by-rank/lion
+Returns the best performing lion rank car(s) that did not make it to finals
+
+This endpoint is useful for determining "best of the rest" or consolation awards for cars that performed well but didn't advance to finals. The score aggregates weighted results (result × 100) across all preliminary, semifinal, and deadheat races.
+
+Note: This endpoint uses the rank stored in the Racer table (via car.racer.rank), not the rank field in HeatLane.
 
 #### Get results by rank and race type
 GET /api/results/by-rank/:raceType/:rank

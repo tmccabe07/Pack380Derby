@@ -59,9 +59,6 @@ export default function Home() {
           </div>
 
           {/* Den Leaderboard */}
-          <div className="mb-8">
-            <Leaderboard raceType={RaceType.Preliminary} rank={RankType.Den} />
-          </div>
 
           {isAdmin && (
             <button

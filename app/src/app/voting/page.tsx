@@ -12,10 +12,9 @@ import CarCard from "@/components/cars/CarCard";
 
 export default function VotingPage() {
   const [categories, setCategories] = useState<VotingCategory[]>([]);
-  // TODO: Replace with real user identifier logic
-  const voterIdentifier = typeof window !== "undefined" ? (window.localStorage.getItem("voterIdentifier") || "anonymous") : "anonymous";
   const [cars, setCars] = useState<Car[]>([]);
   const [selected, setSelected] = useState<{ [cat: string]: string | number }>({});
+  const [activeCategory, setActiveCategory] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -29,9 +28,9 @@ export default function VotingPage() {
           fetchCars()
         ]);
         if (cancelled) return;
-        console.log("Fetched voting categories:", catRes);
         setCategories(catRes || []);
         setCars(carRes);
+        if (catRes && catRes.length > 0) setActiveCategory(catRes[0].id);
       } catch {
         if (!cancelled) setError("Failed to load voting data");
       } finally {
@@ -49,13 +48,12 @@ export default function VotingPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
-      // TODO: Replace with real voterId logic
       const voterId = typeof window !== "undefined" ? Number(window.localStorage.getItem("voterId") || 1) : 1;
       for (const category of categories) {
         const vote: VoteSubmission = {
           carId: Number(selected[category.id]),
           voterId,
-          score: 1, // Default score, update if needed
+          score: 1,
           categoryId: Number(category.id)
         };
         await submitVote(vote);
@@ -73,23 +71,61 @@ export default function VotingPage() {
   return (
     <Layout>
       <h1 className="text-3xl font-bold mb-6">Vote for...</h1>
-      <form onSubmit={handleSubmit} className="space-y-8">
+      {/* Category Tabs */}
+      <div className="flex gap-4 mb-8">
         {categories.map(category => (
-          <div key={category.id} className="mb-8">
-            <h2 className="text-xl font-semibold mb-2">{category.name}</h2>
+          <button
+            key={category.id}
+            type="button"
+            className={`px-4 py-2 rounded font-semibold border-2 transition-all flex items-center gap-2 ${activeCategory === category.id ? "border-blue-600 bg-blue-50 text-blue-800" : "border-gray-200 bg-white text-gray-700"}`}
+            onClick={() => setActiveCategory(category.id)}
+          >
+            {category.name}
+            {selected[category.id] && (
+              <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-bold">Selected</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Show selected car for each category */}
+      <div className="mb-8 flex flex-wrap gap-4">
+        {categories.map(category => (
+          selected[category.id] ? (
+            <div key={category.id} className="flex items-center gap-2 border rounded px-3 py-2 bg-blue-50">
+              <span className="font-semibold text-blue-700">{category.name}:</span>
+              <CarCard car={cars.find(car => car.id === selected[category.id])!} onlyImage={true} />
+            </div>
+          ) : null
+        ))}
+      </div>
+
+      {/* Car selection for active category */}
+      {activeCategory && (
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <button
+            type="submit"
+            className={`bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 text-lg font-bold ${Object.keys(selected).length === categories.length && categories.every(cat => selected[cat.id]) ? "" : "opacity-50 cursor-not-allowed"}`}
+            disabled={Object.keys(selected).length !== categories.length || !categories.every(cat => selected[cat.id])}
+          >
+            Submit Vote
+          </button>
+          <hr />          
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-2">{categories.find(cat => cat.id === activeCategory)?.name}</h2>            
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {cars.map(car => (
-                <div key={car.id} className={`border rounded-lg p-2 ${selected[category.id] === car.id ? "border-blue-600 bg-blue-50" : "border-gray-200"}`}>
-                  <button type="button" className="w-full" onClick={() => handleSelect(category.id, car.id)}>
+                <div key={car.id} className={`border rounded-lg p-2 ${selected[activeCategory] === car.id ? "border-blue-600 bg-blue-50" : "border-gray-200"}`}>
+                  <button type="button" className="w-full" onClick={() => handleSelect(activeCategory, car.id)}>
                     <CarCard car={car} onlyImage={true} />
                   </button>
                 </div>
               ))}
             </div>
           </div>
-        ))}
-        <button type="submit" className="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 text-lg font-bold">Submit Vote</button>
-      </form>
+
+        </form>
+      )}
     </Layout>
   );
 }

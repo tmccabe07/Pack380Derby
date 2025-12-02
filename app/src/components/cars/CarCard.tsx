@@ -28,8 +28,8 @@ export default function CarCard({ car, onlyImage = false }: CarCardProps) {
           <Image
             src={getCarImage(car.image)}
             alt={car.name}
-            width={IMAGE_DIMENSIONS[0] * 2}
-            height={IMAGE_DIMENSIONS[1] * 2}
+            width={IMAGE_DIMENSIONS[0] * 0.5}
+            height={IMAGE_DIMENSIONS[1] * 0.5}
             className="object-cover rounded"
           />
         )}

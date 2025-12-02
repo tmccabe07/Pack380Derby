@@ -33,8 +33,6 @@ export default function RaceSummaryList() {
               <ul className="text-sm mb-4">
                 <li>Type: {race.raceType}</li>
                 <li>Rank: {race.rank}</li>
-                <li>Lanes: {race.numLanes}</li>
-                <li>Group By Rank: {race.groupByRank ? "Yes" : "No"}</li>
               </ul>
               <Link href={`/races/${race.id}`} className="text-blue-600 hover:underline">View Race Details</Link>
             </div>

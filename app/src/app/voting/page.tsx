@@ -72,7 +72,7 @@ export default function VotingPage() {
 
   return (
     <Layout>
-      <h1 className="text-3xl font-bold mb-6">Vote for Your Favorite Cars</h1>
+      <h1 className="text-3xl font-bold mb-6">Vote for...</h1>
       <form onSubmit={handleSubmit} className="space-y-8">
         {categories.map(category => (
           <div key={category.id} className="mb-8">
@@ -81,7 +81,7 @@ export default function VotingPage() {
               {cars.map(car => (
                 <div key={car.id} className={`border rounded-lg p-2 ${selected[category.id] === car.id ? "border-blue-600 bg-blue-50" : "border-gray-200"}`}>
                   <button type="button" className="w-full" onClick={() => handleSelect(category.id, car.id)}>
-                    <CarCard car={car} disableLink={true} />
+                    <CarCard car={car} onlyImage={true} />
                   </button>
                 </div>
               ))}

@@ -22,9 +22,12 @@ async function main() {
     console.error('JSON file must contain an array of objects');
     process.exit(1);
   }
+
+  console.log(`Loading data from table: ${table}`);
   // Clear table before loading
   // @ts-ignore
   await prisma[table].deleteMany({});
+  
   // Insert data
   // @ts-ignore
   await prisma[table].createMany({ data });

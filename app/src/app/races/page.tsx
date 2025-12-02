@@ -61,12 +61,13 @@ export default function RacesPage() {
   return (
     <Layout>
       <h1 className="text-3xl font-bold mb-6">Race Rounds</h1>
+      <div className="layout">
       {RACE_TYPES.map(rt => {
         const races = data[rt] || [];
         console.log(`Rendering races for race type ${rt}:`, races);
         return (
           <div key={rt} className="mb-10">
-            <h2 className="text-2xl font-semibold mb-4">{RACE_TYPE_LABELS[rt as keyof typeof RACE_TYPE_LABELS] || `Type ${rt}`} ({races.length})</h2>
+            <h2 className="text-2xl font-semibold mb-8">{RACE_TYPE_LABELS[rt as keyof typeof RACE_TYPE_LABELS] || `Type ${rt}`} ({races.length})</h2>
             {races.length === 0 ? (
               <div className="text-gray-500 mb-6">No races for this round.</div>
             ) : (
@@ -76,7 +77,6 @@ export default function RacesPage() {
                     <div className="flex justify-between items-center mb-2">
                       <div>
                         <h3 className="font-bold">Race #{race.id} - Rank {race.rank}</h3>
-                        <p className="text-sm text-gray-600">Lanes: {race.numLanes} | Group By Rank: {race.groupByRank ? 'Yes' : 'No'}</p>
                       </div>
                       <Link href={`/races/${race.id}`} className="text-blue-600 hover:underline">View Race</Link>
                     </div>
@@ -102,7 +102,7 @@ export default function RacesPage() {
                                     return (
                                       <tr key={heatId} className="border-t">
                                         <td className="py-2 px-2 align-top">
-                                          Heat {heatId}
+                                          Heat {Number(heatId) + 1}
                                           {races.length > 0 && (
                                             <>
                                               {' '}
@@ -158,6 +158,7 @@ export default function RacesPage() {
           </div>
         );
       })}
+      </div>
     </Layout>
   );
 }

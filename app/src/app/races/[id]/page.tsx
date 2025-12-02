@@ -6,7 +6,6 @@ import { RankType } from "@/lib/api/racers";
 
 import HeatLanesTable from "@/components/heats/HeatLanesTable";
 import Link from "next/link";
-import { Leaderboard } from "@/components/results/Leaderboard";
 
 export default function RaceDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   // Unwrap promised route params (Next.js 15+ provides params as a Promise in client components)
@@ -59,8 +58,6 @@ export default function RaceDetailsPage({ params }: { params: Promise<{ id: stri
       <ul className="mb-8">
         <li>Type: {RACE_TYPE_LABELS[race.raceType] || race.raceType}</li>
         <li>Rank: {race.rank}</li>
-        <li>Lanes: {race.numLanes}</li>
-        <li>Group By Rank: {race.groupByRank ? "Yes" : "No"}</li>
       </ul>
       <HeatLanesTable
         groups={Object.entries(flatHeats)
@@ -73,13 +70,6 @@ export default function RaceDetailsPage({ params }: { params: Promise<{ id: stri
         showStatus
         emptyMessage="No heats for this race."
       />
-      {/* Leaderboards for each rank */}
-      <div className="mt-10 space-y-8">
-        <Leaderboard raceType={race.raceType} rank={RankType.Cub} />
-        <Leaderboard raceType={race.raceType} rank={RankType.Sibling} />
-        <Leaderboard raceType={race.raceType} rank={RankType.Adult} />
-      </div>
-      <Link href={`/rounds`} className="text-blue-600 hover:underline">Back to Rounds</Link>
     </Layout>
   );
 }

@@ -8,3 +8,11 @@ npm run start:dev
 ## Run Tests
 
 - `npx playwright test --ui`
+
+## Environment variables
+
+add these to your .env file
+```
+NEXT_PUBLIC_DERBY_API_URL=http://localhost:3000
+NEXT_PUBLIC_DERBY_API_TOKEN=
+```

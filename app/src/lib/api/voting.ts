@@ -1,6 +1,18 @@
 import { fetchPinewoodAPI } from "./api";
 import type { VoteSubmission } from "@/types/VoteSubmission";
 
+export enum VoteScoreField {
+  CarId = "carId",
+  CarName = "carName",
+  TotalScore = "totalScore"
+}
+
+export type VoteScore = {
+  [VoteScoreField.CarId]: number;
+  [VoteScoreField.CarName]: string;
+  [VoteScoreField.TotalScore]: number;
+};
+
 // Submit a vote for a car in a category, with voterIdentifier
 export async function submitVote(vote: VoteSubmission) {
   const res = await fetchPinewoodAPI(`/api/voting`, {
@@ -20,9 +32,16 @@ export async function getVotes() {
 }
 
 // Get votes for a specific category
-export async function getVotesByCategory(category: string) {
+export async function getVoteByCategory(category: string) {
   const res = await fetchPinewoodAPI(`/api/voting/category/${encodeURIComponent(category)}`);
   if (!res.ok) throw new Error("Failed to fetch votes for category");
+  return res.json();
+}
+
+// Get vote scores for a specific category
+export async function getVoteScoresByCategory(category: string): Promise<VoteScore[]> {
+  const res = await fetchPinewoodAPI(`/api/voting/category/${encodeURIComponent(category)}/scores`);
+  if (!res.ok) throw new Error("Failed to fetch vote scores for category");
   return res.json();
 }
 

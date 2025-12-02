@@ -25,7 +25,7 @@ export async function getConfiguration() {
   };
 }
 // Voting Categories API (now at /api/voting/category)
-export async function getVotingCategories() {
+export async function getVotingCategories(): Promise<VotingCategory[]> {
   const res = await fetchPinewoodAPI(`/api/voting/category`);
   if (!res.ok) throw new Error("Failed to fetch voting categories");
   return res.json();

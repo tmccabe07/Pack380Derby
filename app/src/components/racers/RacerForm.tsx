@@ -75,6 +75,7 @@ export default function RacerForm({ racer: initialRacer, onSubmit }: RacerFormPr
           <label className="block text-sm font-bold mb-1">Search Scout Name</label>
           <input
             type="text"
+            aria-label="name"
             className="border p-2 w-full"
             value={search}
             onChange={e => { setSearch(e.target.value); setSelectedScout(null); }}

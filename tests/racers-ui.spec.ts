@@ -9,7 +9,7 @@ test.describe('Racer CRUD UI', () => {
     const racerName = `Playwright Racer ${timestamp}`;
     const denName = `5`;
     // Go to racers list
-    await page.goto('http://localhost:3001/racers');
+    await page.goto('http://localhost:3001/racers?admin=true');
     await expect(page).toHaveTitle(/Pinewood Derby/);
 
     // Click to add a new racer

@@ -281,5 +281,72 @@ export class ResultsService {
     const topScore = sortedResults[0].totalPlace;
     return sortedResults.filter(result => result.totalPlace === topScore);
   }
+
+  async getAllResultsByRank(rank: string): Promise<RankResultsResponseDto[]> {
+    // Get all heat lanes for cars whose racers have the specified rank, across ALL race types
+    const heatLanes = await this.prisma.heatLane.findMany({
+      select: {
+        carId: true,
+        result: true,
+        raceType: true,
+        car: {
+          select: {
+            racer: {
+              select: {
+                rank: true,
+              },
+            },
+          },
+        },
+      },
+      where: {
+        result: {
+          not: 0,
+        },
+        car: {
+          racer: {
+            rank: rank,
+          },
+        },
+      },
+    });
+
+    // Group results by carId and calculate weighted score across all races
+    const carResults = new Map<number, { rank: string; totalPlace: number }>();
+
+    heatLanes.forEach((lane) => {
+      if (lane.carId && lane.result !== null) {
+        const weightedScore = lane.result * 100;
+        const existing = carResults.get(lane.carId);
+        const racerRank = lane.car?.racer?.rank || rank;
+        if (existing) {
+          existing.totalPlace += weightedScore;
+        } else {
+          carResults.set(lane.carId, {
+            rank: racerRank,
+            totalPlace: weightedScore,
+          });
+        }
+      }
+    });
+
+    // Convert to array and sort by totalPlace (ascending - lower is better)
+    const sortedResults = Array.from(carResults.entries())
+      .map(([carId, data]) => ({
+        carId,
+        rank: data.rank,
+        raceType: undefined, // Not applicable since we're aggregating across all race types
+        totalPlace: data.totalPlace,
+      }))
+      .sort((a, b) => a.totalPlace - b.totalPlace);
+
+    // Return all cars with the best score (handles ties)
+    if (sortedResults.length === 0) {
+      return [];
+    }
+
+    const topScore = sortedResults[0].totalPlace;
+    return sortedResults.filter(result => result.totalPlace === topScore);
+  }
   
 }

@@ -17,7 +17,9 @@ export default function RacesPage() {
   const [data, setData] = useState<Record<number, RaceWithHeats[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { withAdmin } = useAdmin();
+  const { isAdmin, withAdmin } = useAdmin();
+
+  
 
   useEffect(() => {
     let cancelled = false;
@@ -60,7 +62,16 @@ export default function RacesPage() {
 
   return (
     <Layout>
-      <h1 className="text-3xl font-bold mb-6">Race Rounds</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold">Race Rounds</h1>
+        {isAdmin && (
+          <Link href={withAdmin("/races/create")}
+            className="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition"
+          >
+            + Create Race
+          </Link>
+        )}
+      </div>
       <div className="layout">
       {RACE_TYPES.map(rt => {
         const races = data[rt] || [];

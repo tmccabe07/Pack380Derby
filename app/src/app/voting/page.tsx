@@ -5,7 +5,7 @@ import { getVotingCategories } from "@/lib/api/competition";
 // Import VotingCategory type
 import { VotingCategory } from "@/types/VotingCategory";
 import type { Car } from "@/lib/api/cars";
-import { fetchCars } from "@/lib/api/cars";
+import { fetchCarsForCubs } from "@/lib/api/cars";
 import { submitVote } from "@/lib/api/voting";
 import type { VoteSubmission } from "@/types/VoteSubmission";
 import CarCard from "@/components/cars/CarCard";
@@ -25,7 +25,7 @@ export default function VotingPage() {
       try {
         const [catRes, carRes] = await Promise.all([
           getVotingCategories(),
-          fetchCars()
+          fetchCarsForCubs()
         ]);
         if (cancelled) return;
         setCategories(catRes || []);

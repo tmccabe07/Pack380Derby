@@ -11,6 +11,7 @@ export class RacerService {
   constructor(private prisma: PrismaService) {}
 
   async createRacer(data: CreateRacerDto): Promise<Racer> {
+    console.log('Creating racer with data:', data);
     return await this.prisma.racer.create({
       data: {
         ...data,
@@ -22,7 +23,7 @@ export class RacerService {
   async update(id: number, updateData: UpdateRacerDto): Promise<Racer> {
     const checkIndex = await this.prisma.racer.findUnique({
       where: {
-        id: id, 
+        id: id,
       },
     })
 

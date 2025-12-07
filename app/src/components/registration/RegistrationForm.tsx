@@ -94,7 +94,7 @@ export default function RegistrationForm({ onRegistered }: { onRegistered?: () =
         racerId = String(selectedScout.id);
       } else {
         if (!newRacerName.trim()) throw new Error("Enter a name for the racer");
-        const created = await createRacer({ name: newRacerName.trim(), rank: role, den: "" });
+        const created = await createRacer({ name: newRacerName.trim(), rank: role, den: role });
         racerId = String(created.id);
       }
       // Determine create vs update

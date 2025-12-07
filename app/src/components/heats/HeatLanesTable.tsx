@@ -123,8 +123,9 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
             <th className="py-2 px-2 text-left">Heat</th>
             <th className="py-2 px-2 text-left">Lane</th>
             <th className="py-2 px-2 text-left">Place</th>
-            <th className="py-2 px-2 text-left">Car</th>
-            <th className="py-2 px-2 text-left">Racer</th>
+            <th className="py-2 px-2 text-left">Car #</th>
+            <th className="py-2 px-2 text-left">Car Name</th>
+            <th className="py-2 px-2 text-left">Racer Name</th>
             <th className="py-2 px-2 text-left">Status</th>
           </tr>
         </thead>
@@ -179,6 +180,7 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
                     entry.result ?? 0
                   )}
                 </td>
+                <td className="py-2 px-2">{entry.carId ? <Link href={`/cars/${entry.carId}`} className="text-blue-600 hover:underline">{entry.carId}</Link> : '—'}</td>
                 <td className="py-2 px-2">{entry.carId ? <Link href={`/cars/${entry.carId}`} className="text-blue-600 hover:underline">{entry.car?.name}</Link> : '—'}</td>
                 <td className="py-2 px-2">{entry.car?.racer ? <Link href={`/racers/${entry.car?.racerId}`} className="text-green-600 hover:underline">{entry.car?.racer?.name}</Link> : '—'}</td>
                 {idx === 0 && (

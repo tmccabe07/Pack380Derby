@@ -142,3 +142,4 @@ dist
 .tfstate.*
 *.tfstate
 *.backup
+iac/derby.pem

@@ -17,4 +17,4 @@ db_password = "adminadmin"     # Change this
 # EC2 configuration
 ami_id = "ami-08982f1c5bf93d976"  # Amazon Linux 2023 AMI in us-east-1
 instance_type = "t3.micro"
-key_name = "my_ec2_key"        # Change this to your existing key pair name
+key_name = "derby"        # Change this to your existing key pair name

@@ -34,7 +34,7 @@ export default function RaceForm({ onCreate }: { onCreate: (race: any) => void }
         <input type="number" min={2} max={6} value={numLanes} onChange={e => setNumLanes(Number(e.target.value))} className="border p-2 w-24" />
       </div>
       <div>
-        <label className="block font-bold mb-1">Race Type</label>
+        <label className="block font-bold mb-1">Existing Race</label>
         <select value={raceType} onChange={e => setRaceType(Number(e.target.value))} className="border p-2 w-full">
           {raceTypeOptions.map((rt: { value: number; label: string }) => (
             <option key={rt.value} value={rt.value}>{rt.label}</option>

@@ -59,7 +59,7 @@ export async function createCar(car: Omit<Car, "id">): Promise<Car> {
   }
 
   const createdCar: Car = await res.json();
-  attachRacerGetter(createdCar);
+  // attachRacerGetter(createdCar);
   return createdCar;
 }
 

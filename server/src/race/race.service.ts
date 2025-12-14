@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { CreateRaceDto } from './dto/create-race.dto';
 import { UpdateRaceDto } from './dto/update-race.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -10,6 +10,7 @@ import { CompetitionService } from '../competition/competition.service';
 
 @Injectable()
 export class RaceService {
+  private readonly logger = new Logger(RaceService.name);
 
   constructor(private prisma: PrismaService, 
     private progression: RaceProgressionService,
@@ -20,16 +21,19 @@ export class RaceService {
     const { raceType, rank, groupByRank } = createRaceDto;
     const currentStage = raceType as RaceStage;
     const numLanes = this.competitionService.getNumLanes();
+
+    this.logger.debug(`createRaceAndHeats called with raceType: ${raceType}`);
     
     // To start everything, create the PRELIMINARY
     if (currentStage === RaceStage.INITIALIZE) {
+      this.logger.debug('createRaceAndHeats: creating preliminary race');
       return this.generator.createPreliminaryRace(rank as RacerType, groupByRank);
     }
 
     // Get results from this current stage and its corresponding deadheat stage
     const results = await this.getStageResults(currentStage, rank);
 
-    //console.log("results from current stage: ", results);
+    this.logger.debug(`results from current stage: ${JSON.stringify(results)}`);
 
     const nextStage = this.progression.getNextStage(currentStage);
       if (!nextStage) {
@@ -39,14 +43,14 @@ export class RaceService {
     // Calculate who advances for the next stage
     const advancingCount = await this.progression.calculateAdvancingCount(nextStage, numLanes, rank as RacerType);
 
-    //console.log("advancingCount: ", advancingCount);
+    this.logger.debug(`advancingCount: ${advancingCount}`);
 
     const { advancing, needsTiebreaker, tiedCarIds } = 
       await this.progression.determineAdvancingResults(results, advancingCount);
 
-    //console.log("needsTiebreaker: ", needsTiebreaker);
-    //console.log("tiedCarIds: ", tiedCarIds);
-    //console.log("these cars are advancing: ", advancing);
+    this.logger.debug(`needsTiebreaker: ${needsTiebreaker}`);
+    this.logger.debug(`tiedCarIds: ${JSON.stringify(tiedCarIds)}`);
+    this.logger.debug(`these cars are advancing: ${JSON.stringify(advancing)}`);
 
     // Either handle tie breakers if needed by creating deadheat, or create this stage's race with all the advancers
     if (needsTiebreaker) {

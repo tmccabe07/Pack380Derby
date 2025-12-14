@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Racer } from '@prisma/client';
 import { CreateRacerDto } from './dto/create-racer.dto';
@@ -6,6 +6,8 @@ import { UpdateRacerDto } from './dto/update-racer.dto';
 
 @Injectable()
 export class RacerService {
+  private readonly logger = new Logger(RacerService.name);
+  
   constructor(private prisma: PrismaService) {}
 
   async createRacer(data: CreateRacerDto): Promise<Racer> {
@@ -104,11 +106,11 @@ export class RacerService {
     try {
       // Convert buffer to string and normalize line endings
       const content = fileBuffer.toString('utf-8').replace(/\r\n/g, '\n');
-      console.log('Raw content:', content);
+      this.logger.debug(`Raw content: ${content}`);
       
       // Split into lines and remove empty lines
       const lines = content.split('\n').filter(line => line.trim().length > 0);
-      console.log('Lines after split:', lines);
+      this.logger.debug(`Lines after split: ${JSON.stringify(lines)}`);
       
       if (lines.length === 0) {
         throw new BadRequestException('CSV file is empty');
@@ -116,7 +118,7 @@ export class RacerService {
 
       // Validate header
       const header = lines[0].toLowerCase().trim();
-      console.log('Header:', header);
+      this.logger.debug(`Header: ${header}`);
       if (header !== 'name,den,rank') {
         throw new BadRequestException(`Invalid CSV header. Expected: 'name,den,rank', Got: '${header}'`);
       }
@@ -124,10 +126,10 @@ export class RacerService {
       // Process each line
       for (const line of lines.slice(1)) {
         try {
-          console.log('Processing line:', line);
+          this.logger.debug(`Processing line: ${line}`);
           
           const fields = line.split(',').map(field => field.trim());
-          console.log('Split fields:', fields);
+          this.logger.debug(`Split fields: ${JSON.stringify(fields)}`);
           
           if (fields.length !== 3) {
             throw new Error(`Expected 3 fields (name,den,rank), but got ${fields.length} fields`);
@@ -153,20 +155,20 @@ export class RacerService {
             rank: normalizedRank,
           });
 
-          console.log('Successfully created racer:', name);
+          this.logger.log(`Successfully created racer: ${name}`);
           results.success++;
         } catch (error) {
-          console.error('Error processing line:', line, error);
+          this.logger.error(`Error processing line: ${line}`, error.stack);
           results.failed++;
           results.errors.push(`Failed to import racer from line: ${line}. Error: ${error.message}`);
         }
       }
     } catch (error) {
-      console.error('Fatal error during import:', error);
+      this.logger.error('Fatal error during import:', error.stack);
       throw new BadRequestException(`CSV import failed: ${error.message}`);
     }
 
-    console.log('Import completed:', results);
+    this.logger.log(`Import completed: ${JSON.stringify(results)}`);
     return results;
   }
 }

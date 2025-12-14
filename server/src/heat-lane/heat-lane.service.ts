@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { CreateHeatLaneDto } from './dto/create-heat-lane.dto';
 import { UpdateHeatLaneDto } from './dto/update-heat-lane.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -6,6 +6,8 @@ import { HeatLane, Prisma } from '@prisma/client';
 
 @Injectable()
 export class HeatLaneService {
+  private readonly logger = new Logger(HeatLaneService.name);
+  
   constructor(private prisma: PrismaService) {}
   
   async create(createHeatLaneDto: CreateHeatLaneDto) : Promise<HeatLane> {
@@ -170,11 +172,11 @@ export class HeatLaneService {
     try {
       // Convert buffer to string and normalize line endings
       const content = fileBuffer.toString('utf-8').replace(/\r\n/g, '\n');
-      console.log('Raw content:', content);
+      this.logger.debug(`Raw content: ${content}`);
       
       // Split into lines and remove empty lines
       const lines = content.split('\n').filter(line => line.trim().length > 0);
-      console.log('Lines after split:', lines);
+      this.logger.debug(`Lines after split: ${JSON.stringify(lines)}`);
       
       if (lines.length === 0) {
         throw new BadRequestException('CSV file is empty');
@@ -182,7 +184,7 @@ export class HeatLaneService {
 
       // Validate header
       const header = lines[0].toLowerCase().trim();
-      console.log('Header:', header);
+      this.logger.debug(`Header: ${header}`);
       if (header !== 'lane,result,carid,heatid,raceid,racetype,rank') {
         throw new BadRequestException(
           `Invalid CSV header. Expected: 'lane,result,carid,heatid,raceid,racetype,rank', Got: '${header}'`
@@ -192,10 +194,10 @@ export class HeatLaneService {
       // Process each line
       for (const line of lines.slice(1)) {
         try {
-          console.log('Processing line:', line);
+          this.logger.debug(`Processing line: ${line}`);
           
           const fields = line.split(',').map(field => field.trim());
-          console.log('Split fields:', fields);
+          this.logger.debug(`Split fields: ${JSON.stringify(fields)}`);
           
           if (fields.length !== 7) {
             throw new Error(`Expected 7 fields, but got ${fields.length} fields`);
@@ -258,20 +260,20 @@ export class HeatLaneService {
             rank: normalizedRank
           });
 
-          console.log('Successfully created heat lane:', { lane, heatId, raceId });
+          this.logger.log(`Successfully created heat lane: lane=${lane}, heatId=${heatId}, raceId=${raceId}`);
           results.success++;
         } catch (error) {
-          console.error('Error processing line:', line, error);
+          this.logger.error(`Error processing line: ${line}`, error.stack);
           results.failed++;
           results.errors.push(`Failed to import heat lane from line: ${line}. Error: ${error.message}`);
         }
       }
     } catch (error) {
-      console.error('Fatal error during import:', error);
+      this.logger.error('Fatal error during import:', error.stack);
       throw new BadRequestException(`CSV import failed: ${error.message}`);
     }
 
-    console.log('Import completed:', results);
+    this.logger.log(`Import completed: ${JSON.stringify(results)}`);
     return results;
   }
 }

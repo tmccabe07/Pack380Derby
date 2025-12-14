@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { CreateCarDto } from './dto/create-car.dto';
 import { UpdateCarDto } from './dto/update-car.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -7,6 +7,8 @@ import { Car } from '@prisma/client';
 
 @Injectable()
 export class CarService {
+  private readonly logger = new Logger(CarService.name);
+  
   constructor(private prisma: PrismaService) {}
 
   async create(data: CreateCarDto) : Promise<Car> {
@@ -113,11 +115,11 @@ export class CarService {
     try {
       // Convert buffer to string and normalize line endings
       const content = fileBuffer.toString('utf-8').replace(/\r\n/g, '\n');
-      console.log('Raw content:', content);
+      this.logger.debug(`Raw content: ${content}`);
       
       // Split into lines and remove empty lines
       const lines = content.split('\n').filter(line => line.trim().length > 0);
-      console.log('Lines after split:', lines);
+      this.logger.debug(`Lines after split: ${JSON.stringify(lines)}`);
       
       if (lines.length === 0) {
         throw new BadRequestException('CSV file is empty');
@@ -125,7 +127,7 @@ export class CarService {
 
       // Validate header
       const header = lines[0].toLowerCase().trim();
-      console.log('Header:', header);
+      this.logger.debug(`Header: ${header}`);
       if (header !== 'name,weight,racerid,year,image') {
         throw new BadRequestException(
           `Invalid CSV header. Expected: 'name,weight,racerid,year,image', Got: '${header}'`
@@ -135,9 +137,9 @@ export class CarService {
       // Process each line
       for (const line of lines.slice(1)) {
         try {
-          console.log('Processing line:', line);
+          this.logger.debug(`Processing line: ${line}`);
           const fields = line.split(',').map((field) => field.trim());
-          console.log('Split fields:', fields);
+          this.logger.debug(`Split fields: ${JSON.stringify(fields)}`);
           if (fields.length !== 5) {
             throw new Error(
               `Expected 5 fields, but got ${fields.length} fields`,
@@ -182,10 +184,10 @@ export class CarService {
           };
           await this.create(carDto);
 
-          console.log('Successfully created car:', name);
+          this.logger.log(`Successfully created car: ${name}`);
           results.success++;
         } catch (error) {
-          console.error('Error processing line:', line, error);
+          this.logger.error(`Error processing line: ${line}`, error.stack);
           results.failed++;
           results.errors.push(
             `Failed to import car from line: ${line}. Error: ${error.message}`,
@@ -193,11 +195,11 @@ export class CarService {
         }
       }
     } catch (error) {
-      console.error('Fatal error during import:', error);
+      this.logger.error('Fatal error during import:', error.stack);
       throw new BadRequestException(`CSV import failed: ${error.message}`);
     }
 
-    console.log('Import completed:', results);
+    this.logger.log(`Import completed: ${JSON.stringify(results)}`);
     return results;
   }
 

@@ -1,4 +1,3 @@
-import { DERBY_API_URL } from "@/lib/config/apiConfig";
 import { fetchCars } from "./cars";
 import { fetchRacers } from "./racers";
 

@@ -1,3 +1,7 @@
+.saved-failure {
+  background-color: #ef4444 !important; /* Tailwind red-500 */
+  border-color: #ef4444 !important;
+}
 @import "tailwindcss";
 
 :root {
@@ -24,3 +28,33 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+/* Save button state styles for HeatLanesTable */
+.saved-true {
+  background-color: #22c55e !important; /* Tailwind green-500 */
+  border-color: #22c55e !important;
+}
+.saved-false {
+  background-color: #2563eb !important; /* Tailwind blue-600 */
+  border-color: #2563eb !important;
+}
+.saved-true:hover {
+  background-color: #16a34a !important; /* Tailwind green-600 */
+  border-color: #16a34a !important;
+}
+.saved-failure:hover {
+  background-color: #dc2626 !important; /* Tailwind red-600 */
+  border-color: #dc2626 !important;
+}
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem; 
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+} 

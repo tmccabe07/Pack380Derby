@@ -1,36 +1,48 @@
 // lib/api/Racers.js
-import { DERBY_API_URL } from "@/lib/config/apiConfig";
+import { fetchPinewoodAPI } from "./api";
+
+export enum RankType {
+  Lion = "lion",
+  Tiger = "tiger",
+  Wolf = "wolf",
+  Bear = "bear",
+  Webelos = "webelos",
+  Cub = "cub",
+  AOL = "aol",
+  Sibling = "sibling",
+  Adult = "adult"
+}
 
 // Define what a Racer looks like
 export interface Racer {
-    id?: string;
-    name: string;
-    rank: "lion" | "tiger" | "wolf" | "bear" | "webelos" | "aol" | "sibling" | "adult";
-    den: string;
+  id?: string;
+  name: string;
+  rank: RankType;
+  den: string;
 }
 
 export async function fetchRacerById(racerId: string): Promise<Racer> {
-  const res = await fetch(`${DERBY_API_URL}/api/racer/${racerId}`);
+  const res = await fetchPinewoodAPI(`/api/racer/${racerId}`);
   if (!res.ok) {
     throw new Error("Failed to fetch racer");
   }
   return res.json();
 }
 export async function fetchRacers() {
-  const res = await fetch(`${DERBY_API_URL}/api/racer`);
+  const res = await fetchPinewoodAPI(`/api/racer`);
   if (!res.ok) {
     throw new Error("Failed to fetch Racers");
   }
   return res.json();
 }
 
-export async function createRacer(Racer: Racer): Promise<Racer> {
-  const res = await fetch(`${DERBY_API_URL}/api/racer`, {
+export async function createRacer(racer: Racer): Promise<Racer> {
+  const res = await fetchPinewoodAPI(`/api/racer`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(Racer),
+    body: JSON.stringify(racer),
   });
 
   if (!res.ok) {
@@ -40,13 +52,13 @@ export async function createRacer(Racer: Racer): Promise<Racer> {
   return res.json();
 }
 
-export async function updateRacer(id: string, Racer: Racer): Promise<Racer> {
-  const res = await fetch(`${DERBY_API_URL}/api/racer/${id}`, {
+export async function updateRacer(id: string, racer: Racer): Promise<Racer> {
+  const res = await fetchPinewoodAPI(`/api/racer/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(Racer),
+    body: JSON.stringify(racer),
   });
 
   if (!res.ok) {
@@ -60,7 +72,7 @@ export async function deleteRacerById(id?: string): Promise<void> {
   if (!id) {
     throw new Error("Racer ID is required for deletion");
   }
-  const res = await fetch(`${DERBY_API_URL}/api/racer/${id}`, {
+  const res = await fetchPinewoodAPI(`/api/racer/${id}`, {
     method: "DELETE",
   });
 
@@ -70,7 +82,7 @@ export async function deleteRacerById(id?: string): Promise<void> {
 }
 
 export async function searchRacers(query: string): Promise<Racer[]> {
-  const res = await fetch(`${DERBY_API_URL}/api/racer/search?q=${encodeURIComponent(query)}`);
+  const res = await fetchPinewoodAPI(`/api/racer/search?q=${encodeURIComponent(query)}`);
   if (!res.ok) {
     throw new Error("Failed to search Racers");
   }

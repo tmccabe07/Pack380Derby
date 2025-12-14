@@ -44,3 +44,9 @@ modify the `.env` for your configuration
 ```bash
 npm run start:dev
 ```
+
+
+## Testing
+
+### Playwright
+

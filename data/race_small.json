@@ -1,0 +1,8 @@
+[
+  { "id": 1, "raceName": "Preliminary 1", "raceType": 10, "rank": "cub", "numLanes": 4 },
+  { "id": 2, "raceName": "Preliminary 2", "raceType": 10, "rank": "sibling", "numLanes": 4 },
+  { "id": 3, "raceName": "Preliminary 3", "raceType": 10, "rank": "adult", "numLanes": 2 },
+  { "id": 4, "raceName": "Semifinal 1", "raceType": 20, "rank": "cub", "numLanes": 5 },
+  { "id": 5, "raceName": "Semifinal 2", "raceType": 20, "rank": "sibling", "numLanes": 5 },
+  { "id": 6, "raceName": "Final", "raceType": 30, "rank": "cub", "numLanes": 6 }
+]

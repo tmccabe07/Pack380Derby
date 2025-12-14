@@ -4,6 +4,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ResultsResponseDto } from './dto/results-response.dto';
 import { RankResultsResponseDto } from './dto/rank-results-response.dto';
 
+// Used to calculate weighted score: PLACE_WEIGHT_MULTIPLIER * original lane result
+const PLACE_WEIGHT_MULTIPLIER = 100
+
 @Injectable()
 export class ResultsService {
   
@@ -163,12 +166,12 @@ export class ResultsService {
 
     //console.log("getResultsByRank - heatLanes:", heatLanes);
 
-    // Group results by carId and calculate weighted score (100 * original lane result)
+    // Group results by carId and calculate weighted score (PLACE_WEIGHT_MULTIPLIER * original lane result)
     const carResults = new Map<number, { rank: string; raceType: number; totalPlace: number }>();
 
     heatLanes.forEach((lane) => {
       if (lane.carId && lane.result !== null) {
-        const weightedScore = lane.result * 100; // Calculate weighted score: 100 * original lane result
+        const weightedScore = lane.result * PLACE_WEIGHT_MULTIPLIER; // Calculate weighted score: PLACE_WEIGHT_MULTIPLIER * original lane result
         const existing = carResults.get(lane.carId);
         if (existing) {
           existing.totalPlace += weightedScore;

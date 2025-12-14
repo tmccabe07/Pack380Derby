@@ -1,4 +1,4 @@
-import { DERBY_API_URL } from "@/lib/config/apiConfig";
+import { fetchPinewoodAPI } from "./api";
 export interface Person {
   id: number;
   name: string;
@@ -16,7 +16,7 @@ export interface Car {
 }
 
 export async function fetchPersonById(racerId: number): Promise<Person> {
-  const res = await fetch(`${DERBY_API_URL}/api/racer/${racerId}`);
+  const res = await fetchPinewoodAPI(`/api/racer/${racerId}`);
   if (!res.ok) {
     throw new Error("Failed to fetch racer");
   }
@@ -25,7 +25,7 @@ export async function fetchPersonById(racerId: number): Promise<Person> {
 
 // Patch fetchCars to attach the getter to each car
 export async function fetchCars() {
-  const res = await fetch(`${DERBY_API_URL}/api/car`);
+  const res = await fetchPinewoodAPI(`/api/car`);
   if (!res.ok) {
     throw new Error("Failed to fetch cars");
   }
@@ -46,7 +46,7 @@ export async function fetchCars() {
 }
 
 export async function createCar(car: Omit<Car, "id">): Promise<Car> {
-  const res = await fetch(`${DERBY_API_URL}/api/car`, {
+  const res = await fetchPinewoodAPI(`/api/car`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -64,7 +64,7 @@ export async function createCar(car: Omit<Car, "id">): Promise<Car> {
 }
 
 export async function fetchCarById(id: string): Promise<Car | null> {
-  const res = await fetch(`${DERBY_API_URL}/api/car/${id}`);
+  const res = await fetchPinewoodAPI(`/api/car/${id}`);
   if (!res.ok) return null;
   const car: Car = await res.json();
   if (car && car.racerId && !car.racer) {

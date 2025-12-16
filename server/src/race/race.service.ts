@@ -18,7 +18,7 @@ export class RaceService {
     private competitionService: CompetitionService) {}
 
   async createRaceAndHeats(createRaceDto: CreateRaceDto) {
-    const { raceType, racerType, groupByRank } = createRaceDto;
+    const { raceType, racerType } = createRaceDto;
     const currentStage = raceType as RaceStage;
     const numLanes = this.competitionService.getNumLanes();
 
@@ -27,7 +27,7 @@ export class RaceService {
     // To start everything, create the PRELIMINARY
     if (currentStage === RaceStage.INITIALIZE) {
       this.logger.debug('createRaceAndHeats: creating preliminary race');
-      return this.generator.createPreliminaryRace(racerType as RacerType, groupByRank);
+      return this.generator.createPreliminaryRace(racerType as RacerType);
     }
 
     // Get results from this current stage and its corresponding deadheat stage
@@ -335,7 +335,7 @@ async findRoundByRaceType(raceType: number) {
           }
 
           // Validate rank
-          const validRacerTypes = ['lion', 'tiger', 'wolf', 'bear', 'webelos', 'aol', 'cub', 'sibling', 'adult'];
+          const validRacerTypes = ['cub', 'sibling', 'adult'];
           const normalizedRacerType = racerType.toLowerCase();
           if (!validRacerTypes.includes(normalizedRacerType)) {
             throw new Error(`Invalid racerType: ${racerType}. Must be one of: ${validRacerTypes.join(', ')}`);

@@ -58,9 +58,8 @@ export class RaceGenerationService {
   }
 
   async createPreliminaryRace(
-    racerType: RacerType, 
-    groupByRank?: boolean
-  ): Promise<Race | Race[]> {
+    racerType: RacerType
+  ): Promise<Race> {
     
     // Get all eligible cars for the given racer type
     const cars = await this.prisma.car.findMany({
@@ -80,48 +79,11 @@ export class RaceGenerationService {
       }
     });
 
-    // If grouping by rank is not requested, create a single race
-    if (!groupByRank) {
-      return this.createRace(
-        RaceStage.PRELIMINARY,
-        cars,
-        racerType
-      );
-    }
-
-    // Group cars by rank
-    const rankGroups = new Map<string, Car[]>();
-    const carsWithRacer = await this.prisma.car.findMany({
-      where: {
-        id: {
-          in: cars.map(c => c.id)
-        }
-      },
-      include: {
-        racer: true
-      }
-    });
-
-    carsWithRacer.forEach(car => {
-      const rank = car.racer?.rank || 'unknown';
-      if (!rankGroups.has(rank)) {
-        rankGroups.set(rank, []);
-      }
-      rankGroups.get(rank)?.push(car);
-    });
-
-    // Create races for each rank group
-    const races: Race[] = [];
-    for (const [rank, rankCars] of rankGroups) {
-      const race = await this.createRace(
-        RaceStage.PRELIMINARY,
-        rankCars,
-        rank as RacerType
-      );
-      races.push(race);
-    }
-
-    return races;
+    return this.createRace(
+      RaceStage.PRELIMINARY,
+      cars,
+      racerType
+    );
   }
 
   async createRace(

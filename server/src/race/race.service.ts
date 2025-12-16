@@ -262,9 +262,12 @@ async findRoundByRaceType(raceType: number) {
   }
 
   async clearRaceTable(): Promise<string> {
+    // Delete HeatLane records first due to foreign key constraint
+    await this.prisma.$queryRaw`DELETE FROM public."HeatLane" WHERE "raceId" IS NOT NULL`
     await this.prisma.$queryRaw`DELETE FROM public."Race"`
     await this.prisma.$queryRaw`ALTER SEQUENCE public."Race_id_seq" RESTART WITH 1`;
-    return "Race table dropped and sequence restarted";
+    await this.prisma.$queryRaw`ALTER SEQUENCE public."HeatLane_id_seq" RESTART WITH 1`;
+    return "Race table and related HeatLane records cleared, sequences restarted";
   }
 
   async importRacesFromCSV(fileBuffer: Buffer): Promise<{ success: number; failed: number; errors: string[] }> {

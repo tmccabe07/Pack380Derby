@@ -122,8 +122,8 @@ export class RacerService {
       // Validate header
       const header = lines[0].toLowerCase().trim();
       this.logger.debug(`Header: ${header}`);
-      if (header !== 'name,den,rank,racerType') {
-        throw new BadRequestException(`Invalid CSV header. Expected: 'name,den,rank,racerType', Got: '${header}'`);
+      if (header !== 'name,den,rank,racertype') {
+        throw new BadRequestException(`Invalid CSV header. Expected: 'name,den,rank,racertype', Got: '${header}'`);
       }
 
       // Process each line
@@ -135,7 +135,7 @@ export class RacerService {
           this.logger.debug(`Split fields: ${JSON.stringify(fields)}`);
           
           if (fields.length !== 4) {
-            throw new Error(`Expected 4 fields (name,den,rank,racerType), but got ${fields.length} fields`);
+            throw new Error(`Expected 4 fields (name,den,rank,racertype), but got ${fields.length} fields`);
           }
 
           const [name, den, rank, racerType] = fields;
@@ -144,7 +144,7 @@ export class RacerService {
           }
 
           // Validate rank
-          const validRanks = ['lion', 'tiger', 'wolf', 'bear', 'webelos', 'aol', 'sibling', 'adult'];
+          const validRanks = ['lion', 'tiger', 'wolf', 'bear', 'webelos', 'aol', 'N/A'];
           const normalizedRank = rank.toLowerCase();
           if (!validRanks.includes(normalizedRank)) {
             throw new Error(`Invalid rank: ${rank}. Must be one of: ${validRanks.join(', ')}`);

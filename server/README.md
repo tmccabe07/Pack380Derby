@@ -166,6 +166,15 @@ DELETE /api/racer/:id
 #### Get all cars
 GET /api/car
 
+**Query Parameters:**
+- `racerId` (optional): Filter cars by racer ID
+- `include` (optional): When set to `racer`, includes the racer object in the response
+
+**Examples:**
+- `GET /api/car` - Returns all cars without racer objects
+- `GET /api/car?include=racer` - Returns all cars with racer objects included
+- `GET /api/car?racerId=25` - Returns cars filtered by racer ID
+
 #### Get car by ID
 GET /api/car/:id
 

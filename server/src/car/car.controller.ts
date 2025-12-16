@@ -45,18 +45,22 @@ export class CarController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all cars (optionally filter by racerId)' })
+  @ApiOperation({ summary: 'Get all cars (optionally filter by racerId or include racer)' })
   @ApiResponse({
     status: 200,
     description: 'All records',
     type: CarResponseDto,
     isArray: true,
   })
-  async findAll(@Query('racerId') racerId?: string): Promise<CarModel[]> {
+  async findAll(
+    @Query('racerId') racerId?: string,
+    @Query('include') include?: string
+  ): Promise<CarModel[]> {
     if (racerId) {
       return this.carService.findAllByRacerId(racerId);
     }
-    return this.carService.findAll();
+    const includeRacer = include === 'racer';
+    return this.carService.findAll(includeRacer);
   }
 
   @Get('byRank/:inputRank')

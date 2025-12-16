@@ -4,11 +4,11 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CreateRaceDto {
    @ApiProperty({
         example: 10,
-        description: 'The type of the race, valid values are 1 to generate prelim, 10 to generate semifinals, 20 to generate final',
+        description: 'The type of the race, valid values are 10 to generate prelim, 20 to generate semifinals, 30 to generate final',
         required: true,
     })
     @IsInt()
-    @IsIn([1,10,20], { message: 'raceType must be one of: 1, 10, 20'})
+    @IsIn([10,20,30], { message: 'raceType must be one of: 10, 20, 30'})
     @IsNotEmpty()
     raceType: number;
 

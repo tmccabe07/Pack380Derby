@@ -235,33 +235,34 @@ Returns race history for a specific car including race ID, heat ID, lane, result
 
 POST /api/race 
 {
-    "raceType": 1,
-    "rank": "cub",
-    "groupByRank": false
+    "raceType": 10,
+    "racerType": "cub"
 }
 
-This will create a preliminary race with a unique race id and as many heats as necessary to race all of the cars associated with the cub with the number of lanes specified as 6 per heat.  Repeat this with different raceType to create multiple races with heats. 
+This will create a preliminary race with a unique race id and as many heats as necessary to race all of the cars associated with the cub with the number of lanes specified per heat based on the competition configuration. The raceType parameter now specifies which stage you want to CREATE (not the current stage).
 
 numLanes: number of lanes that are active in a race.  Max is 6.
 
 Note: The numLanes parameter is no longer required as it uses the usable lanes configured via the competition API.
 
 raceType mapping:
-1 = initialize, which will generate a preliminary
-10 = preliminary, which will generate a semifinal or prelim-deadheat
-20 = semifinal, which will generate a final or semi-deadheat
-30 = final, not used
-40 = prelim-deadheat, which will generate a semi
-50 = semi-deadheat, which will generate final
+10 = preliminary - creates preliminary races from all cars
+20 = semifinal - creates semifinal races based on preliminary results (or prelim-deadheat if ties need resolution)
+30 = final - creates final races based on semifinal results (or semi-deadheat if ties need resolution)
 
-rank: 
+Note: Deadheat races (40=prelim-deadheat, 50=semi-deadheat) are automatically created when needed to resolve ties. After completing deadheat races, call the same endpoint again with the same raceType to create the intended stage.
+
+Example workflow:
+1. POST /api/race with raceType=10 to create preliminary races
+2. Complete preliminary races and record results
+3. POST /api/race with raceType=20 to create semifinals (may create prelim-deadheat if there are ties)
+4. If deadheat was created, complete it and call POST /api/race with raceType=20 again to create semifinals
+5. Complete semifinal races and record results
+6. POST /api/race with raceType=30 to create finals (may create semi-deadheat if there are ties)
+7. If deadheat was created, complete it and call POST /api/race with raceType=30 again to create finals
+
+racerType: 
 cub = all cub ranks, inclusive of lion, tiger, wolf, bear, webelos, aol
-lion = specific to lion rank (includes all lion dens)
-tiger = specific to tiger rank (includes all tiger dens)
-wolf = specific to wolf rank (includes all wolf dens)
-bear = specific to bear rank (includes all bear dens)
-webelos = specific to webelos rank (includes all webelos dens)
-aol = specific to aol rank (includes all aol dens)
 sibling = all siblings
 adult = all adults
 

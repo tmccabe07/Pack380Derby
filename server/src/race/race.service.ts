@@ -19,31 +19,32 @@ export class RaceService {
 
   async createRaceAndHeats(createRaceDto: CreateRaceDto) {
     const { raceType, racerType } = createRaceDto;
-    const currentStage = raceType as RaceStage;
+    const targetStage = raceType as RaceStage;
     const numLanes = this.competitionService.getNumLanes();
 
-    this.logger.debug(`createRaceAndHeats called with raceType: ${raceType}`);
+    this.logger.debug(`createRaceAndHeats called with raceType: ${raceType} (target stage to create)`);
     
-    // To start everything, create the PRELIMINARY
-    if (currentStage === RaceStage.INITIALIZE) {
+    // Create the PRELIMINARY race - this is the starting point
+    if (targetStage === RaceStage.PRELIMINARY) {
       this.logger.debug('createRaceAndHeats: creating preliminary race');
       return this.generator.createPreliminaryRace(racerType as RacerType);
     }
 
-    // Get results from this current stage and its corresponding deadheat stage
-    const results = await this.getStageResults(currentStage, racerType);
+    // For all other stages, we need to get results from the previous stage
+    const previousStage = this.progression.getPreviousStage(targetStage);
+    if (!previousStage) {
+      throw new Error(`Cannot create ${targetStage}: no previous stage found`);
+    }
 
-    this.logger.debug(`results from current stage: ${JSON.stringify(results)}`);
+    // Get results from the previous stage and its corresponding deadheat stage
+    const results = await this.getStageResults(previousStage, racerType);
 
-    const nextStage = this.progression.getNextStage(currentStage);
-      if (!nextStage) {
-        throw new Error(`No next stage defined for ${currentStage}`);
-      }
+    this.logger.debug(`results from previous stage (${previousStage}): ${JSON.stringify(results)}`);
 
-    // Calculate who advances for the next stage
-    const advancingCount = await this.progression.calculateAdvancingCount(nextStage, numLanes, racerType as RacerType);
+    // Calculate who advances to the target stage
+    const advancingCount = await this.progression.calculateAdvancingCount(targetStage, numLanes, racerType as RacerType);
 
-    this.logger.debug(`advancingCount: ${advancingCount}`);
+    this.logger.debug(`advancingCount for ${targetStage}: ${advancingCount}`);
 
     const { advancing, needsTiebreaker, tiedCarIds } = 
       await this.progression.determineAdvancingResults(results, advancingCount);
@@ -52,11 +53,11 @@ export class RaceService {
     this.logger.debug(`tiedCarIds: ${JSON.stringify(tiedCarIds)}`);
     this.logger.debug(`these cars are advancing: ${JSON.stringify(advancing)}`);
 
-    // Either handle tie breakers if needed by creating deadheat, or create this stage's race with all the advancers
+    // Either handle tie breakers if needed by creating deadheat, or create the target stage's race with all the advancers
     if (needsTiebreaker) {
-      const deadheatStage = this.progression.getDeadheatStage(currentStage);
+      const deadheatStage = this.progression.getDeadheatStage(previousStage);
       if (!deadheatStage) {
-        throw new Error(`No deadheat stage defined for ${currentStage}`);
+        throw new Error(`No deadheat stage defined for previous stage ${previousStage}`);
       }
       return this.generator.createDeadheatRace(
         tiedCarIds,
@@ -66,10 +67,10 @@ export class RaceService {
     }
     else{
 
-    // Create next stage race
+    // Create target stage race
       return this.generator.createNextStageRace(
         advancing,
-        nextStage,
+        targetStage,
         racerType as RacerType
       );
 

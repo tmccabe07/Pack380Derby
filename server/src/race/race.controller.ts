@@ -87,8 +87,11 @@ export class RaceController {
   }
   
   @Post()
-  @ApiOperation({ summary: 'Create quarterfinal, semifinal or final race, with heats, including any needed deadheats' })
-  @ApiCreatedResponse({ description: 'Semi or Final Race created successfully', type: RaceResponseDto })
+  @ApiOperation({ 
+    summary: 'Create race and heats for a specific stage', 
+    description: 'Creates races for the specified stage (raceType). Use raceType=10 for preliminary, raceType=20 for semifinal, raceType=30 for final. If deadheats are needed, they will be created automatically. Re-call with the same raceType after resolving deadheats to create the intended stage.'
+  })
+  @ApiCreatedResponse({ description: 'Race created successfully', type: RaceResponseDto })
   @ApiBadRequestResponse({ description: 'Bad Request' }) 
   async createRaceAndHeats(@Body() createRaceDto: CreateRaceDto) {
     return await this.raceService.createRaceAndHeats(createRaceDto);

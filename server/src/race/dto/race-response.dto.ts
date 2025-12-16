@@ -18,7 +18,7 @@ export class RaceResponseDto implements RaceModel {
 
     @ApiProperty({
         example: 1,
-        description: 'The type of race (e.g., 10 for preliminary, 20 for semifinal, 30 for final)',
+        description: 'The type of race (e.g., 10 for preliminary, 20 for semifinal, 30 for final, 40 for prelim-deadheat, 50 for semi-deadheat)',
         required: true
     })
     raceType: number;

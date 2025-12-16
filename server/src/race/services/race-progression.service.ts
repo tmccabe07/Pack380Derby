@@ -123,6 +123,16 @@ export class RaceProgressionService {
     return this.defaultConfigs[currentStage]?.deadheatStage ?? null;
   }
 
+  getPreviousStage(targetStage: RaceStage): RaceStage | null {
+    // Find which stage has targetStage as its nextStage
+    for (const [stage, config] of Object.entries(this.defaultConfigs)) {
+      if (config.nextStage === targetStage) {
+        return parseInt(stage) as RaceStage;
+      }
+    }
+    return null;
+  }
+
   async determineAdvancingResults(
     results: RaceResult[],
     targetCount: number

@@ -1,8 +1,7 @@
-import { Controller, Get, Body, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Query, Param } from '@nestjs/common';
 import { ResultsService } from './results.service';
-import { CreateResultDto } from './dto/create-result.dto';
-import { ApiOperation, ApiResponse, ApiTags, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
-import { ResultsResponseDto } from './dto/results-response.dto';
+import { ApiOperation, ApiResponse, ApiTags, ApiQuery, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import { UnifiedResultsResponseDto } from './dto/unified-results-response.dto';
 import { RankResultsResponseDto } from './dto/rank-results-response.dto';
 
 @ApiTags('results')
@@ -12,45 +11,52 @@ export class ResultsController {
   constructor(private readonly resultsService: ResultsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Calculate race results based on sumby code and parameters'})
-  @ApiResponse({
-      status: 200,
-      description: 'Returns calculated race results based on the sumby code',
-      type: ResultsResponseDto,
-      isArray: true
-    })
-  async getRaceResults(@Body() createResultDto: CreateResultDto): Promise<ResultsResponseDto[]> {
-    return this.resultsService.getRaceResults(createResultDto);
-  }
-
-  @Get('by-rank/:raceType/:rank')
-  @ApiOperation({ summary: 'Get summed places for all cars by rank and race type, with 100 added to each place' })
-  @ApiParam({
-    name: 'rank',
-    description: 'The rank to get results for',
-    example: 'cub',
-    enum: ['cub', 'sibling', 'adult'],
+  @ApiOperation({ 
+    summary: 'Get weighted total results with flexible filtering',
+    description: `
+      Returns weighted total results for all cars in all heatlanes based on the include parameter.
+      
+      Examples:
+      - ?include=cub - All results for racerType=cub
+      - ?include=sibling - All results for racerType=sibling
+      - ?include=adult - All results for racerType=adult
+      - ?include=cub,10 - Results for racerType=cub and raceType=10
+      - ?include=10 - All results for raceType=10
+      - ?include=lion - All results for rank=lion
+      - ?include=lion,10 - Results for rank=lion and raceType=10
+      - ?include=cub&exclude=30 - Results for racerType=cub excluding raceType=30
+      - ?include=lion&exclude=10,20 - Results for rank=lion excluding raceTypes 10 and 20
+      
+      The weighted total is calculated as: sum of (result * 100) for each heat.
+      Lower weighted totals indicate better performance.
+    `
   })
-  @ApiParam({
-    name: 'raceType',
-    description: 'Race type code (10=preliminary, 20=semi, 30=final, 40=preliminarydeadheat, 50=semideadheat)',
-    example: 10,
-    type: 'number',
+  @ApiQuery({
+    name: 'include',
+    description: 'Comma-separated filter values. Can be: racerType (cub/sibling/adult), raceType (10/20/30/40/50), rank (lion/tiger/wolf/bear/webelos/aol), or combinations like "cub,10" or "lion,20"',
+    example: 'cub',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'exclude',
+    description: 'Comma-separated raceType values to exclude (10/20/30/40/50). Example: "30" or "10,20"',
+    example: '30',
+    required: false,
   })
   @ApiResponse({
     status: 200,
-    description: 'Returns summed places for all cars in the specified rank and race type',
-    type: RankResultsResponseDto,
+    description: 'Returns weighted total results based on the specified filters',
+    type: UnifiedResultsResponseDto,
     isArray: true,
   })
-  async getResultsByRank(
-    @Param('raceType', ParseIntPipe) raceType: number,
-    @Param('rank') rank: string
-  ): Promise<RankResultsResponseDto[]> {
-    return this.resultsService.getResultsByRank(rank, raceType);
+  async getResults(
+    @Query('include') include: string,
+    @Query('exclude') exclude?: string
+  ): Promise<UnifiedResultsResponseDto[]> {
+    return this.resultsService.getUnifiedResults(include, exclude);
   }
 
-  @Get('final-by-rank/:rank')
+  @Get('best-of-the-rest/:rank')
   @ApiOperation({ summary: 'Get top result by rank across all races, excluding cars that are in finals' })
   @ApiParam({
     name: 'rank',
@@ -64,30 +70,9 @@ export class ResultsController {
     type: RankResultsResponseDto,
     isArray: true,
   })
-  async getFinalResultsByRank(
+  async getBestOfTheRest(
     @Param('rank') rank: string
   ): Promise<RankResultsResponseDto[]> {
-    return this.resultsService.getFinalResultsByRank(rank);
+    return this.resultsService.getBestOfTheRest(rank);
   }
-
-  @Get('all-by-rank/:rank')
-  @ApiOperation({ summary: 'Get top result by rank across all races, including cars that are in finals' })
-  @ApiParam({
-    name: 'rank',
-    description: 'The rank to get results for',
-    example: 'lion',
-    enum: ['lion', 'tiger', 'wolf', 'bear', 'webelos', 'aol', 'cub', 'sibling', 'adult'],
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Returns the top result(s) for the specified rank across all race types, including cars in finals. Returns all cars if there is a tie for the best score.',
-    type: RankResultsResponseDto,
-    isArray: true,
-  })
-  async getAllResultsByRank(
-    @Param('rank') rank: string
-  ): Promise<RankResultsResponseDto[]> {
-    return this.resultsService.getAllResultsByRank(rank);
-  }
-  
 }

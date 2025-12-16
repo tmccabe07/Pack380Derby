@@ -17,8 +17,13 @@ export class CarService {
     });
  }
 
-  async findAll() : Promise<Car[]> {
+  async findAll(includeRacer: boolean = false) : Promise<Car[]> {
     return await this.prisma.car.findMany({
+      ...(includeRacer && {
+        include: {
+          racer: true,
+        },
+      }),
       orderBy: [
         {
           id: 'asc',

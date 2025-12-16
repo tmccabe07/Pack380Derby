@@ -167,7 +167,7 @@ async findRoundByRaceType(raceType: number) {
     });
   }
 
-  async findRoundByRaceTypeAndRank(raceType: number, racerType: string) {
+  async findRoundByRaceTypeAndRacerType(raceType: number, racerType: string) {
     return await this.prisma.race.findMany({
       where: {
         raceType: raceType,
@@ -335,7 +335,7 @@ async findRoundByRaceType(raceType: number) {
             throw new Error(`Invalid race type: ${raceType}. Must be a valid RaceStage value`);
           }
 
-          // Validate rank
+          // Validate racer type
           const validRacerTypes = ['cub', 'sibling', 'adult'];
           const normalizedRacerType = racerType.toLowerCase();
           if (!validRacerTypes.includes(normalizedRacerType)) {

@@ -194,22 +194,22 @@ export class RaceController {
     return races;
   }
 
-  @Get('round/:raceType/:rank')
-  @ApiOperation({ summary: 'Get all races for a specific round (race type and rank combination)' })
+  @Get('round/:raceType/:racerType')
+  @ApiOperation({ summary: 'Get all races for a specific round (race type and racer type combination)' })
   @ApiResponse({
     status: 200,
     description: 'All races for the specified round',
     type: RaceResponseDto,
     isArray: true
   })
-  async findRoundByRaceTypeAndRank(
+  async findRoundByRaceTypeAndRacerType(
     @Param('raceType', ParseIntPipe) raceType: number,
-    @Param('rank') rank: string
+    @Param('racerType') racerType: string
   ) {
-    const races = await this.raceService.findRoundByRaceTypeAndRank(raceType, rank);
+    const races = await this.raceService.findRoundByRaceTypeAndRacerType(raceType, racerType);
     
     if (races.length === 0) {
-      throw new NotFoundException(`No races found for race type ${raceType} and rank ${rank}.`);
+      throw new NotFoundException(`No races found for race type ${raceType} and racer type ${racerType}.`);
     }
 
     return races;

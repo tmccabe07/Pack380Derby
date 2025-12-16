@@ -18,7 +18,7 @@ export class RaceService {
     private competitionService: CompetitionService) {}
 
   async createRaceAndHeats(createRaceDto: CreateRaceDto) {
-    const { raceType, rank, groupByRank } = createRaceDto;
+    const { raceType, racerType, groupByRank } = createRaceDto;
     const currentStage = raceType as RaceStage;
     const numLanes = this.competitionService.getNumLanes();
 
@@ -27,11 +27,11 @@ export class RaceService {
     // To start everything, create the PRELIMINARY
     if (currentStage === RaceStage.INITIALIZE) {
       this.logger.debug('createRaceAndHeats: creating preliminary race');
-      return this.generator.createPreliminaryRace(rank as RacerType, groupByRank);
+      return this.generator.createPreliminaryRace(racerType as RacerType, groupByRank);
     }
 
     // Get results from this current stage and its corresponding deadheat stage
-    const results = await this.getStageResults(currentStage, rank);
+    const results = await this.getStageResults(currentStage, racerType);
 
     this.logger.debug(`results from current stage: ${JSON.stringify(results)}`);
 
@@ -41,7 +41,7 @@ export class RaceService {
       }
 
     // Calculate who advances for the next stage
-    const advancingCount = await this.progression.calculateAdvancingCount(nextStage, numLanes, rank as RacerType);
+    const advancingCount = await this.progression.calculateAdvancingCount(nextStage, numLanes, racerType as RacerType);
 
     this.logger.debug(`advancingCount: ${advancingCount}`);
 
@@ -61,7 +61,7 @@ export class RaceService {
       return this.generator.createDeadheatRace(
         tiedCarIds,
         deadheatStage,
-        rank as RacerType
+        racerType as RacerType
       );
     }
     else{
@@ -70,7 +70,7 @@ export class RaceService {
       return this.generator.createNextStageRace(
         advancing,
         nextStage,
-        rank as RacerType
+        racerType as RacerType
       );
 
     }
@@ -166,11 +166,11 @@ async findRoundByRaceType(raceType: number) {
     });
   }
 
-  async findRoundByRaceTypeAndRank(raceType: number, rank: string) {
+  async findRoundByRaceTypeAndRank(raceType: number, racerType: string) {
     return await this.prisma.race.findMany({
       where: {
         raceType: raceType,
-        rank: rank.toLowerCase()
+        racerType: racerType.toLowerCase()
       },
       orderBy: [
         { id: 'asc' }
@@ -178,7 +178,7 @@ async findRoundByRaceType(raceType: number) {
     });
   }
 
-  async getStageResults(stage: RaceStage, rank: string): Promise<Array<{ carId: number; totalScore: number }>> {
+  async getStageResults(stage: RaceStage, racerType: string): Promise<Array<{ carId: number; totalScore: number }>> {
     // Get all heat results for this stage and its corresponding deadheat stage
     const deadheatStage = this.progression.getDeadheatStage(stage);
     const stages = deadheatStage ? [stage, deadheatStage] : [stage];
@@ -188,7 +188,7 @@ async findRoundByRaceType(raceType: number) {
         raceType: {
           in: stages
         },
-        rank: rank,
+        racerType: racerType,
         car: {
           name: { not: 'blank' } // Exclude blank cars
         }
@@ -290,9 +290,9 @@ async findRoundByRaceType(raceType: number) {
       // Validate header
       const header = lines[0].toLowerCase().trim();
       console.log('Header:', header);
-      if (header !== 'racename,numlanes,racetype,rank') {
+      if (header !== 'racename,numlanes,racetype,racertype') {
         throw new BadRequestException(
-          `Invalid CSV header. Expected: 'racename,numlanes,racetype,rank', Got: '${header}'`
+          `Invalid CSV header. Expected: 'racename,numlanes,racetype,racertype', Got: '${header}'`
         );
       }
 
@@ -308,7 +308,7 @@ async findRoundByRaceType(raceType: number) {
             throw new Error(`Expected 4 fields, but got ${fields.length} fields`);
           }
 
-          const [raceName, numLanesStr, raceTypeStr, rank] = fields;
+          const [raceName, numLanesStr, raceTypeStr, racerType] = fields;
 
           // Validate required name
           if (!raceName) {
@@ -332,10 +332,10 @@ async findRoundByRaceType(raceType: number) {
           }
 
           // Validate rank
-          const validRanks = ['lion', 'tiger', 'wolf', 'bear', 'webelos', 'aol', 'cub', 'sibling', 'adult'];
-          const normalizedRank = rank.toLowerCase();
-          if (!validRanks.includes(normalizedRank)) {
-            throw new Error(`Invalid rank: ${rank}. Must be one of: ${validRanks.join(', ')}`);
+          const validRacerTypes = ['lion', 'tiger', 'wolf', 'bear', 'webelos', 'aol', 'cub', 'sibling', 'adult'];
+          const normalizedRacerType = racerType.toLowerCase();
+          if (!validRacerTypes.includes(normalizedRacerType)) {
+            throw new Error(`Invalid racerType: ${racerType}. Must be one of: ${validRacerTypes.join(', ')}`);
           }
 
           // Create race
@@ -344,7 +344,7 @@ async findRoundByRaceType(raceType: number) {
               raceName,
               numLanes,
               raceType,
-              rank: normalizedRank
+              racerType: normalizedRacerType
             }
           });
 

@@ -12,6 +12,7 @@ model Racer {
   name      String? @db.VarChar(255)
   den       String? @db.VarChar(30)
   rank      String? @db.VarChar(30)
+  racerType String? @db.VarChar(30)
   car Car?
   votes Vote[]
 }
@@ -38,14 +39,14 @@ model HeatLane {
   race Race? @relation(fields: [raceId], references: [id])
   raceId Int?
   raceType Int? 
-  rank String?
+  racerType String?
 }
 
 model Race {
   id Int @id @default(autoincrement())
   raceName String? @db.VarChar(255)
   raceType Int?
-  rank String? @db.VarChar(30)
+  racerType String? @db.VarChar(30)
   numLanes Int 
   lane HeatLane[]
 }

@@ -66,9 +66,9 @@ export class HeatLaneResponseDto implements HeatLaneModel {
     raceType: number | null;
 
     @ApiProperty({
-        example: 'tiger',
-        description: 'The rank of the racer (e.g., tiger, wolf, bear)',
+        example: 'cub',
+        description: 'The racer type category (e.g., cub, sibling, adult)',
         required: false
     })
-    rank: string | null;
+    racerType: string | null;
 }

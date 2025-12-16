@@ -23,11 +23,11 @@ export class RaceResponseDto implements RaceModel {
     raceType: number | null;
 
     @ApiProperty({
-        example: 'tiger',
-        description: 'The rank category for this race (e.g., cub, sibling, adult, tiger, wolf, bear)',
+        example: 'cub',
+        description: 'The racer type category for this race (e.g., cub, sibling, adult)',
         required: false
     })
-    rank: string | null;
+    racerType: string | null;
 
     @ApiProperty({
         example: 6,

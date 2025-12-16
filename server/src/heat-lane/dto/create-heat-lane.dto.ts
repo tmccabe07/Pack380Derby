@@ -25,5 +25,5 @@ export class CreateHeatLaneDto {
 
     @IsString()
     @IsIn(['cub', 'sibling', 'adult'])
-    rank: string;
+    racerType: string;
 }

@@ -56,7 +56,7 @@ export class RaceGenerationService {
     const cars = await this.prisma.car.findMany({
       where: {
         racer: {
-          rank: racerType === RacerType.CUB 
+          racerType: racerType === RacerType.CUB 
             ? { notIn: [RacerType.SIBLING, RacerType.ADULT] }
             : { equals: racerType }
         },
@@ -81,7 +81,18 @@ export class RaceGenerationService {
 
     // Group cars by rank
     const rankGroups = new Map<string, Car[]>();
-    cars.forEach(car => {
+    const carsWithRacer = await this.prisma.car.findMany({
+      where: {
+        id: {
+          in: cars.map(c => c.id)
+        }
+      },
+      include: {
+        racer: true
+      }
+    });
+
+    carsWithRacer.forEach(car => {
       const rank = car.racer?.rank || 'unknown';
       if (!rankGroups.has(rank)) {
         rankGroups.set(rank, []);
@@ -121,7 +132,7 @@ export class RaceGenerationService {
         raceName: config.stageName,
         numLanes: effectiveLanesPerHeat,
         raceType: stage,
-        rank: racerType
+        racerType: racerType
       }
     });
 
@@ -154,7 +165,7 @@ export class RaceGenerationService {
             heatId: heatIndex,
             raceId: race.id,
             raceType: stage,
-            rank: racerType
+            racerType: racerType
           }
         });
         heatLanes.push(heatLane);

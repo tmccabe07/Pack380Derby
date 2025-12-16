@@ -51,7 +51,7 @@ export class ResultsService {
           },
           where: {
             raceType: raceType,
-            rank: rank,
+            racerType: rank,
           },
           orderBy: {
             raceId: 'asc',
@@ -68,7 +68,7 @@ export class ResultsService {
             id: true,
           },
           where: {
-            rank: rank,
+            racerType: rank,
           },
           orderBy: {
             raceId: 'asc',
@@ -152,11 +152,11 @@ export class ResultsService {
       select: {
         carId: true,
         result: true,
-        rank: true,
+        racerType: true,
         raceType: true,
       },
       where: {
-        rank: rank,
+        racerType: rank,
         raceType: raceType,
         result: {
           not: 0, // Only include records with actual results, since 0 would weight as 0 anyway
@@ -177,7 +177,7 @@ export class ResultsService {
           existing.totalPlace += weightedScore;
         } else {
           carResults.set(lane.carId, {
-            rank: lane.rank || rank,
+            rank: lane.racerType || rank,
             raceType: lane.raceType || raceType,
             totalPlace: weightedScore,
           });

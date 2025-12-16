@@ -17,7 +17,7 @@ export class HeatLaneService {
         result: createHeatLaneDto.result,
         heatId: createHeatLaneDto.heatId,
         raceType: createHeatLaneDto.raceType,
-        rank: createHeatLaneDto.rank,
+        racerType: createHeatLaneDto.racerType,
         car: createHeatLaneDto.carId ? {
           connect: { id: createHeatLaneDto.carId }
         } : undefined,
@@ -126,7 +126,7 @@ export class HeatLaneService {
       heatId: checkIndex.heatId,
       raceId: checkIndex.raceId,
       raceType: checkIndex.raceType,
-      rank: checkIndex.rank
+      racerType: checkIndex.racerType
     }
 
     return await this.prisma.heatLane.update({
@@ -185,9 +185,9 @@ export class HeatLaneService {
       // Validate header
       const header = lines[0].toLowerCase().trim();
       this.logger.debug(`Header: ${header}`);
-      if (header !== 'lane,result,carid,heatid,raceid,racetype,rank') {
+      if (header !== 'lane,result,carid,heatid,raceid,racetype,racertype') {
         throw new BadRequestException(
-          `Invalid CSV header. Expected: 'lane,result,carid,heatid,raceid,racetype,rank', Got: '${header}'`
+          `Invalid CSV header. Expected: 'lane,result,carid,heatid,raceid,racetype,racertype', Got: '${header}'`
         );
       }
 
@@ -203,7 +203,7 @@ export class HeatLaneService {
             throw new Error(`Expected 7 fields, but got ${fields.length} fields`);
           }
 
-          const [laneStr, resultStr, carIdStr, heatIdStr, raceIdStr, raceTypeStr, rank] = fields;
+          const [laneStr, resultStr, carIdStr, heatIdStr, raceIdStr, raceTypeStr, racerType] = fields;
 
           // Convert and validate numeric fields
           const lane = parseInt(laneStr);
@@ -224,11 +224,11 @@ export class HeatLaneService {
           const raceType = parseInt(raceTypeStr);
           if (isNaN(raceType)) throw new Error(`Invalid raceType: ${raceTypeStr}`);
 
-          // Validate rank
-          const validRanks = ['lion', 'tiger', 'wolf', 'bear', 'webelos', 'aol', 'cub', 'sibling', 'adult'];
-          const normalizedRank = rank.toLowerCase();
-          if (!validRanks.includes(normalizedRank)) {
-            throw new Error(`Invalid rank: ${rank}. Must be one of: ${validRanks.join(', ')}`);
+          // Validate racerType
+          const validRacerTypes = ['cub', 'sibling', 'adult'];
+          const normalizedRacerType = racerType.toLowerCase();
+          if (!validRacerTypes.includes(normalizedRacerType)) {
+            throw new Error(`Invalid racerType: ${racerType}. Must be one of: ${validRacerTypes.join(', ')}`);
           }
 
           // Validate that referenced car exists if carId is provided
@@ -257,7 +257,7 @@ export class HeatLaneService {
             heatId,
             raceId,
             raceType,
-            rank: normalizedRank
+            racerType: normalizedRacerType
           });
 
           this.logger.log(`Successfully created heat lane: lane=${lane}, heatId=${heatId}, raceId=${raceId}`);

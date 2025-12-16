@@ -73,7 +73,7 @@ export class RaceProgressionService {
     const totalCars = await this.prisma.car.count({
         where : {
           racer: {
-          rank: racerType === RacerType.CUB 
+          racerType: racerType === RacerType.CUB 
             ? { notIn: [RacerType.SIBLING, RacerType.ADULT] }
             : { equals: racerType }
         },

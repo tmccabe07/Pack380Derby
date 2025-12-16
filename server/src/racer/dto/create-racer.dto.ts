@@ -24,4 +24,12 @@ export class CreateRacerDto {
     @IsNotEmpty()
     @IsIn(['lion','tiger','wolf','bear','webelos','aol', 'sibling', 'adult'], { message: 'rank must be one of: lion, tiger, wolf, bear, webelos, aol, sibling, adult'})
     rank: string;
+
+    @ApiProperty({
+      example: 'cub',
+      description: 'The racer type category, valid values are cub, sibling, adult',
+    })
+    @IsString()
+    @IsIn(['cub', 'sibling', 'adult'], { message: 'racerType must be one of: cub, sibling, adult'})
+    racerType?: string;
 }

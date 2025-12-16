@@ -119,8 +119,8 @@ export class RacerService {
       // Validate header
       const header = lines[0].toLowerCase().trim();
       this.logger.debug(`Header: ${header}`);
-      if (header !== 'name,den,rank') {
-        throw new BadRequestException(`Invalid CSV header. Expected: 'name,den,rank', Got: '${header}'`);
+      if (header !== 'name,den,rank,racerType') {
+        throw new BadRequestException(`Invalid CSV header. Expected: 'name,den,rank,racerType', Got: '${header}'`);
       }
 
       // Process each line
@@ -131,12 +131,11 @@ export class RacerService {
           const fields = line.split(',').map(field => field.trim());
           this.logger.debug(`Split fields: ${JSON.stringify(fields)}`);
           
-          if (fields.length !== 3) {
-            throw new Error(`Expected 3 fields (name,den,rank), but got ${fields.length} fields`);
+          if (fields.length !== 4) {
+            throw new Error(`Expected 4 fields (name,den,rank,racerType), but got ${fields.length} fields`);
           }
 
-          const [name, den, rank] = fields;
-
+          const [name, den, rank, racerType] = fields;
           if (!name) {
             throw new Error('Name is required');
           }
@@ -148,11 +147,17 @@ export class RacerService {
             throw new Error(`Invalid rank: ${rank}. Must be one of: ${validRanks.join(', ')}`);
           }
 
+          const validRacerTypes = ['cub', 'sibling', 'adult'];
+          const normalizedRacerType = racerType.toLowerCase();
+          if (!validRacerTypes.includes(normalizedRacerType)) {
+            throw new Error(`Invalid racerType: ${racerType}. Must be one of: ${validRacerTypes.join(', ')}`);
+          }
           // Create racer
           await this.createRacer({
             name,
             den: den, 
             rank: normalizedRank,
+            racerType: normalizedRacerType,
           });
 
           this.logger.log(`Successfully created racer: ${name}`);

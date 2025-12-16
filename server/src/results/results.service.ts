@@ -202,9 +202,6 @@ export class ResultsService {
       },
       where: {
         raceType: 30, // Finals race type
-        carId: {
-          not: null,
-        },
         car: {
           racer: {
             rank: rank,

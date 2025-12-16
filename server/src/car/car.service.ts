@@ -169,21 +169,23 @@ export class CarService {
             throw new Error(`Invalid year: ${yearStr}`);
           }
 
-          // Validate that referenced racer exists if racerId is provided
-          if (racerId !== null) {
-            const racer = await this.prisma.racer.findUnique({
-              where: { id: racerId }
-            });
-            if (!racer) {
-              throw new Error(`Racer with ID ${racerId} not found`);
-            }
+          // Validate that racerId is provided and that referenced racer exists
+          if (racerId === null) {
+            throw new Error('RacerId is required');
+          }
+          
+          const racer = await this.prisma.racer.findUnique({
+            where: { id: racerId }
+          });
+          if (!racer) {
+            throw new Error(`Racer with ID ${racerId} not found`);
           }
 
           // Create car
           const carDto: CreateCarDto = {
             name,
             weight,
-            racerId: racerId || undefined,
+            racerId: racerId,
             year: year || undefined,
             image,
           };

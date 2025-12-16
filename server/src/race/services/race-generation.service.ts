@@ -22,25 +22,35 @@ export class RaceGenerationService {
     return shuffled;
   }
 
-  private async createBlankCar(): Promise<Car> {
+  private async createBlankCar(racerType: string): Promise<Car> {
+    // Create a blank racer first since racerId is required
+    const blankRacer = await this.prisma.racer.create({
+      data: {
+        name: "blank",
+        den: "N/A",
+        rank: "N/A",
+        racerType: racerType,
+      }
+    });
+
     return this.prisma.car.create({
       data: {
         name: "blank",
         weight: "0",
-        racerId: null,
+        racerId: blankRacer.id,
         year: 9999,
         image: "blank",
       }
     });
   }
 
-  private async fillLanes(cars: Car[], lanesPerHeat: number): Promise<Car[]> {
+  private async fillLanes(cars: Car[], lanesPerHeat: number, racerType: string): Promise<Car[]> {
     const filledCars = [...cars];
     const blanksNeeded = lanesPerHeat - (cars.length % lanesPerHeat);
     
     if (blanksNeeded < lanesPerHeat) {
       for (let i = 0; i < blanksNeeded; i++) {
-        filledCars.push(await this.createBlankCar());
+        filledCars.push(await this.createBlankCar(racerType));
       }
     }
     
@@ -138,7 +148,7 @@ export class RaceGenerationService {
 
     // Optionally fill lanes with blank cars if needed
     let processedCars = cars;
-    processedCars = await this.fillLanes(cars, effectiveLanesPerHeat);
+    processedCars = await this.fillLanes(cars, effectiveLanesPerHeat, racerType);
   
     // Optionally shuffle the cars
     const finalCars = await this.shuffleCars(processedCars);

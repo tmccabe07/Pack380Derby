@@ -142,21 +142,31 @@ GET /api/racer/:id
 
 #### Create new racer
 POST /api/racer
+```json
 {
     "name": "Jane Doe",
-    "den": "8",
-    "rank": "Tiger",
-    "role": "Cub"
+    "den": "Den 8",
+    "rank": "tiger",
+    "racerType": "cub"
 }
+```
+
+**Fields:**
+- `name` (required): The name of the racer
+- `den` (optional): Den number or identifier
+- `rank` (required): Valid values are: lion, tiger, wolf, bear, webelos, aol, sibling, adult
+- `racerType` (optional): Valid values are: cub, sibling, adult. Defaults to 'cub' if not provided
 
 #### Update racer
 PATCH /api/racer/:id
+```json
 {
     "name": "John Doe",
-    "den": "7",
-    "rank": "Webelos",
-    "role": "Cub"
+    "den": "Den 7",
+    "rank": "webelos",
+    "racerType": "cub"
 }
+```
 
 #### Delete racer
 DELETE /api/racer/:id
@@ -180,23 +190,34 @@ GET /api/car/:id
 
 #### Create new car
 POST /api/car
+```json
 {
     "name": "Speed Demon",
     "weight": "5.0",
+    "racerId": 25,
     "year": 2025,
-    "image": "somebase64encodedstringhere",
-    "racerId": 25
+    "image": "somebase64encodedstringhere"
 }
+```
+
+**Fields:**
+- `name` (required): The name of the car
+- `weight` (required): The official weight of the car as a string (e.g., "5.0")
+- `racerId` (required): The ID of the racer who owns this car
+- `year` (optional): The 4 digit year that this car raced
+- `image` (optional): Base64 encoded string of the car image
 
 #### Update car
 PATCH /api/car/:id
+```json
 {
     "name": "Lightning Bolt",
     "weight": "4.9",
+    "racerId": 25,
     "year": 2025,
-    "image": "updatedbase64string",
-    "racerId": 25
+    "image": "updatedbase64string"
 }
+```
 
 #### Delete car
 DELETE /api/car/:id
@@ -347,26 +368,27 @@ GET /api/voting/results
 Create racer, then create a car linked to that person
 
 POST /api/racer
-### To register
-#Create person, then create a car linked to that person
-
-#POST /api/person
+```json
 {
     "name": "Jane Doe",
-    "den": "8",
-    "rank": "Tiger",
-    "role": "Cub"
+    "den": "Den 8",
+    "rank": "tiger",
+    "racerType": "cub"
 }
+```
 
-#POST /api/car
+POST /api/car
+```json
 {
-        "name": "25 Car",
-        "weight": "5.0",
-        "year": 2025,
-        "image": "somebase64encodedstringhere",
-        "racerId": 25
+    "name": "Speed Racer",
+    "weight": "5.0",
+    "racerId": 25,
+    "year": 2025,
+    "image": "somebase64encodedstringhere"
 }
-racerId is the unique id of the racer that was created. 
+```
+
+**Note:** `racerId` is the unique id of the racer that was created in the first POST request. 
 
 
 

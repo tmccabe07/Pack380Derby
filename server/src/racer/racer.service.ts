@@ -12,7 +12,10 @@ export class RacerService {
 
   async createRacer(data: CreateRacerDto): Promise<Racer> {
     return await this.prisma.racer.create({
-      data,
+      data: {
+        ...data,
+        racerType: data.racerType || 'cub', // Default to 'cub' if not provided
+      },
     });
   }
 

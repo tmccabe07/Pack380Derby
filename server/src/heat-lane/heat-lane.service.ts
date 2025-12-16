@@ -11,21 +11,23 @@ export class HeatLaneService {
   constructor(private prisma: PrismaService) {}
   
   async create(createHeatLaneDto: CreateHeatLaneDto) : Promise<HeatLane> {
-    return await this.prisma.heatLane.create({
-      data: {
-        lane: createHeatLaneDto.lane,
-        result: createHeatLaneDto.result,
-        heatId: createHeatLaneDto.heatId,
-        raceType: createHeatLaneDto.raceType,
-        racerType: createHeatLaneDto.racerType,
-        car: createHeatLaneDto.carId ? {
-          connect: { id: createHeatLaneDto.carId }
-        } : undefined,
-        race: createHeatLaneDto.raceId ? {
-          connect: { id: createHeatLaneDto.raceId }
-        } : undefined
-      },
-    });
+    const data: any = {
+      lane: createHeatLaneDto.lane,
+      result: createHeatLaneDto.result,
+      heatId: createHeatLaneDto.heatId,
+      raceType: createHeatLaneDto.raceType,
+      racerType: createHeatLaneDto.racerType,
+    };
+
+    if (createHeatLaneDto.carId) {
+      data.car = { connect: { id: createHeatLaneDto.carId } };
+    }
+
+    if (createHeatLaneDto.raceId) {
+      data.race = { connect: { id: createHeatLaneDto.raceId } };
+    }
+
+    return await this.prisma.heatLane.create({ data });
   }
 
   async findAll() : Promise<HeatLane[]> {
@@ -213,7 +215,8 @@ export class HeatLaneService {
           if (isNaN(result)) throw new Error(`Invalid result: ${resultStr}`);
 
           const carId = carIdStr ? parseInt(carIdStr) : null;
-          if (carId !== null && isNaN(carId)) throw new Error(`Invalid carId: ${carIdStr}`);
+          if (carId === null) throw new Error('CarId is required');
+          if (isNaN(carId)) throw new Error(`Invalid carId: ${carIdStr}`);
 
           const heatId = parseInt(heatIdStr);
           if (isNaN(heatId)) throw new Error(`Invalid heatId: ${heatIdStr}`);
@@ -231,14 +234,12 @@ export class HeatLaneService {
             throw new Error(`Invalid racerType: ${racerType}. Must be one of: ${validRacerTypes.join(', ')}`);
           }
 
-          // Validate that referenced car exists if carId is provided
-          if (carId !== null) {
-            const car = await this.prisma.car.findUnique({
-              where: { id: carId }
-            });
-            if (!car) {
-              throw new Error(`Car with ID ${carId} not found`);
-            }
+          // Validate that referenced car exists
+          const car = await this.prisma.car.findUnique({
+            where: { id: carId }
+          });
+          if (!car) {
+            throw new Error(`Car with ID ${carId} not found`);
           }
 
           // Validate that referenced race exists

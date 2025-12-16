@@ -11,21 +11,23 @@ export class HeatLaneService {
   constructor(private prisma: PrismaService) {}
   
   async create(createHeatLaneDto: CreateHeatLaneDto) : Promise<HeatLane> {
-    return await this.prisma.heatLane.create({
-      data: {
-        lane: createHeatLaneDto.lane,
-        result: createHeatLaneDto.result,
-        heatId: createHeatLaneDto.heatId,
-        raceType: createHeatLaneDto.raceType,
-        rank: createHeatLaneDto.rank,
-        car: createHeatLaneDto.carId ? {
-          connect: { id: createHeatLaneDto.carId }
-        } : undefined,
-        race: createHeatLaneDto.raceId ? {
-          connect: { id: createHeatLaneDto.raceId }
-        } : undefined
-      },
-    });
+    const data: any = {
+      lane: createHeatLaneDto.lane,
+      result: createHeatLaneDto.result,
+      heatId: createHeatLaneDto.heatId,
+      raceType: createHeatLaneDto.raceType,
+      racerType: createHeatLaneDto.racerType,
+    };
+
+    if (createHeatLaneDto.carId) {
+      data.car = { connect: { id: createHeatLaneDto.carId } };
+    }
+
+    if (createHeatLaneDto.raceId) {
+      data.race = { connect: { id: createHeatLaneDto.raceId } };
+    }
+
+    return await this.prisma.heatLane.create({ data });
   }
 
   async findAll() : Promise<HeatLane[]> {
@@ -126,7 +128,7 @@ export class HeatLaneService {
       heatId: checkIndex.heatId,
       raceId: checkIndex.raceId,
       raceType: checkIndex.raceType,
-      rank: checkIndex.rank
+      racerType: checkIndex.racerType
     }
 
     return await this.prisma.heatLane.update({
@@ -185,9 +187,9 @@ export class HeatLaneService {
       // Validate header
       const header = lines[0].toLowerCase().trim();
       this.logger.debug(`Header: ${header}`);
-      if (header !== 'lane,result,carid,heatid,raceid,racetype,rank') {
+      if (header !== 'lane,result,carid,heatid,raceid,racetype,racertype') {
         throw new BadRequestException(
-          `Invalid CSV header. Expected: 'lane,result,carid,heatid,raceid,racetype,rank', Got: '${header}'`
+          `Invalid CSV header. Expected: 'lane,result,carid,heatid,raceid,racetype,racertype', Got: '${header}'`
         );
       }
 
@@ -203,7 +205,7 @@ export class HeatLaneService {
             throw new Error(`Expected 7 fields, but got ${fields.length} fields`);
           }
 
-          const [laneStr, resultStr, carIdStr, heatIdStr, raceIdStr, raceTypeStr, rank] = fields;
+          const [laneStr, resultStr, carIdStr, heatIdStr, raceIdStr, raceTypeStr, racerType] = fields;
 
           // Convert and validate numeric fields
           const lane = parseInt(laneStr);
@@ -213,7 +215,8 @@ export class HeatLaneService {
           if (isNaN(result)) throw new Error(`Invalid result: ${resultStr}`);
 
           const carId = carIdStr ? parseInt(carIdStr) : null;
-          if (carId !== null && isNaN(carId)) throw new Error(`Invalid carId: ${carIdStr}`);
+          if (carId === null) throw new Error('CarId is required');
+          if (isNaN(carId)) throw new Error(`Invalid carId: ${carIdStr}`);
 
           const heatId = parseInt(heatIdStr);
           if (isNaN(heatId)) throw new Error(`Invalid heatId: ${heatIdStr}`);
@@ -224,21 +227,19 @@ export class HeatLaneService {
           const raceType = parseInt(raceTypeStr);
           if (isNaN(raceType)) throw new Error(`Invalid raceType: ${raceTypeStr}`);
 
-          // Validate rank
-          const validRanks = ['lion', 'tiger', 'wolf', 'bear', 'webelos', 'aol', 'cub', 'sibling', 'adult'];
-          const normalizedRank = rank.toLowerCase();
-          if (!validRanks.includes(normalizedRank)) {
-            throw new Error(`Invalid rank: ${rank}. Must be one of: ${validRanks.join(', ')}`);
+          // Validate racerType
+          const validRacerTypes = ['cub', 'sibling', 'adult'];
+          const normalizedRacerType = racerType.toLowerCase();
+          if (!validRacerTypes.includes(normalizedRacerType)) {
+            throw new Error(`Invalid racerType: ${racerType}. Must be one of: ${validRacerTypes.join(', ')}`);
           }
 
-          // Validate that referenced car exists if carId is provided
-          if (carId !== null) {
-            const car = await this.prisma.car.findUnique({
-              where: { id: carId }
-            });
-            if (!car) {
-              throw new Error(`Car with ID ${carId} not found`);
-            }
+          // Validate that referenced car exists
+          const car = await this.prisma.car.findUnique({
+            where: { id: carId }
+          });
+          if (!car) {
+            throw new Error(`Car with ID ${carId} not found`);
           }
 
           // Validate that referenced race exists
@@ -257,7 +258,7 @@ export class HeatLaneService {
             heatId,
             raceId,
             raceType,
-            rank: normalizedRank
+            racerType: normalizedRacerType
           });
 
           this.logger.log(`Successfully created heat lane: lane=${lane}, heatId=${heatId}, raceId=${raceId}`);

@@ -1,11 +1,11 @@
-import { IsString, IsNotEmpty, IsInt } from 'class-validator';
-import { Racer } from "@prisma/client";
+import { IsString, IsNotEmpty, IsInt, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCarDto {
     @ApiProperty({
         example: 'Lightning McQueen',
         description: 'The name of the car',
+         required: true,
     })
     @IsString()
     @IsNotEmpty()
@@ -14,14 +14,19 @@ export class CreateCarDto {
     @ApiProperty({
         example: '5.0',
         description: 'The official weight of the car',
+        required: true,
     })
     @IsString()
     @IsNotEmpty()
     weight: string;
 
-    @ApiProperty({ required: false, nullable: true })
+    @ApiProperty({
+        example: 1,
+        description: 'The ID of the racer who owns this car',
+        required: true,
+    })
     @IsInt()
-    racerId?: number;
+    racerId: number;
 
     @ApiProperty({
         example: '2025',
@@ -30,13 +35,17 @@ export class CreateCarDto {
         nullable: true
     })
     @IsInt()
+    @IsOptional()
     year?: number;
 
     @ApiProperty({
         example: '...',
-        description: 'The URL path to the image of the car',
+        description: 'The base64 encoding ofthe image of the car',
+        required: false,
+        nullable: true
     })
     @IsString()
+    @IsOptional()
     image: string;
 
 }

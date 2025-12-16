@@ -12,7 +12,10 @@ export class RacerService {
 
   async createRacer(data: CreateRacerDto): Promise<Racer> {
     return await this.prisma.racer.create({
-      data,
+      data: {
+        ...data,
+        racerType: data.racerType || 'cub', // Default to 'cub' if not provided
+      },
     });
   }
 
@@ -119,8 +122,8 @@ export class RacerService {
       // Validate header
       const header = lines[0].toLowerCase().trim();
       this.logger.debug(`Header: ${header}`);
-      if (header !== 'name,den,rank') {
-        throw new BadRequestException(`Invalid CSV header. Expected: 'name,den,rank', Got: '${header}'`);
+      if (header !== 'name,den,rank,racertype') {
+        throw new BadRequestException(`Invalid CSV header. Expected: 'name,den,rank,racertype', Got: '${header}'`);
       }
 
       // Process each line
@@ -131,28 +134,33 @@ export class RacerService {
           const fields = line.split(',').map(field => field.trim());
           this.logger.debug(`Split fields: ${JSON.stringify(fields)}`);
           
-          if (fields.length !== 3) {
-            throw new Error(`Expected 3 fields (name,den,rank), but got ${fields.length} fields`);
+          if (fields.length !== 4) {
+            throw new Error(`Expected 4 fields (name,den,rank,racertype), but got ${fields.length} fields`);
           }
 
-          const [name, den, rank] = fields;
-
+          const [name, den, rank, racerType] = fields;
           if (!name) {
             throw new Error('Name is required');
           }
 
           // Validate rank
-          const validRanks = ['lion', 'tiger', 'wolf', 'bear', 'webelos', 'aol', 'sibling', 'adult'];
+          const validRanks = ['lion', 'tiger', 'wolf', 'bear', 'webelos', 'aol', 'N/A'];
           const normalizedRank = rank.toLowerCase();
           if (!validRanks.includes(normalizedRank)) {
             throw new Error(`Invalid rank: ${rank}. Must be one of: ${validRanks.join(', ')}`);
           }
 
+          const validRacerTypes = ['cub', 'sibling', 'adult'];
+          const normalizedRacerType = racerType.toLowerCase();
+          if (!validRacerTypes.includes(normalizedRacerType)) {
+            throw new Error(`Invalid racerType: ${racerType}. Must be one of: ${validRacerTypes.join(', ')}`);
+          }
           // Create racer
           await this.createRacer({
             name,
             den: den, 
             rank: normalizedRank,
+            racerType: normalizedRacerType,
           });
 
           this.logger.log(`Successfully created racer: ${name}`);

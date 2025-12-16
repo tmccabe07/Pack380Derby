@@ -6,19 +6,21 @@ import { RaceResponseDto } from '../../race/dto/race-response.dto';
 export class HeatLaneResponseDto implements HeatLaneModel {
     @ApiProperty({
         example: 1,
-        description: 'The unique identifier of the heat lane'
+        description: 'The unique identifier of the heat lane',
+        required: true
     })
     id: number;
 
     @ApiProperty({
         example: 1,
-        description: 'The lane number in the race (1-6 typically)'
+        description: 'The lane number in the race (1-6 typically)',
+        required: true
     })
     lane: number;
 
     @ApiProperty({
         example: 2,
-        description: 'The finishing position in this heat lane (1st = 1, 2nd = 2, etc)',
+        description: 'The finishing position in this heat lane (1st = 1, 2nd = 2, etc); 0 indicates default',
         required: false
     })
     result: number | null;
@@ -26,49 +28,49 @@ export class HeatLaneResponseDto implements HeatLaneModel {
     @ApiProperty({
         example: 1,
         description: 'The ID of the car assigned to this lane',
-        required: false
+        required: true
     })
-    carId: number | null;
+    carId: number;
 
     @ApiProperty({
         type: () => CarResponseDto,
         description: 'The car assigned to this lane',
-        required: false
+        required: true
     })
-    car?: CarModel | null;
+    car: CarModel;
 
     @ApiProperty({
         example: 1,
         description: 'The heat number within the race',
-        required: false
+        required: true
     })
-    heatId: number | null;
+    heatId: number;
 
     @ApiProperty({
         example: 1,
         description: 'The ID of the race this heat lane belongs to',
-        required: false
+        required: true
     })
-    raceId: number | null;
+    raceId: number;
 
     @ApiProperty({
         type: () => RaceResponseDto,
         description: 'The race this heat lane belongs to',
-        required: false
+        required: true
     })
-    race?: RaceModel | null;
+    race: RaceModel;
 
     @ApiProperty({
         example: 1,
         description: 'The type of race (e.g., preliminary, semifinal, final)',
-        required: false
+        required: true
     })
-    raceType: number | null;
+    raceType: number;
 
     @ApiProperty({
-        example: 'tiger',
-        description: 'The rank of the racer (e.g., tiger, wolf, bear)',
-        required: false
+        example: 'cub',
+        description: 'The racer type category (e.g., cub, sibling, adult)',
+        required: true
     })
-    rank: string | null;
+    racerType: string;
 }

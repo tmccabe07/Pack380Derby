@@ -13,4 +13,7 @@ export class RacerResponseDto implements RacerModel {
     
     @ApiProperty()
     rank: string;
+    
+    @ApiProperty()
+    racerType: string;
 }

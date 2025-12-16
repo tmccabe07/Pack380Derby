@@ -22,25 +22,35 @@ export class RaceGenerationService {
     return shuffled;
   }
 
-  private async createBlankCar(): Promise<Car> {
+  private async createBlankCar(racerType: string): Promise<Car> {
+    // Create a blank racer first since racerId is required
+    const blankRacer = await this.prisma.racer.create({
+      data: {
+        name: "blank",
+        den: "N/A",
+        rank: "N/A",
+        racerType: racerType,
+      }
+    });
+
     return this.prisma.car.create({
       data: {
         name: "blank",
         weight: "0",
-        racerId: null,
+        racerId: blankRacer.id,
         year: 9999,
         image: "blank",
       }
     });
   }
 
-  private async fillLanes(cars: Car[], lanesPerHeat: number): Promise<Car[]> {
+  private async fillLanes(cars: Car[], lanesPerHeat: number, racerType: string): Promise<Car[]> {
     const filledCars = [...cars];
     const blanksNeeded = lanesPerHeat - (cars.length % lanesPerHeat);
     
     if (blanksNeeded < lanesPerHeat) {
       for (let i = 0; i < blanksNeeded; i++) {
-        filledCars.push(await this.createBlankCar());
+        filledCars.push(await this.createBlankCar(racerType));
       }
     }
     
@@ -48,15 +58,14 @@ export class RaceGenerationService {
   }
 
   async createPreliminaryRace(
-    racerType: RacerType, 
-    groupByRank?: boolean
-  ): Promise<Race | Race[]> {
+    racerType: RacerType
+  ): Promise<Race> {
     
     // Get all eligible cars for the given racer type
     const cars = await this.prisma.car.findMany({
       where: {
         racer: {
-          rank: racerType === RacerType.CUB 
+          racerType: racerType === RacerType.CUB 
             ? { notIn: [RacerType.SIBLING, RacerType.ADULT] }
             : { equals: racerType }
         },
@@ -70,37 +79,11 @@ export class RaceGenerationService {
       }
     });
 
-    // If grouping by rank is not requested, create a single race
-    if (!groupByRank) {
-      return this.createRace(
-        RaceStage.PRELIMINARY,
-        cars,
-        racerType
-      );
-    }
-
-    // Group cars by rank
-    const rankGroups = new Map<string, Car[]>();
-    cars.forEach(car => {
-      const rank = car.racer?.rank || 'unknown';
-      if (!rankGroups.has(rank)) {
-        rankGroups.set(rank, []);
-      }
-      rankGroups.get(rank)?.push(car);
-    });
-
-    // Create races for each rank group
-    const races: Race[] = [];
-    for (const [rank, rankCars] of rankGroups) {
-      const race = await this.createRace(
-        RaceStage.PRELIMINARY,
-        rankCars,
-        rank as RacerType
-      );
-      races.push(race);
-    }
-
-    return races;
+    return this.createRace(
+      RaceStage.PRELIMINARY,
+      cars,
+      racerType
+    );
   }
 
   async createRace(
@@ -121,13 +104,13 @@ export class RaceGenerationService {
         raceName: config.stageName,
         numLanes: effectiveLanesPerHeat,
         raceType: stage,
-        rank: racerType
+        racerType: racerType
       }
     });
 
     // Optionally fill lanes with blank cars if needed
     let processedCars = cars;
-    processedCars = await this.fillLanes(cars, effectiveLanesPerHeat);
+    processedCars = await this.fillLanes(cars, effectiveLanesPerHeat, racerType);
   
     // Optionally shuffle the cars
     const finalCars = await this.shuffleCars(processedCars);
@@ -154,7 +137,7 @@ export class RaceGenerationService {
             heatId: heatIndex,
             raceId: race.id,
             raceType: stage,
-            rank: racerType
+            racerType: racerType
           }
         });
         heatLanes.push(heatLane);

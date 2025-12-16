@@ -4,34 +4,36 @@ import { Race as RaceModel } from '@prisma/client';
 export class RaceResponseDto implements RaceModel {
     @ApiProperty({
         example: 1,
-        description: 'The unique identifier of the race'
+        description: 'The unique identifier of the race',
+        required: true
     })
     id: number;
 
     @ApiProperty({
-        example: 'Quarterfinals',
+        example: 'Preliminary',
         description: 'The name of the race',
-        required: false
+        required: true
     })
-    raceName: string | null;
+    raceName: string;
 
     @ApiProperty({
         example: 1,
-        description: 'The type of race (e.g., 10 for quarterfinal, 20 for semifinal, 30 for final)',
-        required: false
+        description: 'The type of race (e.g., 10 for preliminary, 20 for semifinal, 30 for final, 40 for prelim-deadheat, 50 for semi-deadheat)',
+        required: true
     })
-    raceType: number | null;
+    raceType: number;
 
     @ApiProperty({
-        example: 'tiger',
-        description: 'The rank category for this race (e.g., cub, sibling, adult, tiger, wolf, bear)',
-        required: false
+        example: 'cub',
+        description: 'The racer type category for this race (e.g., cub, sibling, adult)',
+        required: true
     })
-    rank: string | null;
+    racerType: string;
 
     @ApiProperty({
         example: 6,
-        description: 'The number of lanes in this race'
+        description: 'The number of lanes in this race',
+        required: true
     })
     numLanes: number;
 }

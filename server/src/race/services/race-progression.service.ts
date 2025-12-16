@@ -73,7 +73,7 @@ export class RaceProgressionService {
     const totalCars = await this.prisma.car.count({
         where : {
           racer: {
-          rank: racerType === RacerType.CUB 
+          racerType: racerType === RacerType.CUB 
             ? { notIn: [RacerType.SIBLING, RacerType.ADULT] }
             : { equals: racerType }
         },
@@ -121,6 +121,16 @@ export class RaceProgressionService {
 
   getDeadheatStage(currentStage: RaceStage): RaceStage | null {
     return this.defaultConfigs[currentStage]?.deadheatStage ?? null;
+  }
+
+  getPreviousStage(targetStage: RaceStage): RaceStage | null {
+    // Find which stage has targetStage as its nextStage
+    for (const [stage, config] of Object.entries(this.defaultConfigs)) {
+      if (config.nextStage === targetStage) {
+        return parseInt(stage) as RaceStage;
+      }
+    }
+    return null;
   }
 
   async determineAdvancingResults(

@@ -87,8 +87,11 @@ export class RaceController {
   }
   
   @Post()
-  @ApiOperation({ summary: 'Create quarterfinal, semifinal or final race, with heats, including any needed deadheats' })
-  @ApiCreatedResponse({ description: 'Semi or Final Race created successfully', type: RaceResponseDto })
+  @ApiOperation({ 
+    summary: 'Create race and heats for a specific stage', 
+    description: 'Creates races for the specified stage (raceType). Use raceType=10 for preliminary, raceType=20 for semifinal, raceType=30 for final. If deadheats are needed, they will be created automatically. Re-call with the same raceType after resolving deadheats to create the intended stage.'
+  })
+  @ApiCreatedResponse({ description: 'Race created successfully', type: RaceResponseDto })
   @ApiBadRequestResponse({ description: 'Bad Request' }) 
   async createRaceAndHeats(@Body() createRaceDto: CreateRaceDto) {
     return await this.raceService.createRaceAndHeats(createRaceDto);
@@ -191,22 +194,22 @@ export class RaceController {
     return races;
   }
 
-  @Get('round/:raceType/:rank')
-  @ApiOperation({ summary: 'Get all races for a specific round (race type and rank combination)' })
+  @Get('round/:raceType/:racerType')
+  @ApiOperation({ summary: 'Get all races for a specific round (race type and racer type combination)' })
   @ApiResponse({
     status: 200,
     description: 'All races for the specified round',
     type: RaceResponseDto,
     isArray: true
   })
-  async findRoundByRaceTypeAndRank(
+  async findRoundByRaceTypeAndRacerType(
     @Param('raceType', ParseIntPipe) raceType: number,
-    @Param('rank') rank: string
+    @Param('racerType') racerType: string
   ) {
-    const races = await this.raceService.findRoundByRaceTypeAndRank(raceType, rank);
+    const races = await this.raceService.findRoundByRaceTypeAndRacerType(raceType, racerType);
     
     if (races.length === 0) {
-      throw new NotFoundException(`No races found for race type ${raceType} and rank ${rank}.`);
+      throw new NotFoundException(`No races found for race type ${raceType} and racer type ${racerType}.`);
     }
 
     return races;

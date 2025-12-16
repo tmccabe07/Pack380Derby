@@ -18,32 +18,33 @@ export class RaceService {
     private competitionService: CompetitionService) {}
 
   async createRaceAndHeats(createRaceDto: CreateRaceDto) {
-    const { raceType, rank, groupByRank } = createRaceDto;
-    const currentStage = raceType as RaceStage;
+    const { raceType, racerType } = createRaceDto;
+    const targetStage = raceType as RaceStage;
     const numLanes = this.competitionService.getNumLanes();
 
-    this.logger.debug(`createRaceAndHeats called with raceType: ${raceType}`);
+    this.logger.debug(`createRaceAndHeats called with raceType: ${raceType} (target stage to create)`);
     
-    // To start everything, create the PRELIMINARY
-    if (currentStage === RaceStage.INITIALIZE) {
+    // Create the PRELIMINARY race - this is the starting point
+    if (targetStage === RaceStage.PRELIMINARY) {
       this.logger.debug('createRaceAndHeats: creating preliminary race');
-      return this.generator.createPreliminaryRace(rank as RacerType, groupByRank);
+      return this.generator.createPreliminaryRace(racerType as RacerType);
     }
 
-    // Get results from this current stage and its corresponding deadheat stage
-    const results = await this.getStageResults(currentStage, rank);
+    // For all other stages, we need to get results from the previous stage
+    const previousStage = this.progression.getPreviousStage(targetStage);
+    if (!previousStage) {
+      throw new Error(`Cannot create ${targetStage}: no previous stage found`);
+    }
 
-    this.logger.debug(`results from current stage: ${JSON.stringify(results)}`);
+    // Get results from the previous stage and its corresponding deadheat stage
+    const results = await this.getStageResults(previousStage, racerType);
 
-    const nextStage = this.progression.getNextStage(currentStage);
-      if (!nextStage) {
-        throw new Error(`No next stage defined for ${currentStage}`);
-      }
+    this.logger.debug(`results from previous stage (${previousStage}): ${JSON.stringify(results)}`);
 
-    // Calculate who advances for the next stage
-    const advancingCount = await this.progression.calculateAdvancingCount(nextStage, numLanes, rank as RacerType);
+    // Calculate who advances to the target stage
+    const advancingCount = await this.progression.calculateAdvancingCount(targetStage, numLanes, racerType as RacerType);
 
-    this.logger.debug(`advancingCount: ${advancingCount}`);
+    this.logger.debug(`advancingCount for ${targetStage}: ${advancingCount}`);
 
     const { advancing, needsTiebreaker, tiedCarIds } = 
       await this.progression.determineAdvancingResults(results, advancingCount);
@@ -52,25 +53,25 @@ export class RaceService {
     this.logger.debug(`tiedCarIds: ${JSON.stringify(tiedCarIds)}`);
     this.logger.debug(`these cars are advancing: ${JSON.stringify(advancing)}`);
 
-    // Either handle tie breakers if needed by creating deadheat, or create this stage's race with all the advancers
+    // Either handle tie breakers if needed by creating deadheat, or create the target stage's race with all the advancers
     if (needsTiebreaker) {
-      const deadheatStage = this.progression.getDeadheatStage(currentStage);
+      const deadheatStage = this.progression.getDeadheatStage(previousStage);
       if (!deadheatStage) {
-        throw new Error(`No deadheat stage defined for ${currentStage}`);
+        throw new Error(`No deadheat stage defined for previous stage ${previousStage}`);
       }
       return this.generator.createDeadheatRace(
         tiedCarIds,
         deadheatStage,
-        rank as RacerType
+        racerType as RacerType
       );
     }
     else{
 
-    // Create next stage race
+    // Create target stage race
       return this.generator.createNextStageRace(
         advancing,
-        nextStage,
-        rank as RacerType
+        targetStage,
+        racerType as RacerType
       );
 
     }
@@ -166,11 +167,11 @@ async findRoundByRaceType(raceType: number) {
     });
   }
 
-  async findRoundByRaceTypeAndRank(raceType: number, rank: string) {
+  async findRoundByRaceTypeAndRacerType(raceType: number, racerType: string) {
     return await this.prisma.race.findMany({
       where: {
         raceType: raceType,
-        rank: rank.toLowerCase()
+        racerType: racerType.toLowerCase()
       },
       orderBy: [
         { id: 'asc' }
@@ -178,7 +179,7 @@ async findRoundByRaceType(raceType: number) {
     });
   }
 
-  async getStageResults(stage: RaceStage, rank: string): Promise<Array<{ carId: number; totalScore: number }>> {
+  async getStageResults(stage: RaceStage, racerType: string): Promise<Array<{ carId: number; totalScore: number }>> {
     // Get all heat results for this stage and its corresponding deadheat stage
     const deadheatStage = this.progression.getDeadheatStage(stage);
     const stages = deadheatStage ? [stage, deadheatStage] : [stage];
@@ -188,7 +189,7 @@ async findRoundByRaceType(raceType: number) {
         raceType: {
           in: stages
         },
-        rank: rank,
+        racerType: racerType,
         car: {
           name: { not: 'blank' } // Exclude blank cars
         }
@@ -262,9 +263,12 @@ async findRoundByRaceType(raceType: number) {
   }
 
   async clearRaceTable(): Promise<string> {
+    // Delete HeatLane records first due to foreign key constraint
+    await this.prisma.$queryRaw`DELETE FROM public."HeatLane" WHERE "raceId" IS NOT NULL`
     await this.prisma.$queryRaw`DELETE FROM public."Race"`
     await this.prisma.$queryRaw`ALTER SEQUENCE public."Race_id_seq" RESTART WITH 1`;
-    return "Race table dropped and sequence restarted";
+    await this.prisma.$queryRaw`ALTER SEQUENCE public."HeatLane_id_seq" RESTART WITH 1`;
+    return "Race table and related HeatLane records cleared, sequences restarted";
   }
 
   async importRacesFromCSV(fileBuffer: Buffer): Promise<{ success: number; failed: number; errors: string[] }> {
@@ -290,9 +294,9 @@ async findRoundByRaceType(raceType: number) {
       // Validate header
       const header = lines[0].toLowerCase().trim();
       console.log('Header:', header);
-      if (header !== 'racename,numlanes,racetype,rank') {
+      if (header !== 'racename,numlanes,racetype,racertype') {
         throw new BadRequestException(
-          `Invalid CSV header. Expected: 'racename,numlanes,racetype,rank', Got: '${header}'`
+          `Invalid CSV header. Expected: 'racename,numlanes,racetype,racertype', Got: '${header}'`
         );
       }
 
@@ -308,7 +312,7 @@ async findRoundByRaceType(raceType: number) {
             throw new Error(`Expected 4 fields, but got ${fields.length} fields`);
           }
 
-          const [raceName, numLanesStr, raceTypeStr, rank] = fields;
+          const [raceName, numLanesStr, raceTypeStr, racerType] = fields;
 
           // Validate required name
           if (!raceName) {
@@ -331,11 +335,11 @@ async findRoundByRaceType(raceType: number) {
             throw new Error(`Invalid race type: ${raceType}. Must be a valid RaceStage value`);
           }
 
-          // Validate rank
-          const validRanks = ['lion', 'tiger', 'wolf', 'bear', 'webelos', 'aol', 'cub', 'sibling', 'adult'];
-          const normalizedRank = rank.toLowerCase();
-          if (!validRanks.includes(normalizedRank)) {
-            throw new Error(`Invalid rank: ${rank}. Must be one of: ${validRanks.join(', ')}`);
+          // Validate racer type
+          const validRacerTypes = ['cub', 'sibling', 'adult'];
+          const normalizedRacerType = racerType.toLowerCase();
+          if (!validRacerTypes.includes(normalizedRacerType)) {
+            throw new Error(`Invalid racerType: ${racerType}. Must be one of: ${validRacerTypes.join(', ')}`);
           }
 
           // Create race
@@ -344,7 +348,7 @@ async findRoundByRaceType(raceType: number) {
               raceName,
               numLanes,
               raceType,
-              rank: normalizedRank
+              racerType: normalizedRacerType
             }
           });
 

@@ -8,9 +8,9 @@ export class RankResultsResponseDto {
     carId: number;
 
     @ApiProperty({
-        example: 'cub',
+        example: 'lion',
         description: 'The rank of the car',
-        enum: ['cub', 'sibling', 'adult'],
+        enum: ['lion', 'tiger', 'wolf', 'bear', 'webelos', 'aol', 'sibling', 'adult'],
     })
     rank: string;
 

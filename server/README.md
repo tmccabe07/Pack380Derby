@@ -142,21 +142,31 @@ GET /api/racer/:id
 
 #### Create new racer
 POST /api/racer
+```json
 {
     "name": "Jane Doe",
-    "den": "8",
-    "rank": "Tiger",
-    "role": "Cub"
+    "den": "Den 8",
+    "rank": "tiger",
+    "racerType": "cub"
 }
+```
+
+**Fields:**
+- `name` (required): The name of the racer
+- `den` (optional): Den number or identifier
+- `rank` (required): Valid values are: lion, tiger, wolf, bear, webelos, aol, sibling, adult
+- `racerType` (optional): Valid values are: cub, sibling, adult. Defaults to 'cub' if not provided
 
 #### Update racer
 PATCH /api/racer/:id
+```json
 {
     "name": "John Doe",
-    "den": "7",
-    "rank": "Webelos",
-    "role": "Cub"
+    "den": "Den 7",
+    "rank": "webelos",
+    "racerType": "cub"
 }
+```
 
 #### Delete racer
 DELETE /api/racer/:id
@@ -180,23 +190,34 @@ GET /api/car/:id
 
 #### Create new car
 POST /api/car
+```json
 {
     "name": "Speed Demon",
     "weight": "5.0",
+    "racerId": 25,
     "year": 2025,
-    "image": "somebase64encodedstringhere",
-    "racerId": 25
+    "image": "somebase64encodedstringhere"
 }
+```
+
+**Fields:**
+- `name` (required): The name of the car
+- `weight` (required): The official weight of the car as a string (e.g., "5.0")
+- `racerId` (required): The ID of the racer who owns this car
+- `year` (optional): The 4 digit year that this car raced
+- `image` (optional): Base64 encoded string of the car image
 
 #### Update car
 PATCH /api/car/:id
+```json
 {
     "name": "Lightning Bolt",
     "weight": "4.9",
+    "racerId": 25,
     "year": 2025,
-    "image": "updatedbase64string",
-    "racerId": 25
+    "image": "updatedbase64string"
 }
+```
 
 #### Delete car
 DELETE /api/car/:id
@@ -214,33 +235,34 @@ Returns race history for a specific car including race ID, heat ID, lane, result
 
 POST /api/race 
 {
-    "raceType": 1,
-    "rank": "cub",
-    "groupByRank": false
+    "raceType": 10,
+    "racerType": "cub"
 }
 
-This will create a preliminary race with a unique race id and as many heats as necessary to race all of the cars associated with the cub with the number of lanes specified as 6 per heat.  Repeat this with different raceType to create multiple races with heats. 
+This will create a preliminary race with a unique race id and as many heats as necessary to race all of the cars associated with cub racerType with the number of lanes specified per heat based on the competition configuration. The raceType parameter now specifies which stage you want to CREATE (not the current stage).
 
 numLanes: number of lanes that are active in a race.  Max is 6.
 
 Note: The numLanes parameter is no longer required as it uses the usable lanes configured via the competition API.
 
 raceType mapping:
-1 = initialize, which will generate a preliminary
-10 = preliminary, which will generate a semifinal or prelim-deadheat
-20 = semifinal, which will generate a final or semi-deadheat
-30 = final, not used
-40 = prelim-deadheat, which will generate a semi
-50 = semi-deadheat, which will generate final
+10 = preliminary - creates preliminary races from all cars
+20 = semifinal - creates semifinal races based on preliminary results (or prelim-deadheat if ties need resolution)
+30 = final - creates final races based on semifinal results (or semi-deadheat if ties need resolution)
 
-rank: 
+Note: Deadheat races (40=prelim-deadheat, 50=semi-deadheat) are automatically created when needed to resolve ties. After completing deadheat races, call the same endpoint again with the same raceType to create the intended stage.
+
+Example workflow:
+1. POST /api/race with raceType=10 to create preliminary races
+2. Complete preliminary races and record results
+3. POST /api/race with raceType=20 to create semifinals (may create prelim-deadheat if there are ties)
+4. If deadheat was created, complete it and call POST /api/race with raceType=20 again to create semifinals
+5. Complete semifinal races and record results
+6. POST /api/race with raceType=30 to create finals (may create semi-deadheat if there are ties)
+7. If deadheat was created, complete it and call POST /api/race with raceType=30 again to create finals
+
+racerType: 
 cub = all cub ranks, inclusive of lion, tiger, wolf, bear, webelos, aol
-lion = specific to lion rank (includes all lion dens)
-tiger = specific to tiger rank (includes all tiger dens)
-wolf = specific to wolf rank (includes all wolf dens)
-bear = specific to bear rank (includes all bear dens)
-webelos = specific to webelos rank (includes all webelos dens)
-aol = specific to aol rank (includes all aol dens)
 sibling = all siblings
 adult = all adults
 
@@ -347,26 +369,27 @@ GET /api/voting/results
 Create racer, then create a car linked to that person
 
 POST /api/racer
-### To register
-#Create person, then create a car linked to that person
-
-#POST /api/person
+```json
 {
     "name": "Jane Doe",
-    "den": "8",
-    "rank": "Tiger",
-    "role": "Cub"
+    "den": "Den 8",
+    "rank": "tiger",
+    "racerType": "cub"
 }
+```
 
-#POST /api/car
+POST /api/car
+```json
 {
-        "name": "25 Car",
-        "weight": "5.0",
-        "year": 2025,
-        "image": "somebase64encodedstringhere",
-        "racerId": 25
+    "name": "Speed Racer",
+    "weight": "5.0",
+    "racerId": 25,
+    "year": 2025,
+    "image": "somebase64encodedstringhere"
 }
-racerId is the unique id of the racer that was created. 
+```
+
+**Note:** `racerId` is the unique id of the racer that was created in the first POST request. 
 
 
 
@@ -378,56 +401,82 @@ e.g. POST /api/heat-lane/1/2
 
 This will update the heat-lane row id of 1 with the result of 2 
 
-#### Calculate results
+#### Get weighted total results with flexible filtering
+GET /api/results?include={filters}&exclude={raceTypes}
 
-/api/results/by-rank/:raceType/:rank
+Returns weighted total results for all cars based on the specified filters. The weighted total is calculated as: sum of (result × 100) for each heat. Lower weighted totals indicate better performance.
 
-For example:
-/api/results/by-rank/10/cub
+**Query Parameters:**
+- `include` (required): Comma-separated filter values
+  - racerType: `cub`, `sibling`, `adult`
+  - raceType: `10`, `20`, `30`, `40`, `50`
+  - rank: `lion`, `tiger`, `wolf`, `bear`, `webelos`, `aol`
+  - Combinations: Use commas to combine multiple filters (e.g., `cub,10` for racerType=cub AND raceType=10)
+- `exclude` (optional): Comma-separated raceType values to exclude (e.g., `30` or `10,20`)
 
-will return the weighted score of total place for each car that has heatlanes that match that racetype and rank, which in this case is racetype = 10 for preliminary and rank = cub.  So all cub prelims. 
+**Examples:**
 
-#### Get results by rank and race type
-GET /api/results/by-rank/:raceType/:rank
+Single filter by racerType:
+- `GET /api/results?include=cub` - All results for racerType=cub
+- `GET /api/results?include=sibling` - All results for racerType=sibling
+- `GET /api/results?include=adult` - All results for racerType=adult
 
-Returns summed places (weighted by 100) for all cars by rank and race type.
+Single filter by raceType:
+- `GET /api/results?include=10` - All results for raceType=10 (preliminary)
+- `GET /api/results?include=20` - All results for raceType=20 (semifinal)
+- `GET /api/results?include=30` - All results for raceType=30 (final)
 
-Example: GET /api/results/by-rank/10/cub
-Returns results for all cub rank cars in preliminary races (raceType 10)
-Note: rank in this context is cub, sibling or adult, which is the rank value in the heatlane table. 
+Single filter by rank:
+- `GET /api/results?include=lion` - All results for rank=lion
+- `GET /api/results?include=tiger` - All results for rank=tiger
+- `GET /api/results?include=bear` - All results for rank=bear
 
-#### Get final results by rank (excluding finalists)
-GET /api/results/final-by-rank/:rank
+Combined filters (racerType + raceType):
+- `GET /api/results?include=cub,10` - Results for racerType=cub AND raceType=10
+- `GET /api/results?include=sibling,20` - Results for racerType=sibling AND raceType=20
+
+Combined filters (rank + raceType):
+- `GET /api/results?include=lion,10` - Results for rank=lion AND raceType=10
+- `GET /api/results?include=webelos,30` - Results for rank=webelos AND raceType=30
+
+With exclusions:
+- `GET /api/results?include=cub&exclude=30` - All cub results excluding finals (raceType=30)
+- `GET /api/results?include=lion&exclude=10,20` - Lion rank results excluding raceTypes 10 and 20
+- `GET /api/results?include=sibling&exclude=40,50` - Sibling results excluding deadheat races
+
+**Response Format:**
+```json
+[
+  {
+    "carId": 1,
+    "rank": "lion",
+    "racerType": "cub",
+    "raceType": 10,
+    "weightedTotal": 306
+  }
+]
+```
+
+**Notes:**
+- Blank cars (used to fill empty lanes) are automatically excluded from results
+- Results are sorted by weightedTotal (ascending - lower is better)
+- When filtering by racerType only or rank only, raceType in the response will be null (aggregating across all race types)
+- raceType mapping: 10=preliminary, 20=semifinal, 30=final, 40=preliminarydeadheat, 50=semideadheat
+
+#### Get best-of-the-rest by rank (excluding finalists)
+GET /api/results/best-of-the-rest/:rank
 
 Returns the top result(s) for the specified rank across all race types, excluding any cars that made it to the finals race (raceType 30). If multiple cars are tied for the best score, all tied cars are returned.
 
-Example: GET /api/results/final-by-rank/lion
-Returns the best performing lion rank car(s) that did not make it to finals
+**Parameters:**
+- `rank`: lion, tiger, wolf, bear, webelos, aol, cub, sibling, adult
+
+**Example:**
+- `GET /api/results/best-of-the-rest/lion` - Returns the best performing lion rank car(s) that did not make it to finals
 
 This endpoint is useful for determining "best of the rest" or consolation awards for cars that performed well but didn't advance to finals. The score aggregates weighted results (result × 100) across all preliminary, semifinal, and deadheat races.
 
-Note: This endpoint uses the rank stored in the Racer table (via car.racer.rank), not the rank field in HeatLane.
-
-#### Get results by rank and race type
-GET /api/results/by-rank/:raceType/:rank
-
-Returns summed places (weighted by 100) for all cars by rank and race type.
-
-Example: GET /api/results/by-rank/10/cub
-Returns results for all cub rank cars in preliminary races (raceType 10)
-Note: rank in this context is cub, sibling or adult, which is the rank value in the heatlane table. 
-
-#### Get final results by rank (excluding finalists)
-GET /api/results/final-by-rank/:rank
-
-Returns the top result(s) for the specified rank across all race types, excluding any cars that made it to the finals race (raceType 30). If multiple cars are tied for the best score, all tied cars are returned.
-
-Example: GET /api/results/final-by-rank/lion
-Returns the best performing lion rank car(s) that did not make it to finals
-
-This endpoint is useful for determining "best of the rest" or consolation awards for cars that performed well but didn't advance to finals. The score aggregates weighted results (result × 100) across all preliminary, semifinal, and deadheat races.
-
-Note: This endpoint uses the rank stored in the Racer table (via car.racer.rank), not the rank field in HeatLane.
+**Note:** This endpoint uses the rank stored in the Racer table (via car.racer.rank), not the racerType field in HeatLane.
 
 ## Competition Configuration Notes
 

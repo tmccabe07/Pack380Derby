@@ -24,24 +24,53 @@ export default function CarForm({ car, onChange, racer, hideSubmit, onSubmit }: 
     setImagePreview(car.image || "");
   }, [car.image]);
 
-  function handleImageFile(file: File) {
+
+  async function handleImageFile(file: File) {
     setImageError(null);
     if (!file.type.startsWith("image/")) {
       setImageError("File must be an image");
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      setImageError("Image must be under 2MB");
-      return;
+    // Downsize image before converting to base64
+    try {
+      console.log("Downsizing image file...", file);
+      const downsizedBase64 = await downsizeImageFile(file, 800, 600, 0.25); // max 800x600, 85% quality
+      setImagePreview(downsizedBase64);
+      console.log("Downsized image file...", downsizedBase64);
+
+      onChange({ ...car, image: downsizedBase64 });
+    } catch (error) {
+      setImageError(`Failed to process image: ${error}`);
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = reader.result as string;
-      setImagePreview(base64);
-  onChange({ ...car, image: base64 });
-    };
-    reader.onerror = () => setImageError("Failed to read file");
-    reader.readAsDataURL(file);
+  }
+
+  // Helper to downsize image file to maxWidth x maxHeight and return base64 string
+  async function downsizeImageFile(file: File, maxWidth: number, maxHeight: number, quality: number = 0.85): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        img.onload = () => {
+          const { width, height } = img;
+          const scale = Math.min(maxWidth / width, maxHeight / height, 1);
+          const newWidth = Math.round(width * scale);
+          const newHeight = Math.round(height * scale);
+          const canvas = document.createElement('canvas');
+          canvas.width = newWidth;
+          canvas.height = newHeight;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return reject("Failed to get canvas context");
+          ctx.drawImage(img, 0, 0, newWidth, newHeight);
+          // Use JPEG for best compression
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          resolve(dataUrl);
+        };
+        img.onerror = () => reject("Failed to load image");
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => reject("Failed to read file");
+      reader.readAsDataURL(file);
+    });
   }
 
   function removeImage() {

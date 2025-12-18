@@ -8,9 +8,11 @@ export interface RaceWithRankedHeats extends Race {
 
 // RaceType enum based on server README
 export enum RaceType {
-  // Initialize = 1,
+  Initialize = 1,
   Preliminary = 10,
+  PreliminaryDeadheat = 40,
   Semifinal = 20,
+  SemifinalDeadheat = 50,
   Final = 30,
 }
 
@@ -25,9 +27,11 @@ export interface Race {
 
 // Optional mapping of race type enum to friendly labels
 export const RACE_TYPE_LABELS: Record<RaceType, string> = {
-  // [RaceType.Initialize]: "Initialize",
+  [RaceType.Initialize]: "Initialize",
   [RaceType.Preliminary]: "Preliminary",
+  [RaceType.PreliminaryDeadheat]: "Preliminary Deadheat",
   [RaceType.Semifinal]: "Semifinal",
+  [RaceType.SemifinalDeadheat]: "Semifinal Deadheat",
   [RaceType.Final]: "Final",
 };
 

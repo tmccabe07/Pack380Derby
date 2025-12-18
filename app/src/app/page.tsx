@@ -2,7 +2,6 @@
 
 import Layout from "@/components/Layout";
 import DashboardCard from "@/components/DashboardCard";
-import Link from "next/link";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useState } from "react";
 import RegistrationForm from "@/components/registration/RegistrationForm";

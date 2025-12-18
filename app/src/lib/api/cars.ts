@@ -63,12 +63,13 @@ export async function fetchCarsByRank(rank: RankType): Promise<Car[]> {
  */
 export async function fetchCarsForCubs(): Promise<Car[]> {
   const cubRanks: RankType[] = [
-    RankType.Tiger,
-    RankType.Lion,
-    RankType.Bear,
-    RankType.Wolf,
-    RankType.Webelos,
-    RankType.AOL
+    RankType.Cub
+    // RankType.Tiger,
+    // RankType.Lion,
+    // RankType.Bear,
+    // RankType.Wolf,
+    // RankType.Webelos,
+    // RankType.AOL
   ];
   const results = await Promise.all(cubRanks.map(rank => fetchCarsByRank(rank)));
   const cars = results.flat();

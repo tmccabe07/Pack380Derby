@@ -75,6 +75,10 @@ export default function RacesPage() {
       <div className="layout">
       {RACE_TYPES.map(rt => {
         const races = data[rt] || [];
+        // Don't show race type if there are no races
+        if(races.length === 0){
+          return null;
+        }
         console.log(`Rendering races for race type ${rt}:`, races);
         return (
           <div key={rt} className="mb-10">

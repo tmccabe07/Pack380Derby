@@ -2,10 +2,7 @@
 import Layout from "@/components/Layout";
 import { useEffect, useState, use } from "react";
 import { fetchRaceById, Race, fetchHeatsForRace, HeatLane, RACE_TYPE_LABELS } from "@/lib/api/races";
-import { RankType } from "@/lib/api/racers";
-
 import HeatLanesTable from "@/components/heats/HeatLanesTable";
-import Link from "next/link";
 
 export default function RaceDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   // Unwrap promised route params (Next.js 15+ provides params as a Promise in client components)
@@ -61,13 +58,12 @@ export default function RaceDetailsPage({ params }: { params: Promise<{ id: stri
       </ul>
       <HeatLanesTable
         groups={Object.entries(flatHeats)
-          .filter(([_, arr]) => Array.isArray(arr))
+          .filter(([, arr]) => Array.isArray(arr))
           .map(([heatId, arr]) => ({
             heatId,
-            entries: (arr as HeatLane[]).map(l => ({ ...l }))
+            entries: arr.map(l => ({ ...l }))
           }))}
         raceId={id}
-        showStatus
         emptyMessage="No heats for this race."
       />
     </Layout>

@@ -1,11 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react";
-import { fetchHeats, Heat} from "@/lib/api/heats";
+import { HeatEntry } from "@/lib/api/heats";
 import HeatCard from "@/components/heats/HeatCard";
 
 
-export default function HeatList({ heatsByRank }: { heatsByRank: Record<string, Record<string, any[]>> }) {
+export default function HeatList({ heatsByRank }: { heatsByRank: Record<string, Record<string, HeatEntry[]>> }) {
   if (!heatsByRank || Object.keys(heatsByRank).length === 0) {
     return <p className="text-center text-gray-500">No heats created yet.</p>;
   }

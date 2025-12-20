@@ -16,7 +16,7 @@ export default function HeatDetailsPage({ params }: { params: Promise<{ id: stri
 
   useEffect(() => {
     if (id && heatId) {
-      fetchHeatByRaceHeat(id, heatId as string).then(setHeat);
+      fetchHeatByRaceHeat(id, heatId as string).then((heat) => setHeat(heat || null));
       // fetchCars().then(setCars);
     }
   }, [id, heatId]);
@@ -25,7 +25,10 @@ export default function HeatDetailsPage({ params }: { params: Promise<{ id: stri
 
   return (
     <Layout>
-      <HeatLanesTable raceId={id} groups={[heat]} />
+      <HeatLanesTable
+        raceId={id}
+        groups={[{ heatId: heat.id ?? "", entries: heat.entries }]}
+      />
     </Layout>
   );
 }

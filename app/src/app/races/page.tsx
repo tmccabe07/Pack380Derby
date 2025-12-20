@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { fetchRacesByType, fetchHeatsForRace, Race, HeatLane, RACE_TYPE_LABELS} from "@/lib/api/races";
 import Link from "next/link";
 import { useAdmin } from "@/hooks/useAdmin";
+import logger, { log } from "@/lib/utils/log";
 
 
 interface RaceWithHeats extends Race {
@@ -17,7 +18,9 @@ export default function RacesPage() {
   const [data, setData] = useState<Record<number, RaceWithHeats[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { withAdmin } = useAdmin();
+  const { isAdmin, withAdmin } = useAdmin();
+
+  
 
   useEffect(() => {
     let cancelled = false;
@@ -42,7 +45,7 @@ export default function RacesPage() {
           }
         }
         if (!cancelled) {
-          console.log("Fetched race rounds data:", result);
+          log("Fetched race rounds data:", result);
           setData(result)
         };
       } catch {
@@ -60,11 +63,24 @@ export default function RacesPage() {
 
   return (
     <Layout>
-      <h1 className="text-3xl font-bold mb-6">Race Rounds</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold">Race Rounds</h1>
+        {isAdmin && (
+          <Link href={withAdmin("/races/create")}
+            className="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition"
+          >
+            + Create Race
+          </Link>
+        )}
+      </div>
       <div className="layout">
       {RACE_TYPES.map(rt => {
         const races = data[rt] || [];
-        console.log(`Rendering races for race type ${rt}:`, races);
+        // Don't show race type if there are no races
+        if(races.length === 0){
+          return null;
+        }
+        log(`Rendering races for race type ${rt}: ${races}`);
         return (
           <div key={rt} className="mb-10">
             <h2 className="text-2xl font-semibold mb-8">{RACE_TYPE_LABELS[rt as keyof typeof RACE_TYPE_LABELS] || `Type ${rt}`} ({races.length})</h2>
@@ -83,7 +99,7 @@ export default function RacesPage() {
                     <div>
                       {race.heatsByRank ? (
                         Object.entries(race.heatsByRank)
-                          .filter(([_, heatsById]) => Object.keys(heatsById).length > 0)
+                          .filter(([, heatsById]) => Object.keys(heatsById).length > 0)
                           .map(([rank, heatsById]) => (
                             <div key={rank} className="mb-6">
                               <h4 className="text-lg font-semibold mb-2">{rank.charAt(0).toUpperCase() + rank.slice(1)} Heats</h4>

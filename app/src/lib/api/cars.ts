@@ -103,7 +103,7 @@ export async function fetchCars(racerId?: string) {
  * @param car - Car object
  */
 export async function enrichCar(car: Car): Promise<Car> {
-  console.log("Enriching car:", car);
+  
   if (!car.racer && car.racerId) {
     try {
       car.racer = await fetchRacerById(car.racerId);
@@ -127,7 +127,6 @@ export async function enrichCar(car: Car): Promise<Car> {
  * @returns Created Car object
  */
 export async function createCar(newCar: Omit<Car, "id">): Promise<Car> {
-console.log("Creating car:", newCar);
   const res = await fetchPinewoodAPI(`/api/car`, {
     method: "POST",
     headers: {

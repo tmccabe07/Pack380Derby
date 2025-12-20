@@ -11,6 +11,7 @@ import {
   updateVotingCategories,
 } from "@/lib/api/competition";
 import { useAdmin } from "@/hooks/useAdmin";
+import { log } from "@/lib/utils/log";
 
 export default function CompetitionConfig() {
   const [config, setConfig] = useState<{ numLanes: number; usableLanes: number[] } | null>(null);
@@ -26,7 +27,7 @@ export default function CompetitionConfig() {
         setConfig(cfg);
         setMultipliers(mult);
         // cats.categories is expected to be array of { name, description }
-        console.log("Fetched voting categories:", categories);
+        log("Fetched voting categories:", categories);
         setVotingCategories(categories || []);
       })
       .catch(() => setError("Failed to load competition config"))

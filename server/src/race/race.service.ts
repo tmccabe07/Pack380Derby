@@ -281,11 +281,9 @@ async findRoundByRaceType(raceType: number) {
     try {
       // Convert buffer to string and normalize line endings
       const content = fileBuffer.toString('utf-8').replace(/\r\n/g, '\n');
-      console.log('Raw content:', content);
       
       // Split into lines and remove empty lines
       const lines = content.split('\n').filter(line => line.trim().length > 0);
-      console.log('Lines after split:', lines);
       
       if (lines.length === 0) {
         throw new BadRequestException('CSV file is empty');
@@ -293,7 +291,7 @@ async findRoundByRaceType(raceType: number) {
 
       // Validate header
       const header = lines[0].toLowerCase().trim();
-      console.log('Header:', header);
+
       if (header !== 'racename,numlanes,racetype,racertype') {
         throw new BadRequestException(
           `Invalid CSV header. Expected: 'racename,numlanes,racetype,racertype', Got: '${header}'`
@@ -303,10 +301,8 @@ async findRoundByRaceType(raceType: number) {
       // Process each line
       for (const line of lines.slice(1)) {
         try {
-          console.log('Processing line:', line);
           
           const fields = line.split(',').map(field => field.trim());
-          console.log('Split fields:', fields);
           
           if (fields.length !== 4) {
             throw new Error(`Expected 4 fields, but got ${fields.length} fields`);
@@ -352,7 +348,6 @@ async findRoundByRaceType(raceType: number) {
             }
           });
 
-          console.log('Successfully created race:', raceName);
           results.success++;
         } catch (error) {
           console.error('Error processing line:', line, error);

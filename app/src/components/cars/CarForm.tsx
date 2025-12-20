@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Car, getCarImage } from "@/lib/api/cars";
 import { Racer } from "@/lib/api/racers";
+import { log } from "@/lib/utils/log";
 
 interface CarFormProps {
   car: Omit<Car, "id">;
@@ -34,10 +35,10 @@ export default function CarForm({ car, onChange, racer, hideSubmit, onSubmit }: 
     }
     // Downsize image before converting to base64
     try {
-      console.log("Downsizing image file...", file);
+      log(`Downsizing image file... ${file.name}`);
       const downsizedBase64 = await downsizeImageFile(file, 800, 600, 0.25); // max 800x600, 85% quality
       setImagePreview(downsizedBase64);
-      console.log("Downsized image file...", downsizedBase64);
+      log(`Downsized image file... ${downsizedBase64}`);
 
       onChange({ ...car, image: downsizedBase64 });
     } catch (error) {

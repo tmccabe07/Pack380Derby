@@ -11,7 +11,6 @@ export class RacerService {
   constructor(private prisma: PrismaService) {}
 
   async createRacer(data: CreateRacerDto): Promise<Racer> {
-    console.log('Creating racer with data:', data);
     return await this.prisma.racer.create({
       data: {
         ...data,

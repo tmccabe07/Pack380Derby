@@ -21,7 +21,6 @@ export async function fetchAllResultsByRank(rank: string): Promise<ResultItem[]>
 
 
 		const results: Array<Partial<ResultItem>> = await res.json();
-		console.log(`fetchResultsByRank( ${rank} ) -> `, results);
 		// Attach car and racer info to each result
 		const enriched = await Promise.all(results.map(async (result) => {
 			let car = null;
@@ -32,7 +31,6 @@ export async function fetchAllResultsByRank(rank: string): Promise<ResultItem[]>
 			return { ...result, car } as ResultItem;
 		}));
 
-		console.log(`fetchResultsByRank( ${rank} ) enriched -> `, enriched);
 
 		return enriched;
 }
@@ -51,7 +49,7 @@ export async function fetchResultsByRank(rank: string): Promise<ResultItem[]> {
 
 
 		const results: Array<Partial<ResultItem>> = await res.json();
-		console.log(`fetchResultsByRank( ${rank} ) -> `, results);
+
 		// Attach car and racer info to each result
 		const enriched = await Promise.all(results.map(async (result) => {
 			let car = null;
@@ -61,8 +59,6 @@ export async function fetchResultsByRank(rank: string): Promise<ResultItem[]> {
 			}
 			return { ...result, car } as ResultItem;
 		}));
-
-		console.log(`fetchResultsByRank( ${rank} ) enriched -> `, enriched);
 
 		return enriched;
 }

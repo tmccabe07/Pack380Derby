@@ -8,6 +8,7 @@ import CarCard from "@/components/cars/CarCard";
 // import { useAdmin } from "@/hooks/useAdmin";
 import { VoteScore } from "@/lib/api/voting";
 import { VotingCategory } from "@/types/VotingCategory";
+import { log } from "@/lib/utils/log";
 
 export default function VotingAdminPage() {
   // const { isAdmin } = useAdmin();
@@ -28,7 +29,7 @@ export default function VotingAdminPage() {
         if (cancelled) return;
         setCategories(catRes || []);
         setCars(carRes);
-        console.log("Fetched categories for voting admin:", catRes);
+        log(`Fetched categories for voting admin: ${catRes}`);
         // Fetch votes for each category
         const resultsObj: { [cat: string]: { carId: string | number; votes: number }[] } = {};
         for (const category of catRes || []) {

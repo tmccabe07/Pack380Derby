@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { fetchRacesByType, fetchHeatsForRace, Race, HeatLane, RACE_TYPE_LABELS} from "@/lib/api/races";
 import Link from "next/link";
 import { useAdmin } from "@/hooks/useAdmin";
+import logger, { log } from "@/lib/utils/log";
 
 
 interface RaceWithHeats extends Race {
@@ -44,7 +45,7 @@ export default function RacesPage() {
           }
         }
         if (!cancelled) {
-          console.log("Fetched race rounds data:", result);
+          log("Fetched race rounds data:", result);
           setData(result)
         };
       } catch {
@@ -79,7 +80,7 @@ export default function RacesPage() {
         if(races.length === 0){
           return null;
         }
-        console.log(`Rendering races for race type ${rt}:`, races);
+        log(`Rendering races for race type ${rt}: ${races}`);
         return (
           <div key={rt} className="mb-10">
             <h2 className="text-2xl font-semibold mb-8">{RACE_TYPE_LABELS[rt as keyof typeof RACE_TYPE_LABELS] || `Type ${rt}`} ({races.length})</h2>

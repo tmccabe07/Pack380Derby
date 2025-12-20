@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import { getVotingCategories } from "@/lib/api/competition";
 import { getVoteScoresByCategory } from "@/lib/api/voting";
-import { fetchCars } from "@/lib/api/cars";
+import { fetchCars, Car } from "@/lib/api/cars";
 import CarCard from "@/components/cars/CarCard";
 // import { useAdmin } from "@/hooks/useAdmin";
 import { VoteScore } from "@/lib/api/voting";
@@ -13,7 +13,7 @@ export default function VotingAdminPage() {
   // const { isAdmin } = useAdmin();
   const [categories, setCategories] = useState<VotingCategory[]>([]);
   const [results, setResults] = useState<{ [cat: string]: { carId: string | number; votes: number }[] }>({});
-  const [cars, setCars] = useState<any[]>([]);
+  const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,7 +32,7 @@ export default function VotingAdminPage() {
         // Fetch votes for each category
         const resultsObj: { [cat: string]: { carId: string | number; votes: number }[] } = {};
         for (const category of catRes || []) {
-          const voteScores = await getVoteScoresByCategory(category.id);
+          const voteScores = await getVoteScoresByCategory(String(category.id));
           resultsObj[category.id] = voteScores.map((vote: VoteScore) => ({
             carId: vote.carId,
             votes: vote.totalScore
@@ -53,8 +53,8 @@ export default function VotingAdminPage() {
   if (loading) return <Layout><div className="text-center text-gray-500">Loading...</div></Layout>;
   if (error) return <Layout><div className="text-center text-red-500">{error}</div></Layout>;
 
-  function getCar(carId: string | number) {
-    return cars.find(c => c.id === carId);
+  function getCar(carId: string | number): Car | undefined {
+    return cars.find(c => c.id === String(carId));
   }
 
   return (

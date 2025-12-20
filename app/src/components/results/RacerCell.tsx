@@ -31,7 +31,7 @@ const RacerCell: React.FC<RacerCellProps> = ({ racerId, racerName, racerRank, ra
           throw new Error("No racerId for car");
         })
         .then(r => {
-          setName(r?.name || `Racer #${id}`);
+          setName(r?.name || `Racer #${String(r?.id ?? racerId ?? carId)}`);
           setDen(r?.den);
           setRank(r?.rank);
         })

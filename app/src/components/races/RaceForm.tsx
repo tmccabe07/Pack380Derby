@@ -1,19 +1,29 @@
 "use client";
 import { useState } from "react";
 import { RACE_TYPE_LABELS } from "@/lib/api/races";
+import { Race } from "@/lib/api/races";
+import { RankType } from "@/lib/api/racers";
 
 const raceTypeOptions = Object.entries(RACE_TYPE_LABELS).map(([value, label]) => ({
   value: Number(value),
   label
 }));
-const ranks = [
-  "cub", "lion", "tiger", "wolf", "bear", "webelos", "aol", "sibling", "adult"
+const ranks: RankType[] = [
+  RankType.Cub,
+  RankType.Lion,
+  RankType.Tiger,
+  RankType.Wolf,
+  RankType.Bear,
+  RankType.Webelos,
+  RankType.AOL,
+  RankType.Sibling,
+  RankType.Adult,
 ];
 
-export default function RaceForm({ onCreate }: { onCreate: (race: any) => void }) {
+export default function RaceForm({ onCreate }: { onCreate: (race: Race) => void }) {
   const [numLanes, setNumLanes] = useState(6);
   const [raceType, setRaceType] = useState(1);
-  const [rank, setRank] = useState("cub");
+  const [rank, setRank] = useState<RankType>(RankType.Cub);
   const [groupByRank, setGroupByRank] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,7 +53,7 @@ export default function RaceForm({ onCreate }: { onCreate: (race: any) => void }
       </div>
       <div>
         <label className="block font-bold mb-1">Rank</label>
-        <select value={rank} onChange={e => setRank(e.target.value)} className="border p-2 w-full">
+        <select value={rank} onChange={e => setRank(e.target.value as RankType)} className="border p-2 w-full">
           {ranks.map(r => <option key={r} value={r}>{r}</option>)}
         </select>
       </div>

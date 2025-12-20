@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Racer, createRacer, searchRacers } from "@/lib/api/racers";
+import { Racer, createRacer, searchRacers, RankType } from "@/lib/api/racers";
 import { Car, createCar, fetchCars, updateCar } from "@/lib/api/cars";
 import CarForm from "@/components/cars/CarForm";
 
@@ -94,7 +94,8 @@ export default function RegistrationForm({ onRegistered }: { onRegistered?: () =
         racerId = String(selectedScout.id);
       } else {
         if (!newRacerName.trim()) throw new Error("Enter a name for the racer");
-        const created = await createRacer({ name: newRacerName.trim(), rank: role, den: role === "scout" ? selectedDen || "" : undefined });
+        const mappedRank = role === "sibling" ? RankType.Sibling : RankType.Adult;
+        const created = await createRacer({ name: newRacerName.trim(), rank: mappedRank, den: "" });
         racerId = String(created.id);
       }
       // Determine create vs update
@@ -201,7 +202,14 @@ export default function RegistrationForm({ onRegistered }: { onRegistered?: () =
             <h3 className="font-semibold text-lg mb-4">Car Information</h3>
             <CarForm
               car={car}
-              racer={selectedScout || { id: "temp", name: newRacerName || "New Racer", rank: role === "scout" ? "lion" : role, den: "" }}
+              racer={
+                selectedScout || {
+                  id: "temp",
+                  name: newRacerName || "New Racer",
+                  rank: role === "scout" ? RankType.Lion : role === "sibling" ? RankType.Sibling : RankType.Adult,
+                  den: "",
+                }
+              }
               onChange={setCar}
               hideSubmit
             />

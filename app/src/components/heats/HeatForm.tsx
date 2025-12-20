@@ -1,9 +1,10 @@
 "use client";
 import { fetchCars, Car } from "@/lib/api/cars";
 import { useEffect, useState } from "react";
+import { HeatEntry } from "@/lib/api/heats";
 
-export default function HeatForm({ onCreate = () => {}, lanes = 6 }: { onCreate?: (entries: any[]) => void, lanes?: number }) {
-  const [entries, setEntries] = useState<{ lane: number; carId: string }[]>(
+export default function HeatForm({ onCreate = () => {}, lanes = 6 }: { onCreate?: (entries: HeatEntry[]) => void, lanes?: number }) {
+  const [entries, setEntries] = useState<HeatEntry[]>(
     Array.from({ length: lanes }, (_, i) => ({ lane: i + 1, carId: "" }))
   );
   const [cars, setCars] = useState<Car[]>([]);

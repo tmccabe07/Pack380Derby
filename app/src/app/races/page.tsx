@@ -98,7 +98,7 @@ export default function RacesPage() {
                     <div>
                       {race.heatsByRank ? (
                         Object.entries(race.heatsByRank)
-                          .filter(([_, heatsById]) => Object.keys(heatsById).length > 0)
+                          .filter(([, heatsById]) => Object.keys(heatsById).length > 0)
                           .map(([rank, heatsById]) => (
                             <div key={rank} className="mb-6">
                               <h4 className="text-lg font-semibold mb-2">{rank.charAt(0).toUpperCase() + rank.slice(1)} Heats</h4>

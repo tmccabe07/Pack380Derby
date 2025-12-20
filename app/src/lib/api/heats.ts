@@ -1,4 +1,23 @@
 import { fetchPinewoodAPI } from "./api";
+import { logger } from "@/lib/utils/log";
+
+// Define what a Heat looks like
+export interface HeatEntry {
+  id?: string;
+  lane: number;
+  carId: string | number;
+  result?: number;
+  car?: { id?: number | string; name?: string; racerId?: number | string; racer?: { id?: number | string; name?: string } };
+  heatId?: string | number;
+}
+
+export interface Heat {
+  id?: string;
+  entries: HeatEntry[];
+  createdAt?: string;
+  raceId?: string;
+  rank?: string;
+}
 
 /**
  * Group flat heat lane list into a record keyed by heatId
@@ -7,7 +26,7 @@ import { fetchPinewoodAPI } from "./api";
  */
 export function groupHeatLanes(lanes: HeatEntry[]): Record<string, HeatEntry[]> {
   return lanes.reduce<Record<string, HeatEntry[]>>((acc, lane) => {
-    const key = String((lane as any).heatId ?? "unknown");
+    const key = String(lane.heatId ?? "unknown");
     if (!acc[key]) acc[key] = [];
     acc[key].push(lane);
     return acc;
@@ -23,7 +42,7 @@ export async function fetchHeatsByRace(raceId: string): Promise<Heat[]> {
   const res = await fetchPinewoodAPI(`/api/race/${raceId}/heats`);
   if (!res.ok) throw new Error("Failed to fetch heats for race");
   const heats = await res.json();
-  console.log(`fetchHeatsByRace( ${raceId} ) -> `, heats);
+  logger.debug("heats", `fetchHeatsByRace(${raceId})`, heats);
   return heats;
 }
 
@@ -32,11 +51,11 @@ export async function fetchHeatsByRace(raceId: string): Promise<Heat[]> {
  * @param raceId Race ID
  * @returns Array of Heat objects
  */
-export async function fetchHeatByRaceHeat(raceId: string, heatId: string): Promise<Heat[]> {
+export async function fetchHeatByRaceHeat(raceId: string, heatId: string): Promise<Heat> {
   const res = await fetchPinewoodAPI(`/api/race/${raceId}/heat/${heatId}`);
   if (!res.ok) throw new Error(`Failed to fetch heat ${heatId} for race ${raceId}`);
-  const heat = {heatId: heatId, entries: await res.json()};
-  console.log(`fetchHeatByRaceHeat( ${raceId} ) -> `, heat);
+  const heat: Heat = { id: heatId, entries: await res.json() };
+  logger.debug("heats", `fetchHeatByRaceHeat(${raceId}, ${heatId})`, heat);
   return heat;
 }
 
@@ -48,7 +67,7 @@ export async function fetchHeatByRaceHeat(raceId: string, heatId: string): Promi
 export async function fetchHeatsByRank(raceId: string): Promise<Record<string, Heat[]>> {
   const heats = await fetchHeatsByRace(raceId);
   return heats.reduce<Record<string, Heat[]>>((acc, heat) => {
-    const rank = (heat as any).rank ?? "unknown";
+    const rank = heat.rank ?? "unknown";
     if (!acc[rank]) acc[rank] = [];
     acc[rank].push(heat);
     return acc;
@@ -72,20 +91,7 @@ export async function reportHeat(id: string, results: { lane: number; result: nu
   }
   return res.json();
 }
-// Define what a Heat looks like
-export interface HeatEntry {
-  lane: number;
-  carId: string | number;
-  result?: number;
-  car?: { id?: number | string; name?: string; racerId?: number | string; racer?: { id?: number | string; name?: string } };
-}
 
-export interface Heat {
-  id?: string;
-  entries: HeatEntry[];
-  createdAt?: string;
-  raceId?: string;
-}
 
 /**
  * Fetch all heats.
@@ -109,7 +115,7 @@ export async function fetchHeatById(id: string): Promise<Heat | null> {
   if (!res.ok) return null;
 
   const heat = await res.json();
-  console.log(`Fetched heat ID: ${id}`, heat);
+  logger.debug("heats", `fetchHeatById(${id})`, heat);
 
   return heat;
 }
@@ -142,7 +148,7 @@ export async function updateHeat(id: string, entries: HeatEntry[]): Promise<Heat
   const results: Heat[] = [];
   for (const entry of entries) {
     // Only send updatable fields (e.g., result and any additional fields in HeatEntry)
-    const { result, ...rest } = entry;
+    const { result } = entry;
     const res = await fetchPinewoodAPI(`/api/heat-lane/${entry.id}/${result}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },

@@ -36,7 +36,7 @@ export async function fetchCars() {
       if (!car.racer && car.racerId) {
         try {
           car.racer = await fetchPersonById(car.racerId);
-        } catch (e) {
+        } catch {
           car.racer = undefined;
         }
       }

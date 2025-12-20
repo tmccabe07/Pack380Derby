@@ -38,7 +38,7 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
   const [localGroups, setLocalGroups] = useState(groups);
-  const [heatId, setHeatId] = useState<string | number>(groups.length === 1 ? groups[0].heatId : '');
+  // const [heatId, setHeatId] = useState<string | number>(groups.length === 1 ? groups[0].heatId : '');
 
   // Keep localGroups in sync if groups prop changes
   React.useEffect(() => {
@@ -49,7 +49,7 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
       initialState[`${g.heatId}`] = 'false';
     });
     setSavedState(initialState);
-    setHeatId(groups.length === 1 ? groups[0].heatId : '');
+    // setHeatId(groups.length === 1 ? groups[0].heatId : '');
   }, [groups]);
 
   if (!localGroups || localGroups.length === 0) {
@@ -106,7 +106,7 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
       });
       setFieldErrors({});
       setSavedState(s => ({ ...s, [`${heatId}`]: 'true' }));
-    } catch (e) {
+    } catch {
       setError("Failed to save result");
       setSavedState(s => ({ ...s, [`${heatId}`]: 'failure' }));
     } finally {

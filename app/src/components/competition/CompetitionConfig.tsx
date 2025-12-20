@@ -39,6 +39,7 @@ export default function CompetitionConfig() {
     const names = Array.from(form.querySelectorAll('[name^="category-name-"]')) as HTMLInputElement[];
     const descriptions = Array.from(form.querySelectorAll('[name^="category-description-"]')) as HTMLInputElement[];
     const categories = names.map((input, idx) => ({
+      id: votingCategories[idx]?.id ?? Date.now() + idx, // Use existing id or generate a temporary one
       name: input.value.trim(),
       description: descriptions[idx]?.value.trim() || ""
     })).filter(cat => cat.name);

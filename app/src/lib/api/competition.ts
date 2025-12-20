@@ -21,7 +21,7 @@ export async function getConfiguration() {
   return {
     numLanes: total.numLanes,
     usableLanes: usable.usableLanes,
-    votingCategories: cats.categories || []
+    votingCategories: cats || []
   };
 }
 // Voting Categories API (now at /api/voting/category)
@@ -33,7 +33,7 @@ export async function getVotingCategories(): Promise<VotingCategory[]> {
 
 import type { VotingCategory } from "@/types/VotingCategory";
 
-export async function updateVotingCategories(categories: VotingCategory[]) {
+export async function updateVotingCategories(categories: Array<Pick<VotingCategory, "name" | "description">>) {
   // Fetch existing categories
   const existingRes = await fetchPinewoodAPI(`/api/voting/category`);
   if (!existingRes.ok) throw new Error("Failed to fetch existing voting categories");

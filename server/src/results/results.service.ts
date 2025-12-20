@@ -181,9 +181,7 @@ export class ResultsService {
       }))
       .sort((a, b) => a.weightedTotal - b.weightedTotal);
   }
-
   
-
   async getBestOfTheRest(rank: string): Promise<RankResultsResponseDto[]> {
     // Get all car IDs that are in the finals race (raceType 30) for racers with the specified rank
     const finalCarIds = await this.prisma.heatLane.findMany({
@@ -202,7 +200,10 @@ export class ResultsService {
     });
 
     const finalsCarIdSet = new Set(finalCarIds.map(lane => lane.carId).filter(id => id !== null));
-
+    console.log(
+      `API: finalsCarIdSet for rank ${rank}:`,
+      Array.from(finalsCarIdSet),
+    );
     // Get all heat lanes for cars whose racers have the specified rank, across ALL race types, excluding finals cars
     const heatLanes = await this.prisma.heatLane.findMany({
       select: {
@@ -236,6 +237,12 @@ export class ResultsService {
 
     // Group results by carId and calculate weighted score across all races
     const carResults = new Map<number, { rank: string; totalPlace: number }>();
+
+    console.log('API: Heat lanes considered for non-finals:', heatLanes);
+    console.log(
+      `API: carResults map before processing:`,
+      Array.from(carResults.entries()),
+    );
 
     heatLanes.forEach((lane) => {
       if (lane.carId && lane.result !== null) {

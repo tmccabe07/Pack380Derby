@@ -2,13 +2,14 @@ import React from "react";
 import { RaceType, fetchResultsByRank } from "@/lib/api/races";
 import CarCell from "./CarCell";
 import RacerCell from "./RacerCell";
+import { logger } from "@/lib/utils/log";
 
 interface LeaderboardEntry {
   carId: number;
   carName?: string;
   racerId?: number;
   racerName?: string;
-  score: number;
+  totalPlace: number;
 }
 
 interface LeaderboardProps {
@@ -69,7 +70,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ raceType, rank }) => {
         </thead>
         <tbody>
             {entries.map((entry, idx) => {
-            console.log("Leaderboard entry:", entry);
+            logger.debug("leaderboard", "entry", entry);
             return (
               <tr key={entry.carId} className="border-t">
               <td className="py-2 px-2">{idx + 1}</td>

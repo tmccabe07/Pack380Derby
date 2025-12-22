@@ -7,6 +7,7 @@ export interface RaceWithRankedHeats extends Race {
   heatsByRank?: Record<RankType, Record<number, HeatLane[]>>;
 }
 
+
 // RaceType enum based on server README
 export enum RaceType {
   Initialize = 1,
@@ -17,11 +18,16 @@ export enum RaceType {
   Final = 30,
 }
 
+// These are the only types which should be requested.
+export const createableRaceTypes = [RaceType.Preliminary, RaceType.Semifinal, RaceType.Final];
+
+
 export interface Race {
   id?: string;
   numLanes: number;
   raceType: RaceType;
-  rank: RankType;
+  racerType?: RacerType;
+  rank?: RankType;
   groupByRank: boolean;
   createdAt?: string;
 }
@@ -39,7 +45,7 @@ export const RACE_TYPE_LABELS: Record<RaceType, string> = {
 export async function createRace(data: {
   numLanes: number;
   raceType: RaceType;
-  rank: RankType;
+  racerType: RacerType;
   groupByRank: boolean;
 }): Promise<Race> {
     const res = await fetchPinewoodAPI(`/api/race`, {

@@ -1,5 +1,5 @@
 import { fetchPinewoodAPI } from "./api";
-import { RankType } from "./racers";
+import { RacerType, RankType } from "./racers";
 import { logger } from "@/lib/utils/log";
 
 // Race with heats grouped by rankType and heatId
@@ -151,11 +151,31 @@ export interface RaceResult {
   totalPlace: number; // e.g., place or time
 }
 
+export async function fetchResults(
+  raceType: RaceType,
+  rank?: RankType,
+  racerType?: RacerType
+): Promise<RaceResult[]> {
+  const filters = [raceType, rank, racerType].filter(Boolean).join(",");
+  const res = await fetchPinewoodAPI(`/api/results?include=${filters}`);
+  if (!res.ok) throw new Error(`Failed to fetch results for raceType ${raceType} and racerType ${racerType}`);
+  return res.json();
+}
+
 export async function fetchResultsByRank(
   raceType: RaceType,
   rank: RankType
 ): Promise<RaceResult[]> {
     const res = await fetchPinewoodAPI(`/api/results?include=${raceType},${rank}`);
   if (!res.ok) throw new Error(`Failed to fetch results for raceType ${raceType} and rank ${rank}`);
+  return res.json();
+}
+
+export async function fetchResultsByRacerType(
+  raceType: RaceType,
+  racerType: RacerType
+): Promise<RaceResult[]> {
+    const res = await fetchPinewoodAPI(`/api/results?include=${raceType},${racerType}`);
+  if (!res.ok) throw new Error(`Failed to fetch results for raceType ${raceType} and racerType ${racerType}`);
   return res.json();
 }

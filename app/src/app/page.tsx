@@ -8,7 +8,7 @@ import RegistrationForm from "@/components/registration/RegistrationForm";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { Leaderboard } from "@/components/results/Leaderboard";
 import { RaceType } from "@/lib/api/races";
-import { RankType } from "@/lib/api/racers";
+import { RacerType, RankType } from "@/lib/api/racers";
 
 export default function Home() {
   const { data, loading, refreshing, error, lastUpdated } = useDashboardData();
@@ -45,23 +45,23 @@ export default function Home() {
 
           {/* Overall Leaderboard */}
           <div className="mb-8">
-            <Leaderboard raceType={RaceType.Preliminary} rank={RankType.Cub} />
-            <Leaderboard raceType={RaceType.Semifinal} rank={RankType.Cub} />
-            <Leaderboard raceType={RaceType.Final} rank={RankType.Cub} />
+            <Leaderboard raceType={RaceType.Preliminary} rank={RacerType.CUB} />
+            <Leaderboard raceType={RaceType.Semifinal} rank={RacerType.CUB} />
+            <Leaderboard raceType={RaceType.Final} rank={RacerType.CUB} />
           </div>
 
           {/* Sibling and Adult Leaderboards */}
 
           <div className="mb-8">
-            <Leaderboard raceType={RaceType.Preliminary} rank={RankType.Sibling} />
-            <Leaderboard raceType={RaceType.Semifinal} rank={RankType.Sibling} />
-            <Leaderboard raceType={RaceType.Final} rank={RankType.Sibling} />            
+            <Leaderboard raceType={RaceType.Preliminary} rank={RacerType.SIBLING} />
+            <Leaderboard raceType={RaceType.Semifinal} rank={RacerType.SIBLING} />
+            <Leaderboard raceType={RaceType.Final} rank={RacerType.SIBLING} />            
           </div>
 
           <div className="mb-8">
-            <Leaderboard raceType={RaceType.Preliminary} rank={RankType.Adult} />
-            <Leaderboard raceType={RaceType.Semifinal} rank={RankType.Adult} />
-            <Leaderboard raceType={RaceType.Final} rank={RankType.Adult} />            
+            <Leaderboard raceType={RaceType.Preliminary} rank={RacerType.ADULT} />
+            <Leaderboard raceType={RaceType.Semifinal} rank={RacerType.ADULT} />
+            <Leaderboard raceType={RaceType.Final} rank={RacerType.ADULT} />            
           </div>
           
           {/* Den Leaderboard */}

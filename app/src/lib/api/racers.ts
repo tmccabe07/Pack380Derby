@@ -7,10 +7,7 @@ export enum RankType {
   Wolf = "wolf",
   Bear = "bear",
   Webelos = "webelos",
-  Cub = "cub",
-  AOL = "aol",
-  Sibling = "sibling",
-  Adult = "adult"
+  AOL = "aol"
 }
 
 export enum RacerType {

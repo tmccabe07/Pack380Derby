@@ -155,7 +155,7 @@ export async function fetchResultsByRank(
   raceType: RaceType,
   rank: RankType
 ): Promise<RaceResult[]> {
-    const res = await fetchPinewoodAPI(`/api/results/by-rank/${raceType}/${rank}`);
+    const res = await fetchPinewoodAPI(`/api/results?include=${raceType},${rank}`);
   if (!res.ok) throw new Error(`Failed to fetch results for raceType ${raceType} and rank ${rank}`);
   return res.json();
 }

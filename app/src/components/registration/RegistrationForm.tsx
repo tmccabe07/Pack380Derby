@@ -1,14 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Racer, createRacer, searchRacers, RankType } from "@/lib/api/racers";
+import { Racer, createRacer, searchRacers, RankType, RacerType } from "@/lib/api/racers";
 import { Car, createCar, fetchCars, updateCar } from "@/lib/api/cars";
 import CarForm from "@/components/cars/CarForm";
 
-type RoleType = "scout" | "sibling" | "adult";
-
 export default function RegistrationForm({ onRegistered }: { onRegistered?: () => void }) {
   // Role / racer selection state
-  const [role, setRole] = useState<RoleType>("scout");
+  const [role, setRole] = useState<RacerType>(RacerType.CUB);
   const [search, setSearch] = useState("");
   const [searching, setSearching] = useState(false);
   const [scoutResults, setScoutResults] = useState<Racer[]>([]);
@@ -35,7 +33,7 @@ export default function RegistrationForm({ onRegistered }: { onRegistered?: () =
 
   // Load scout results as the user types
   useEffect(() => {
-    if (role === "scout" && search.length > 1) {
+    if (role === RacerType.CUB && search.length > 1) {
       setSearching(true);
       searchRacers(search)
         .then(setScoutResults)
@@ -89,13 +87,17 @@ export default function RegistrationForm({ onRegistered }: { onRegistered?: () =
     setError(null);
     try {
       let racerId: string;
-      if (role === "scout") {
+      // let racerRank: RankType | undefined;
+      // let racerType: RacerType | undefined;
+      if (role === RacerType.CUB) {
         if (!selectedScout) throw new Error("Please select a scout");
         racerId = String(selectedScout.id);
+        // racerRank = selectedScout.rank || RankType.Lion;
+        // racerType = RacerType.CUB;
       } else {
         if (!newRacerName.trim()) throw new Error("Enter a name for the racer");
-        const mappedRank = role === "sibling" ? RankType.Sibling : RankType.Adult;
-        const created = await createRacer({ name: newRacerName.trim(), rank: mappedRank, den: "" });
+        const mappedRank = role === RacerType.SIBLING ? RankType.Sibling : RankType.Adult;
+        const created = await createRacer({ name: newRacerName.trim(), rank: mappedRank, racerType: role, den: "" });
         racerId = String(created.id);
       }
       // Determine create vs update
@@ -115,7 +117,7 @@ export default function RegistrationForm({ onRegistered }: { onRegistered?: () =
   }
 
   const canSubmit = () => {
-    if (role === "scout") return !!selectedScout && !!car.name;
+    if (role === RacerType.CUB) return !!selectedScout && !!car.name;
     return !!newRacerName.trim() && !!car.name;
   };
 
@@ -133,7 +135,7 @@ export default function RegistrationForm({ onRegistered }: { onRegistered?: () =
             <div>
               <label className="block text-sm font-bold mb-1">Role</label>
               <div className="flex space-x-4">
-                {(["scout", "sibling", "adult"] as RoleType[]).map(r => (
+                {([RacerType.CUB, RacerType.SIBLING, RacerType.ADULT] as RacerType[]).map(r => (
                   <label key={r} className="inline-flex items-center cursor-pointer">
                     <input
                       type="radio"
@@ -148,7 +150,7 @@ export default function RegistrationForm({ onRegistered }: { onRegistered?: () =
               </div>
             </div>
 
-            {role === "scout" && (
+            {role === RacerType.CUB && (
               <div>
                 <label className="block text-sm font-bold mb-1">Search Scout</label>
                 <input
@@ -182,7 +184,7 @@ export default function RegistrationForm({ onRegistered }: { onRegistered?: () =
               </div>
             )}
 
-            {(role === "sibling" || role === "adult") && (
+            {(role === RacerType.SIBLING || role === RacerType.ADULT) && (
               <div>
                 <label className="block text-sm font-bold mb-1">Name</label>
                 <input
@@ -206,7 +208,8 @@ export default function RegistrationForm({ onRegistered }: { onRegistered?: () =
                 selectedScout || {
                   id: "temp",
                   name: newRacerName || "New Racer",
-                  rank: role === "scout" ? RankType.Lion : role === "sibling" ? RankType.Sibling : RankType.Adult,
+                  rank: (role === RacerType.CUB ? RankType.Lion : undefined),
+                  racerType: role,
                   den: "",
                 }
               }

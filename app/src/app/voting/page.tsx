@@ -9,6 +9,7 @@ import { fetchCarsForCubs } from "@/lib/api/cars";
 import { submitVote } from "@/lib/api/voting";
 import type { VoteSubmission } from "@/types/VoteSubmission";
 import CarCard from "@/components/cars/CarCard";
+import { state } from "@/lib/utils/state";
 
 export default function VotingPage() {
   const [categories, setCategories] = useState<VotingCategory[]>([]);
@@ -48,7 +49,8 @@ export default function VotingPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
-      const voterId = typeof window !== "undefined" ? Number(window.localStorage.getItem("voterId") || 1) : 1;
+      const voterRaw = state.getItem("voterId");
+      const voterId = Number(voterRaw ?? 1);
       for (const category of categories) {
         const vote: VoteSubmission = {
           carId: Number(selected[category.id]),

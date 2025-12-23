@@ -7,8 +7,8 @@ export enum RankType {
   Wolf = "wolf",
   Bear = "bear",
   Webelos = "webelos",
-  Cub = "cub",
   AOL = "aol",
+  Cub = "cub",
   Sibling = "sibling",
   Adult = "adult"
 }
@@ -23,9 +23,9 @@ export enum RacerType {
 export interface Racer {
   id?: string;
   name: string;
-  type?: RacerType;
-  rank: RankType;
-  den: string;
+  racerType?: RacerType;
+  rank?: RankType;
+  den?: string;
 }
 
 export async function fetchRacerById(racerId: string): Promise<Racer> {

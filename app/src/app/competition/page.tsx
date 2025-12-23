@@ -3,6 +3,7 @@ import Layout from "@/components/Layout";
 import CompetitionConfig from "@/components/competition/CompetitionConfig";
 
 export default function CompetitionPage() {
+
   return (
     <Layout>
       <div className="max-w-3xl mx-auto mt-10 space-y-6">

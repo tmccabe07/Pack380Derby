@@ -40,7 +40,6 @@ export default function CarList() {
 
   return (
     <div className="mt-6">
-      <h2 className="text-2xl font-bold mb-4 text-center">Registered Cars</h2>
       <ul className="space-y-2">
         {cars.map((car) => (
           <li

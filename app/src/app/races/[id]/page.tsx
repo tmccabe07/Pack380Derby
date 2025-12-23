@@ -3,6 +3,7 @@ import Layout from "@/components/Layout";
 import { useEffect, useState, use } from "react";
 import { fetchRaceById, Race, fetchHeatsForRace, HeatLane, RACE_TYPE_LABELS } from "@/lib/api/races";
 import HeatLanesTable from "@/components/heats/HeatLanesTable";
+import Link from "next/link";
 
 export default function RaceDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   // Unwrap promised route params (Next.js 15+ provides params as a Promise in client components)
@@ -51,11 +52,8 @@ export default function RaceDetailsPage({ params }: { params: Promise<{ id: stri
 
   return (
     <Layout>
-      <h1 className="text-3xl font-bold mb-8">Race #{race.id}</h1>
-      <ul className="mb-8">
-        <li>Type: {RACE_TYPE_LABELS[race.raceType] || race.raceType}</li>
-        <li>Rank: {race.rank}</li>
-      </ul>
+      <h1 className="text-3xl font-bold mb-8">Race #{race.id} - {race.racerType} {RACE_TYPE_LABELS[race.raceType] || race.raceType} </h1>
+
       <HeatLanesTable
         groups={Object.entries(flatHeats)
           .filter(([, arr]) => Array.isArray(arr))
@@ -66,6 +64,9 @@ export default function RaceDetailsPage({ params }: { params: Promise<{ id: stri
         raceId={id}
         emptyMessage="No heats for this race."
       />
+      <div className="mb-6">
+        <Link href={`/races/${id}/print`} className="inline-block bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800">Print Heat Sheets</Link>
+      </div>      
     </Layout>
   );
 }

@@ -2,7 +2,7 @@
 import Layout from "@/components/Layout";
 import { useEffect, useState } from "react";
 import { fetchResultsByRank, ResultItem } from "@/lib/api/results";
-import { RankType } from "@/lib/api/racers";
+import { RankType, RacerType } from "@/lib/api/racers";
 import { RaceType } from "@/lib/api/races";
 import { Leaderboard } from "@/components/results/Leaderboard";
 
@@ -45,15 +45,15 @@ export default function ResultsPage() {
       <div className="max-w-7xl mx-auto mt-10">
         <h1 className="text-3xl font-bold mb-8">Race Results</h1>
           <div className="mb-8">
-            <Leaderboard raceType={RaceType.Final} rank={RankType.Cub} />
+            <Leaderboard raceType={RaceType.Final} racerType={RacerType.CUB} />
           </div>
 
           <div className="mb-8">
-            <Leaderboard raceType={RaceType.Final} rank={RankType.Sibling} />            
+            <Leaderboard raceType={RaceType.Final} racerType={RacerType.SIBLING} />            
           </div>
 
           <div className="mb-8">
-            <Leaderboard raceType={RaceType.Final} rank={RankType.Adult} />            
+            <Leaderboard raceType={RaceType.Final} racerType={RacerType.ADULT} />            
           </div>
         {loading && <div>Loading results...</div>}
         {error && <div className="text-red-600">{error}</div>}

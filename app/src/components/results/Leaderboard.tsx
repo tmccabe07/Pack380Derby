@@ -1,9 +1,9 @@
 import React from "react";
-import { RaceType, fetchResultsByRank } from "@/lib/api/races";
+import { RaceType, fetchResults } from "@/lib/api/races";
 import CarCell from "./CarCell";
 import RacerCell from "./RacerCell";
 import { logger } from "@/lib/utils/log";
-
+import { RankType, RacerType } from "@/lib/api/racers";
 interface LeaderboardEntry {
   carId: number;
   carName?: string;
@@ -14,10 +14,11 @@ interface LeaderboardEntry {
 
 interface LeaderboardProps {
   raceType: RaceType;
-  rank: import("@/lib/api/racers").RankType;
+  rank?: RankType;
+  racerType?: RacerType;
 }
 
-export const Leaderboard: React.FC<LeaderboardProps> = ({ raceType, rank }) => {
+export const Leaderboard: React.FC<LeaderboardProps> = ({ raceType, rank, racerType }) => {
   const [entries, setEntries] = React.useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -25,7 +26,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ raceType, rank }) => {
   React.useEffect(() => {
     setLoading(true);
     setError(null);
-    fetchResultsByRank(raceType, rank)
+    fetchResults(raceType, rank)
       .then((results) => {
       // Assume results is an array of { carId, carName, racerId, racerName, totalPlace }
       const leaderboardEntries: LeaderboardEntry[] = results

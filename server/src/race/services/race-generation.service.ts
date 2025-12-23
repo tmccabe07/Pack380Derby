@@ -57,6 +57,21 @@ export class RaceGenerationService {
     return filledCars;
   }
 
+  // Ensure Postgres ID sequences are in sync with table max(id)
+  // Prevents "Unique constraint failed on the fields: (id)" when sequences drift
+  private async ensureIdSequencesInSync(): Promise<void> {
+    try {
+      await this.prisma.$executeRawUnsafe(
+        `SELECT setval(pg_get_serial_sequence('"Racer"', 'id'), COALESCE((SELECT MAX(id) FROM "Racer"), 0))`
+      );
+      await this.prisma.$executeRawUnsafe(
+        `SELECT setval(pg_get_serial_sequence('"Car"', 'id'), COALESCE((SELECT MAX(id) FROM "Car"), 0))`
+      );
+    } catch {
+      // Best-effort safeguard; ignore errors to avoid blocking race creation
+    }
+  }
+
   async createPreliminaryRace(
     racerType: RacerType
   ): Promise<Race> {
@@ -91,6 +106,9 @@ export class RaceGenerationService {
     cars: Car[],
     racerType: RacerType,
   ): Promise<Race> {
+    // Repair any sequence drift before we start creating rows
+    await this.ensureIdSequencesInSync();
+
     const usableLanes = this.competitionService.getUsableLanes();
      // Use usable lane count instead of the passed parameter
     const effectiveLanesPerHeat = this.competitionService.getUsableLaneCount();

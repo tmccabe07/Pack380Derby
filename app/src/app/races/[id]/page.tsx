@@ -53,9 +53,7 @@ export default function RaceDetailsPage({ params }: { params: Promise<{ id: stri
   return (
     <Layout>
       <h1 className="text-3xl font-bold mb-8">Race #{race.id} - {race.racerType} {RACE_TYPE_LABELS[race.raceType] || race.raceType} </h1>
-      <div className="mb-6">
-        <Link href={`/races/${id}/print`} className="inline-block bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800">Print Heat Sheets</Link>
-      </div>
+
       <HeatLanesTable
         groups={Object.entries(flatHeats)
           .filter(([, arr]) => Array.isArray(arr))
@@ -66,6 +64,9 @@ export default function RaceDetailsPage({ params }: { params: Promise<{ id: stri
         raceId={id}
         emptyMessage="No heats for this race."
       />
+      <div className="mb-6">
+        <Link href={`/races/${id}/print`} className="inline-block bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800">Print Heat Sheets</Link>
+      </div>      
     </Layout>
   );
 }

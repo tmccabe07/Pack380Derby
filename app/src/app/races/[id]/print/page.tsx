@@ -46,11 +46,10 @@ export default function RacePrintPage({ params }: { params: Promise<{ id: string
     <div className="print-bg-white print:text-black p-8" style={{ fontFamily: 'sans-serif' }}>
       <h1 className="text-3xl font-bold mb-4">Heats for Race #{race.id}</h1>
       {Object.entries(heatsByRank)
-        .filter(([_, heatsObj]) => Object.keys(heatsObj).length > 0)
+        .filter(([, heatsObj]) => Object.keys(heatsObj).length > 0)
         .map(([rank, heatsObj]) => (
           <div key={rank}>
-            <h2 className="text-2xl font-semibold mb-4">{rank.charAt(0).toUpperCase() + rank.slice(1)} Heats</h2>
-            {Object.entries(heatsObj).map(([heatId, lanes], idx) => (
+            {Object.entries(heatsObj).map(([heatId, lanes]) => (
               <div
                 key={heatId}
                 className="mb-12"

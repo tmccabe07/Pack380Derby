@@ -26,7 +26,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ raceType, rank, racerT
   React.useEffect(() => {
     setLoading(true);
     setError(null);
-    fetchResults(raceType, rank)
+    fetchResults(raceType, rank, racerType)
       .then((results) => {
       // Assume results is an array of { carId, carName, racerId, racerName, totalPlace }
       const leaderboardEntries: LeaderboardEntry[] = results
@@ -42,14 +42,14 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ raceType, rank, racerT
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, [raceType, rank]);
+  }, [raceType, rank, racerType]);
 
   if (loading) return <div>Loading leaderboard...</div>;
   if (error) return <div className="text-red-600">{error}</div>;
   if (!entries.length) return (
    <div className="border rounded-lg p-4 bg-white shadow">
       <h2 className="text-xl font-bold mb-4">
-        Leaderboard: {RaceType[raceType]} / {rank}
+        Leaderboard: {RaceType[raceType]} / {racerType}
       </h2>
       <div>No results available.</div>
     </div>
@@ -58,7 +58,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ raceType, rank, racerT
   return (
     <div className="border rounded-lg p-4 bg-white shadow">
       <h2 className="text-xl font-bold mb-4">
-        Leaderboard: {RaceType[raceType]} / {rank}
+        Leaderboard: {RaceType[raceType]} / {racerType}
       </h2>
       <table className="min-w-full text-sm">
         <thead>

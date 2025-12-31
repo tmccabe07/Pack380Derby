@@ -203,7 +203,7 @@ export class ResultsService {
 
     const finalsCarIdSet = new Set(finalCarIds.map(lane => lane.carId).filter(id => id !== null));
 
-    // Get all heat lanes for cars whose racers have the specified rank, across ALL race types, excluding finals cars
+    // Get all heat lanes for cars whose racers have the specified rank, excluding finals cars
     const heatLanes = await this.prisma.heatLane.findMany({
       select: {
         carId: true,
@@ -234,42 +234,66 @@ export class ResultsService {
       },
     });
 
-    // Group results by carId and calculate weighted score across all races
-    const carResults = new Map<number, { rank: string; totalPlace: number }>();
+    // For each car, determine the highest race type they participated in and their score at that stage
+    const carHighestStage = new Map<number, { 
+      rank: string; 
+      highestRaceType: number; 
+      totalPlace: number;
+    }>();
 
     heatLanes.forEach((lane) => {
-      if (lane.carId && lane.result !== null) {
+      if (lane.carId && lane.result !== null && lane.raceType !== null) {
         const weightedScore = lane.result * 100;
-        const existing = carResults.get(lane.carId);
+        const existing = carHighestStage.get(lane.carId);
         const racerRank = lane.car?.racer?.rank || rank;
+
         if (existing) {
-          existing.totalPlace += weightedScore;
+          // If this is a higher race type, replace with new stage data
+          if (lane.raceType > existing.highestRaceType) {
+            existing.highestRaceType = lane.raceType;
+            existing.totalPlace = weightedScore;
+          } else if (lane.raceType === existing.highestRaceType) {
+            // Same stage, add to the score
+            existing.totalPlace += weightedScore;
+          }
+          // If lower race type, ignore it
         } else {
-          carResults.set(lane.carId, {
+          carHighestStage.set(lane.carId, {
             rank: racerRank,
+            highestRaceType: lane.raceType,
             totalPlace: weightedScore,
           });
         }
       }
     });
 
-    // Convert to array and sort by totalPlace (ascending - lower is better)
-    const sortedResults = Array.from(carResults.entries())
+    // Convert to array and sort by highest stage first (descending), then by score within stage (ascending)
+    const sortedResults = Array.from(carHighestStage.entries())
       .map(([carId, data]) => ({
         carId,
         rank: data.rank,
-        raceType: undefined, // Not applicable since we're aggregating across all race types
+        raceType: data.highestRaceType,
         totalPlace: data.totalPlace,
       }))
-      .sort((a, b) => a.totalPlace - b.totalPlace);
+      .sort((a, b) => {
+        // First sort by race type (higher stage is better)
+        if (a.raceType !== b.raceType) {
+          return b.raceType - a.raceType;
+        }
+        // Within same stage, sort by score (lower is better)
+        return a.totalPlace - b.totalPlace;
+      });
 
-    // Return all cars with the best score (handles ties)
+    // Return all cars with the best combination (highest stage + best score at that stage)
     if (sortedResults.length === 0) {
       return [];
     }
 
+    const topStage = sortedResults[0].raceType;
     const topScore = sortedResults[0].totalPlace;
-    return sortedResults.filter(result => result.totalPlace === topScore);
+    return sortedResults.filter(result => 
+      result.raceType === topStage && result.totalPlace === topScore
+    );
   }
   
 }

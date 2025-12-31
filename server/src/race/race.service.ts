@@ -287,6 +287,13 @@ async findRoundByRaceType(raceType: number) {
       return null as any;
     } 
     
+    // Delete associated HeatLane records first due to foreign key constraint
+    await this.prisma.heatLane.deleteMany({
+      where: {
+        raceId: id,
+      },
+    });
+    
     return await this.prisma.race.delete({
         where: {
           id: id,

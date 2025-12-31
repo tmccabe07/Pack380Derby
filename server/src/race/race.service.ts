@@ -36,44 +36,96 @@ export class RaceService {
       throw new Error(`Cannot create ${targetStage}: no previous stage found`);
     }
 
-    // Get results from the previous stage and its corresponding deadheat stage
-    const results = await this.getStageResults(previousStage, racerType);
-
-    this.logger.debug(`results from previous stage (${previousStage}): ${JSON.stringify(results)}`);
-
     // Calculate who advances to the target stage
     const advancingCount = await this.progression.calculateAdvancingCount(targetStage, numLanes, racerType as RacerType);
-
     this.logger.debug(`advancingCount for ${targetStage}: ${advancingCount}`);
 
-    const { advancing, needsTiebreaker, tiedCarIds } = 
-      await this.progression.determineAdvancingResults(results, advancingCount);
-
-    this.logger.debug(`needsTiebreaker: ${needsTiebreaker}`);
-    this.logger.debug(`tiedCarIds: ${JSON.stringify(tiedCarIds)}`);
-    this.logger.debug(`these cars are advancing: ${JSON.stringify(advancing)}`);
-
-    // Either handle tie breakers if needed by creating deadheat, or create the target stage's race with all the advancers
-    if (needsTiebreaker) {
-      const deadheatStage = this.progression.getDeadheatStage(previousStage);
-      if (!deadheatStage) {
-        throw new Error(`No deadheat stage defined for previous stage ${previousStage}`);
-      }
-      return this.generator.createDeadheatRace(
-        tiedCarIds,
-        deadheatStage,
-        racerType as RacerType
-      );
+    // Check if deadheat exists and has results
+    const deadheatStage = this.progression.getDeadheatStage(previousStage);
+    let hasDeadheatResults = false;
+    
+    if (deadheatStage) {
+      const deadheatCheck = await this.prisma.heatLane.findFirst({
+        where: {
+          raceType: deadheatStage,
+          racerType: racerType,
+        },
+      });
+      hasDeadheatResults = deadheatCheck !== null;
     }
-    else{
 
-    // Create target stage race
+    this.logger.debug(`hasDeadheatResults: ${hasDeadheatResults}`);
+
+    if (hasDeadheatResults) {
+      // Deadheat exists and has results - use special logic
+      // Get preliminary results only (without deadheat)
+      const prelimResults = await this.getStageResultsOnly(previousStage, racerType);
+      this.logger.debug(`prelim-only results: ${JSON.stringify(prelimResults)}`);
+
+      // Determine who definitely advances and who was tied from prelims
+      const { advancing: definitelyAdvancing, needsTiebreaker, tiedCarIds } = 
+        await this.progression.determineAdvancingResults(prelimResults, advancingCount);
+
+      this.logger.debug(`definitelyAdvancing from prelims: ${JSON.stringify(definitelyAdvancing)}`);
+      this.logger.debug(`tiedCarIds from prelims: ${JSON.stringify(tiedCarIds)}`);
+
+      // Get deadheat results for the tied cars
+      const deadheatResults = await this.getStageResultsOnly(deadheatStage, racerType);
+      this.logger.debug(`deadheat results: ${JSON.stringify(deadheatResults)}`);
+
+      // Filter to only include cars that were in the tied set
+      const tiedCarsDeadheatResults = deadheatResults.filter(r => tiedCarIds.includes(r.carId));
+      
+      // Calculate how many spots remain for the tied cars
+      const spotsRemaining = advancingCount - definitelyAdvancing.length;
+      this.logger.debug(`spotsRemaining for deadheat winners: ${spotsRemaining}`);
+
+      // Sort tied cars by their deadheat results and take top N
+      const sortedTiedCars = tiedCarsDeadheatResults.sort((a, b) => a.totalScore - b.totalScore);
+      const advancingFromDeadheat = sortedTiedCars.slice(0, spotsRemaining).map(r => r.carId);
+
+      this.logger.debug(`advancingFromDeadheat: ${JSON.stringify(advancingFromDeadheat)}`);
+
+      // Combine definitely advancing with deadheat winners
+      const allAdvancing = [...definitelyAdvancing, ...advancingFromDeadheat];
+      this.logger.debug(`total advancing to ${targetStage}: ${JSON.stringify(allAdvancing)}`);
+
+      // Create target stage race
       return this.generator.createNextStageRace(
-        advancing,
+        allAdvancing,
         targetStage,
         racerType as RacerType
       );
+    } else {
+      // No deadheat results yet - use normal logic
+      const results = await this.getStageResultsOnly(previousStage, racerType);
+      this.logger.debug(`results from previous stage (${previousStage}): ${JSON.stringify(results)}`);
 
+      const { advancing, needsTiebreaker, tiedCarIds } = 
+        await this.progression.determineAdvancingResults(results, advancingCount);
+
+      this.logger.debug(`needsTiebreaker: ${needsTiebreaker}`);
+      this.logger.debug(`tiedCarIds: ${JSON.stringify(tiedCarIds)}`);
+      this.logger.debug(`these cars are advancing: ${JSON.stringify(advancing)}`);
+
+      // Either handle tie breakers if needed by creating deadheat, or create the target stage's race with all the advancers
+      if (needsTiebreaker) {
+        if (!deadheatStage) {
+          throw new Error(`No deadheat stage defined for previous stage ${previousStage}`);
+        }
+        return this.generator.createDeadheatRace(
+          tiedCarIds,
+          deadheatStage,
+          racerType as RacerType
+        );
+      } else {
+        // Create target stage race
+        return this.generator.createNextStageRace(
+          advancing,
+          targetStage,
+          racerType as RacerType
+        );
+      }
     }
 
     
@@ -251,6 +303,40 @@ async findRoundByRaceType(raceType: number) {
 
     // Convert to array of results
     return Array.from(mainResultMap.entries()).map(([carId, totalScore]) => ({
+      carId,
+      totalScore
+    }));
+  }
+
+  async getStageResultsOnly(stage: RaceStage, racerType: string): Promise<Array<{ carId: number; totalScore: number }>> {
+    // Get heat results for only the specified stage (no deadheat merging)
+    const stageResults = await this.prisma.heatLane.findMany({
+      where: {
+        raceType: stage,
+        racerType: racerType,
+        car: {
+          name: { not: 'blank' } // Exclude blank cars
+        }
+      },
+      select: {
+        carId: true,
+        result: true,
+      },
+    });
+
+    // Group results by car and calculate total score
+    const resultMap = new Map<number, number>();
+    
+    for (const heat of stageResults) {
+      if (heat.carId !== null) {
+        const currentTotal = resultMap.get(heat.carId) ?? 0;
+        const resultValue = heat.result ?? 0;
+        resultMap.set(heat.carId, currentTotal + resultValue);
+      }
+    }
+
+    // Convert to array of results
+    return Array.from(resultMap.entries()).map(([carId, totalScore]) => ({
       carId,
       totalScore
     }));

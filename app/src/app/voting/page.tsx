@@ -5,7 +5,7 @@ import { getVotingCategories } from "@/lib/api/competition";
 // Import VotingCategory type
 import { VotingCategory } from "@/types/VotingCategory";
 import type { Car } from "@/lib/api/cars";
-import { fetchCars } from "@/lib/api/cars";
+import { fetchCarsForCubs } from "@/lib/api/cars";
 import { submitVote } from "@/lib/api/voting";
 import type { VoteSubmission } from "@/types/VoteSubmission";
 import CarCard from "@/components/cars/CarCard";
@@ -25,7 +25,7 @@ export default function VotingPage() {
       try {
         const [catRes, carRes] = await Promise.all([
           getVotingCategories(),
-          fetchCars()
+          fetchCarsForCubs()
         ]);
         if (cancelled) return;
         setCategories(catRes || []);
@@ -112,7 +112,12 @@ export default function VotingPage() {
           </button>
           <hr />          
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-2">{categories.find(cat => cat.id === activeCategory)?.name}</h2>            
+            <h2 className="text-xl font-semibold mb-2">{categories.find(cat => cat.id === activeCategory)?.name}</h2>
+            {categories.find(cat => cat.id === activeCategory)?.description && (
+              <div className="mb-4 text-gray-600 text-sm">
+                {categories.find(cat => cat.id === activeCategory)?.description}
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {cars.map(car => (
                 <div key={car.id} className={`border rounded-lg p-2 ${selected[activeCategory] === car.id ? "border-blue-600 bg-blue-50" : "border-gray-200"}`}>

@@ -13,10 +13,17 @@ export enum RankType {
   Adult = "adult"
 }
 
+export enum RacerType {
+  CUB = 'cub',
+  SIBLING = 'sibling',
+  ADULT = 'adult'
+}
+
 // Define what a Racer looks like
 export interface Racer {
   id?: string;
   name: string;
+  type?: RacerType;
   rank: RankType;
   den: string;
 }

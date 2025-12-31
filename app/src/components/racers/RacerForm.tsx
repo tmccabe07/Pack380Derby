@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Racer, searchRacers } from "@/lib/api/racers";
+import { Racer, searchRacers, RankType } from "@/lib/api/racers";
 
 type RoleType = "scout" | "sibling" | "adult";
 
@@ -14,7 +14,7 @@ export default function RacerForm({ racer: initialRacer, onSubmit }: RacerFormPr
   const [racer, setRacer] = useState<Racer>(
     initialRacer || {
       name: "",
-      rank: "lion",
+      rank: RankType.Lion,
       den: "",
     }
   );
@@ -43,9 +43,10 @@ export default function RacerForm({ racer: initialRacer, onSubmit }: RacerFormPr
     if (role === "scout" && selectedScout) {
       onSubmit(selectedScout);
     } else if (role === "sibling" || role === "adult") {
-  onSubmit({ ...racer, rank: role });
+      const mappedRank = role === "sibling" ? RankType.Sibling : RankType.Adult;
+      onSubmit({ ...racer, rank: mappedRank });
     } else {
-  onSubmit(racer);
+      onSubmit(racer);
     }
   }
 

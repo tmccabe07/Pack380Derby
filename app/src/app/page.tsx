@@ -2,7 +2,6 @@
 
 import Layout from "@/components/Layout";
 import DashboardCard from "@/components/DashboardCard";
-import Link from "next/link";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useState } from "react";
 import RegistrationForm from "@/components/registration/RegistrationForm";
@@ -47,17 +46,24 @@ export default function Home() {
           {/* Overall Leaderboard */}
           <div className="mb-8">
             <Leaderboard raceType={RaceType.Preliminary} rank={RankType.Cub} />
+            <Leaderboard raceType={RaceType.Semifinal} rank={RankType.Cub} />
+            <Leaderboard raceType={RaceType.Final} rank={RankType.Cub} />
           </div>
 
           {/* Sibling and Adult Leaderboards */}
-          <div className="mb-8">
-            <Leaderboard raceType={RaceType.Preliminary} rank={RankType.Adult} />
-          </div>
 
           <div className="mb-8">
             <Leaderboard raceType={RaceType.Preliminary} rank={RankType.Sibling} />
+            <Leaderboard raceType={RaceType.Semifinal} rank={RankType.Sibling} />
+            <Leaderboard raceType={RaceType.Final} rank={RankType.Sibling} />            
           </div>
 
+          <div className="mb-8">
+            <Leaderboard raceType={RaceType.Preliminary} rank={RankType.Adult} />
+            <Leaderboard raceType={RaceType.Semifinal} rank={RankType.Adult} />
+            <Leaderboard raceType={RaceType.Final} rank={RankType.Adult} />            
+          </div>
+          
           {/* Den Leaderboard */}
 
           {isAdmin && (

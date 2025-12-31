@@ -182,9 +182,7 @@ export class ResultsService {
       }))
       .sort((a, b) => a.weightedTotal - b.weightedTotal);
   }
-
   
-
   async getBestOfTheRest(rank: string): Promise<RankResultsResponseDto[]> {
     this.logger.debug(`getBestOfTheRest called with rank: ${rank}`);
 
@@ -246,6 +244,12 @@ export class ResultsService {
       highestRaceType: number; 
       totalPlace: number;
     }>();
+
+    console.log('API: Heat lanes considered for non-finals:', heatLanes);
+    console.log(
+      `API: carResults map before processing:`,
+      Array.from(carResults.entries()),
+    );
 
     heatLanes.forEach((lane) => {
       if (lane.carId && lane.result !== null && lane.raceType !== null) {

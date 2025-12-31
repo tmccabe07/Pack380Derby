@@ -5,9 +5,13 @@ import * as path from 'path';
 
 const prisma = new PrismaClient();
 
+
 async function main() {
   const exportDir = path.resolve(__dirname, '../../data');
   if (!fs.existsSync(exportDir)) fs.mkdirSync(exportDir);
+
+  // Get filename suffix from command line argument
+  const suffix = process.argv[2] ? `_${process.argv[2]}` : '';
 
   // Export each table to a JSON file
   const tables = [
@@ -21,7 +25,7 @@ async function main() {
   ];
 
   for (const table of tables) {
-    const file = path.join(exportDir, `${table.name}.json`);
+    const file = path.join(exportDir, `${table.name}${suffix}.json`);
     fs.writeFileSync(file, JSON.stringify(table.data, null, 2));
     console.log(`Exported ${table.name} to ${file}`);
   }

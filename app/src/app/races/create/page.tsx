@@ -14,7 +14,7 @@ export default function CreateRacePage() {
       const created = await createRace(race);
       router.push(withAdmin(`/races/${created.id}`));
     } catch (error) {
-      alert("Failed to create race");
+      alert(`Failed to create race: ${error}`,);
     }
   }
 

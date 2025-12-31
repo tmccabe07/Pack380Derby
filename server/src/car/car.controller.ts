@@ -75,6 +75,18 @@ export class CarController {
     return this.carService.findAllByRank(inputRank);
   }
 
+  @Get('byRacerType/:racerType')
+  @ApiOperation({ summary: 'Get all cars that match the entered racer type' })
+  @ApiResponse({
+      status: 200,
+      description: 'All records by racer type',
+      type: CarResponseDto,
+      isArray: true
+  })
+  async findAllByRacerType(@Param('racerType') racerType: string) : Promise<CarModel[]> {
+    return this.carService.findAllByRacerType(racerType);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get the car that matches the entered id' })
   @ApiResponse({

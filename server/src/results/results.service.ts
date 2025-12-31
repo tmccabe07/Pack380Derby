@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RankResultsResponseDto } from './dto/rank-results-response.dto';
 import { UnifiedResultsResponseDto } from './dto/unified-results-response.dto';
@@ -8,6 +8,7 @@ const PLACE_WEIGHT_MULTIPLIER = 100
 
 @Injectable()
 export class ResultsService {
+  private readonly logger = new Logger(ResultsService.name);
   
   constructor(private prisma: PrismaService) {}
 
@@ -185,6 +186,8 @@ export class ResultsService {
   
 
   async getBestOfTheRest(rank: string): Promise<RankResultsResponseDto[]> {
+    this.logger.debug(`getBestOfTheRest called with rank: ${rank}`);
+
     // Get all car IDs that are in the finals race (raceType 30) for racers with the specified rank
     const finalCarIds = await this.prisma.heatLane.findMany({
       select: {
@@ -202,6 +205,7 @@ export class ResultsService {
     });
 
     const finalsCarIdSet = new Set(finalCarIds.map(lane => lane.carId).filter(id => id !== null));
+    this.logger.debug(`Finals car IDs (excluded): ${JSON.stringify(Array.from(finalsCarIdSet))}`);
 
     // Get all heat lanes for cars whose racers have the specified rank, excluding finals cars
     const heatLanes = await this.prisma.heatLane.findMany({
@@ -234,6 +238,8 @@ export class ResultsService {
       },
     });
 
+    this.logger.debug(`Found ${heatLanes.length} heat lanes for non-finals cars`);
+
     // For each car, determine the highest race type they participated in and their score at that stage
     const carHighestStage = new Map<number, { 
       rank: string; 
@@ -250,6 +256,7 @@ export class ResultsService {
         if (existing) {
           // If this is a higher race type, replace with new stage data
           if (lane.raceType > existing.highestRaceType) {
+            this.logger.debug(`Car ${lane.carId}: upgrading from stage ${existing.highestRaceType} to ${lane.raceType}`);
             existing.highestRaceType = lane.raceType;
             existing.totalPlace = weightedScore;
           } else if (lane.raceType === existing.highestRaceType) {
@@ -258,6 +265,7 @@ export class ResultsService {
           }
           // If lower race type, ignore it
         } else {
+          this.logger.debug(`Car ${lane.carId}: initial stage ${lane.raceType}, score ${weightedScore}`);
           carHighestStage.set(lane.carId, {
             rank: racerRank,
             highestRaceType: lane.raceType,
@@ -266,6 +274,8 @@ export class ResultsService {
         }
       }
     });
+
+    this.logger.debug(`Car highest stages: ${JSON.stringify(Array.from(carHighestStage.entries()))}`);
 
     // Convert to array and sort by highest stage first (descending), then by score within stage (ascending)
     const sortedResults = Array.from(carHighestStage.entries())
@@ -284,16 +294,24 @@ export class ResultsService {
         return a.totalPlace - b.totalPlace;
       });
 
+    this.logger.debug(`Sorted results: ${JSON.stringify(sortedResults)}`);
+
     // Return all cars with the best combination (highest stage + best score at that stage)
     if (sortedResults.length === 0) {
+      this.logger.debug('No results found');
       return [];
     }
 
     const topStage = sortedResults[0].raceType;
     const topScore = sortedResults[0].totalPlace;
-    return sortedResults.filter(result => 
+    this.logger.debug(`Top stage: ${topStage}, Top score: ${topScore}`);
+    
+    const finalResults = sortedResults.filter(result => 
       result.raceType === topStage && result.totalPlace === topScore
     );
+    this.logger.debug(`Returning ${finalResults.length} results: ${JSON.stringify(finalResults)}`);
+    
+    return finalResults;
   }
   
 }

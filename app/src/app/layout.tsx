@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "@/styles/globals.css";
 import { AdminProvider } from "@/context/AdminContext";
 import { Suspense } from "react";
+import SessionGate from "@/components/SessionGate";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,9 +35,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Suspense fallback={null}>
-          <AdminProvider>
-            {children}
-          </AdminProvider>
+          <SessionGate>
+            <AdminProvider>
+              {children}
+            </AdminProvider>
+          </SessionGate>
         </Suspense>
       </body>
     </html>

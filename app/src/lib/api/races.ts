@@ -154,7 +154,7 @@ export interface RaceResult {
   racerName?: string;
   rank: RankType;
   raceType: RaceType;
-  totalPlace: number; // e.g., place or time
+  weightedTotal: number; // e.g., place or time
 }
 
 export async function fetchResults(

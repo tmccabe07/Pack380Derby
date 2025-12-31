@@ -94,8 +94,9 @@ export async function fetchCars(racerId?: string) {
   }
   const cars: Car[] = await res.json();
   const results = await Promise.all(cars.map(enrichCar));
-  
-  return results;
+  // Filter out cars where the name is "blank"
+  const filteredResults = results.filter(car => car.name.toLowerCase() !== "blank");
+  return filteredResults;
 }
 
 /**

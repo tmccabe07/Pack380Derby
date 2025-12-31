@@ -9,7 +9,7 @@ interface LeaderboardEntry {
   carName?: string;
   racerId?: number;
   racerName?: string;
-  totalPlace: number;
+  weightedTotal: number;
 }
 
 interface LeaderboardProps {
@@ -28,15 +28,15 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ raceType, rank, racerT
     setError(null);
     fetchResults(raceType, rank, racerType)
       .then((results) => {
-      // Assume results is an array of { carId, carName, racerId, racerName, totalPlace }
+      // Assume results is an array of { carId, carName, racerId, racerName, weightedTotal }
       const leaderboardEntries: LeaderboardEntry[] = results
-        .sort((a, b) => a.totalPlace - b.totalPlace)
+        .sort((a, b) => a.weightedTotal - b.weightedTotal)
         .map((result) => ({
           carId: result.carId,
           carName: result.carName,
           racerId: result.racerId,
           racerName: result.racerName,
-          totalPlace: result.totalPlace, // or use another property if needed
+          weightedTotal: result.weightedTotal, // or use another property if needed
         }));
       setEntries(leaderboardEntries);
       })
@@ -77,7 +77,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ raceType, rank, racerT
               <td className="py-2 px-2">{idx + 1}</td>
               <CarCell carId={entry.carId} carName={entry.carName} />
               <RacerCell carId={entry.carId} />
-              <td className="py-2 px-2">{entry.totalPlace}</td>
+              <td className="py-2 px-2">{entry.weightedTotal}</td>
               </tr>
             );
             })}

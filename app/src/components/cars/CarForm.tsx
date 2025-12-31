@@ -3,16 +3,14 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Car, getCarImage } from "@/lib/api/cars";
 import { Racer } from "@/lib/api/racers";
-import { log } from "@/lib/utils/log";
 
 interface CarFormProps {
   car: Omit<Car, "id">;
   onChange: (car: Omit<Car, "id">) => void;
   racer: Racer;
   hideSubmit?: boolean;
-  onSubmit?: (car: Omit<Car, "id">) => void | Promise<void>; // parent handles submit
+  onSubmit?: () => void; // parent handles submit
 }
-
 export default function CarForm({ car, onChange, racer, hideSubmit, onSubmit }: CarFormProps) {
 
   function handleChange<K extends keyof Omit<Car, "id">>(field: K, value: Omit<Car, "id">[K]) {
@@ -35,10 +33,10 @@ export default function CarForm({ car, onChange, racer, hideSubmit, onSubmit }: 
     }
     // Downsize image before converting to base64
     try {
-      log(`Downsizing image file... ${file.name}`);
+      console.log("Downsizing image file...", file);
       const downsizedBase64 = await downsizeImageFile(file, 800, 600, 0.25); // max 800x600, 85% quality
       setImagePreview(downsizedBase64);
-      log(`Downsized image file... ${downsizedBase64}`);
+      console.log("Downsized image file...", downsizedBase64);
 
       onChange({ ...car, image: downsizedBase64 });
     } catch (error) {
@@ -82,7 +80,7 @@ export default function CarForm({ car, onChange, racer, hideSubmit, onSubmit }: 
 
   function handleInternalSubmit(e: React.FormEvent) {
     e.preventDefault();
-    onSubmit?.(car);
+    onSubmit?.();
   }
 
   return (

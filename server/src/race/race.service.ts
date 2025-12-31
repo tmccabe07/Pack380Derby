@@ -58,6 +58,10 @@ export class RaceService {
 
     if (hasDeadheatResults) {
       // Deadheat exists and has results - use special logic
+      if (!deadheatStage) {
+        throw new Error(`No deadheat stage defined for previous stage ${previousStage}`);
+      }
+
       // Get preliminary results only (without deadheat)
       const prelimResults = await this.getStageResultsOnly(previousStage, racerType);
       this.logger.debug(`prelim-only results: ${JSON.stringify(prelimResults)}`);

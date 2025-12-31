@@ -180,15 +180,10 @@ async findRoundByRaceType(raceType: number) {
   }
 
   async getStageResults(stage: RaceStage, racerType: string): Promise<Array<{ carId: number; totalScore: number }>> {
-    // Get all heat results for this stage and its corresponding deadheat stage
-    const deadheatStage = this.progression.getDeadheatStage(stage);
-    const stages = deadheatStage ? [stage, deadheatStage] : [stage];
-
-    const heatResults = await this.prisma.heatLane.findMany({
+    // Get heat results for the main stage
+    const mainStageResults = await this.prisma.heatLane.findMany({
       where: {
-        raceType: {
-          in: stages
-        },
+        raceType: stage,
         racerType: racerType,
         car: {
           name: { not: 'blank' } // Exclude blank cars
@@ -206,19 +201,56 @@ async findRoundByRaceType(raceType: number) {
       ]
     });
 
-    // Group results by car and calculate total score
-    const resultMap = new Map<number, number>();
+    // Group main stage results by car and calculate total score
+    const mainResultMap = new Map<number, number>();
     
-    for (const heat of heatResults) {
-      if (heat.carId !== null) {  // Ensure carId is not null
-        const currentTotal = resultMap.get(heat.carId) ?? 0;
+    for (const heat of mainStageResults) {
+      if (heat.carId !== null) {
+        const currentTotal = mainResultMap.get(heat.carId) ?? 0;
         const resultValue = heat.result ?? 0;
-        resultMap.set(heat.carId, currentTotal + resultValue);
+        mainResultMap.set(heat.carId, currentTotal + resultValue);
+      }
+    }
+
+    // Check if there's a deadheat stage and if it has results
+    const deadheatStage = this.progression.getDeadheatStage(stage);
+    
+    if (deadheatStage) {
+      const deadheatResults = await this.prisma.heatLane.findMany({
+        where: {
+          raceType: deadheatStage,
+          racerType: racerType,
+          car: {
+            name: { not: 'blank' }
+          }
+        },
+        select: {
+          carId: true,
+          result: true
+        }
+      });
+
+      // If deadheat results exist, use those scores for cars that participated
+      if (deadheatResults.length > 0) {
+        const deadheatResultMap = new Map<number, number>();
+        
+        for (const heat of deadheatResults) {
+          if (heat.carId !== null) {
+            const currentTotal = deadheatResultMap.get(heat.carId) ?? 0;
+            const resultValue = heat.result ?? 0;
+            deadheatResultMap.set(heat.carId, currentTotal + resultValue);
+          }
+        }
+
+        // Replace main stage scores with deadheat scores for cars that participated in deadheat
+        for (const [carId, score] of deadheatResultMap.entries()) {
+          mainResultMap.set(carId, score);
+        }
       }
     }
 
     // Convert to array of results
-    return Array.from(resultMap.entries()).map(([carId, totalScore]) => ({
+    return Array.from(mainResultMap.entries()).map(([carId, totalScore]) => ({
       carId,
       totalScore
     }));

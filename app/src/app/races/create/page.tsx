@@ -11,10 +11,19 @@ export default function CreateRacePage() {
 
   async function handleCreateRace(race: Omit<Race, "id">) {
     try {
-      const created = await createRace(race);
+      if (!race.racerType) {
+        alert("Racer type is required.");
+        return;
+      }
+      const created = await createRace({
+        numLanes: race.numLanes,
+        raceType: race.raceType,
+        racerType: race.racerType,
+        groupByRank: race.groupByRank,
+      });
       router.push(withAdmin(`/races/${created.id}`));
     } catch (error) {
-      alert(`Failed to create race: ${error}`,);
+      alert(`Failed to create race: ${error}`);
     }
   }
 

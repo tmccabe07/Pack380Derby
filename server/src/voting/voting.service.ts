@@ -44,12 +44,32 @@ export class VotingService {
     }
 
     async createVote(createVoteDto: CreateVoteDto): Promise<Vote> {
+        // Check if a vote already exists for this voter in this category
+        const existingVote = await this.prisma.vote.findFirst({
+            where: {
+                voterId: createVoteDto.voterId,
+                categoryId: createVoteDto.categoryId,
+            },
+        });
+
+        if (existingVote) {
+            // Update the existing vote
+            return await this.prisma.vote.update({
+                where: { id: existingVote.id },
+                data: {
+                    carId: createVoteDto.carId,
+                    score: createVoteDto.score,
+                },
+            });
+        }
+
+        // Create a new vote if none exists
         return await this.prisma.vote.create({
             data: {
                 carId: createVoteDto.carId,
                 voterId: createVoteDto.voterId,
                 score: createVoteDto.score,
-                categoryId: createVoteDto.categoryId, // Assuming categoryId is part of CreateVoteDto
+                categoryId: createVoteDto.categoryId,
             },
         });
     }

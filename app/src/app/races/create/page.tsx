@@ -23,7 +23,8 @@ export default function CreateRacePage() {
       });
       router.push(withAdmin(`/races/${created.id}`));
     } catch (error) {
-      alert(`Failed to create race: ${error}`);
+      const message = error instanceof Error ? error.message : String(error);
+      alert(`Failed to create race: ${message}`);
     }
   }
 

@@ -63,3 +63,25 @@ export async function fetchResultsByRank(rank: RankType): Promise<ResultItem[]> 
 
 		return enriched;
 }
+
+/**
+ * Fetches the 'best of the rest' results for a given rank from the Pinewood API.
+ *
+ * @param rank - The rank identifier for which to fetch 'best of the rest' results.
+ * @returns A promise that resolves to the results data for the specified rank.
+ * @throws Will throw an error if the API request fails.
+ */
+export async function fetchBestOfTheRestResults(rank: RankType): Promise<ResultItem[]> {
+	const res = await fetchPinewoodAPI(`/api/results/best-of-the-rest/${rank}`);
+	if (!res.ok) throw new Error(`Failed to fetch best-of-the-rest results for rank ${rank}`);
+	const results: Array<Partial<ResultItem>> = await res.json();
+	// Attach car and racer info to each result
+	const enriched = await Promise.all(results.map(async (result) => {
+		let car = null;
+		if (result.carId) {
+			car = await fetchCarById(String(result.carId));
+		}
+		return { ...result, car } as ResultItem;
+	}));
+	return enriched;
+}

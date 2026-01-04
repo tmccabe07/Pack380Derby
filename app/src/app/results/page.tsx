@@ -1,7 +1,7 @@
 "use client";
 import Layout from "@/components/Layout";
 import { useEffect, useState } from "react";
-import { fetchResultsByRank, ResultItem } from "@/lib/api/results";
+import { fetchBestOfTheRestResults, ResultItem } from "@/lib/api/results";
 import { RankType, RacerType } from "@/lib/api/racers";
 import { RaceType } from "@/lib/api/races";
 import { Leaderboard } from "@/components/results/Leaderboard";
@@ -20,7 +20,7 @@ export default function ResultsPage() {
         const resultsObj: Record<string, ResultItem[]> = {};
         for (const rank of ranks) {
           try {
-            const res = await fetchResultsByRank(rank);
+            const res = await fetchBestOfTheRestResults(rank);
             resultsObj[rank] = res;
           } catch {
             resultsObj[rank] = [];

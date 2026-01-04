@@ -3,6 +3,8 @@
 import { useEffect, useState, useRef, memo } from "react";
 import { fetchRacers, Racer, searchRacers } from "@/lib/api/racers";
 import RacerCard from "@/components/racers/RacerCard";
+import RankType from "@/lib/api/racers".
+
 // Parent component: only input re-renders; results handled by child
 export default function RacerList() {
   const [search, setSearch] = useState("");
@@ -105,7 +107,7 @@ const RacerResults = memo(function RacerResults({ search }: { search: string }) 
           key={racer.id}
           racer={{
             ...racer,
-            rank: racer.rank ?? import("@/lib/api/racers").RankType.Lion,
+            rank: racer.rank ?? RankType.Lion,
             den: racer.den ?? "",
           }}
         />

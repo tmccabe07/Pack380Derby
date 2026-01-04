@@ -6,12 +6,25 @@ import { getVotingCategories } from "@/lib/api/competition";
 import { VotingCategory } from "@/types/VotingCategory";
 import type { Car } from "@/lib/api/cars";
 import { fetchCarsForCubs } from "@/lib/api/cars";
-import { submitVote } from "@/lib/api/voting";
+import { submitVote, getVotes } from "@/lib/api/voting";
 import type { VoteSubmission } from "@/types/VoteSubmission";
 import CarCard from "@/components/cars/CarCard";
 import { state } from "@/lib/utils/state";
+import { RacerType } from "@/lib/api/racers";
+
+function getSessionRacer() {
+  const stored = state.getItem("logged_in_racer");
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return null;
+  }
+}
 
 export default function VotingPage() {
+  const sessionRacer = getSessionRacer();
+  const isCub = sessionRacer?.racerType === RacerType.CUB;
   const [categories, setCategories] = useState<VotingCategory[]>([]);
   const [cars, setCars] = useState<Car[]>([]);
   const [selected, setSelected] = useState<{ [cat: string]: string | number }>({});
@@ -32,6 +45,21 @@ export default function VotingPage() {
         setCategories(catRes || []);
         setCars(carRes);
         if (catRes && catRes.length > 0) setActiveCategory(catRes[0].id);
+
+        // Check for existing votes for this racer
+        if (sessionRacer?.id) {
+          const votes = await getVotes(sessionRacer.id);
+          if (Array.isArray(votes)) {
+            // votes: [{ categoryId, carId, ... }]
+            const selectedVotes: { [cat: string]: string | number } = {};
+            votes.forEach(vote => {
+              if (vote.categoryId && vote.carId) {
+                selectedVotes[vote.categoryId] = vote.carId;
+              }
+            });
+            setSelected(selectedVotes);
+          }
+        }
       } catch {
         if (!cancelled) setError("Failed to load voting data");
       } finally {
@@ -40,7 +68,7 @@ export default function VotingPage() {
     }
     load();
     return () => { cancelled = true; };
-  }, []);
+  }, [sessionRacer?.id]);
 
   function handleSelect(category: number, carId: string | number) {
     setSelected(prev => ({ ...prev, [category]: carId }));
@@ -49,8 +77,8 @@ export default function VotingPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
-      const voterRaw = state.getItem("voterId");
-      const voterId = Number(voterRaw ?? 1);
+      // Use session racer's ID if available, otherwise fallback to voterId in state
+      const voterId = sessionRacer?.id ? Number(sessionRacer.id) : Number(state.getItem("voterId") ?? 1);
       for (const category of categories) {
         const vote: VoteSubmission = {
           carId: Number(selected[category.id]),
@@ -66,8 +94,12 @@ export default function VotingPage() {
     }
   }
 
+
   if (loading) return <Layout><div className="text-center text-gray-500">Loading...</div></Layout>;
   if (error) return <Layout><div className="text-center text-red-500">{error}</div></Layout>;
+  if (!isCub) {
+    return <Layout><div className="text-center text-red-600 text-xl font-bold">Voting is only open to Cub Scout racers.</div></Layout>;
+  }
   if (submitted) return <Layout><div className="text-center text-green-600 text-xl font-bold">Thank you for voting!</div></Layout>;
 
   return (

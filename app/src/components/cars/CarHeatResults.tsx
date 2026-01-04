@@ -2,6 +2,7 @@
 
 import { Car, fetchCarRaces, CarRaceEntry } from "@/lib/api/cars";
 import { useEffect, useState } from "react";
+import { state } from "@/lib/utils/state";
 import Link from "next/link";
 
 interface CarHeatResults {
@@ -29,6 +30,8 @@ export default function CarHeatResults({ car }: CarHeatResults) {
     return () => { cancelled = true; };
   }, [car.id]);
 
+  // Get logged-in carId from session
+  const loggedInCarId = state.getItem("logged_in_carId");
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4 flex flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -51,18 +54,24 @@ export default function CarHeatResults({ car }: CarHeatResults) {
               </tr>
             </thead>
             <tbody>
-              {races.map((r, idx) => (
-                <tr key={idx} className="border-t hover:bg-gray-50">
-                  <td className="py-1 px-2">
-                    <Link href={`/races/${r.raceId}`} className="text-blue-600 hover:underline">Race #{r.raceId}</Link>
-                  </td>
-                  <td className="py-1 px-2">
-                    <Link href={`/races/${r.raceId}/heats/${r.heatId}`} className="text-blue-600 hover:underline">Heat {r.heatId}</Link>
-                  </td>
-                  <td className="py-1 px-2">{r.lane}</td>
-                  <td className="py-1 px-2">{r.result ?? 0}</td>
-                </tr>
-              ))}
+              {races.map((r, idx) => {
+                const isLoggedInCar = loggedInCarId && String(car.id) === String(loggedInCarId);
+                return (
+                  <tr
+                    key={idx}
+                    className={`border-t hover:bg-gray-50${isLoggedInCar ? ' bg-yellow-100 font-bold' : ''}`}
+                  >
+                    <td className="py-1 px-2">
+                      <Link href={`/races/${r.raceId}`} className="text-blue-600 hover:underline">Race #{r.raceId}</Link>
+                    </td>
+                    <td className="py-1 px-2">
+                      <Link href={`/races/${r.raceId}/heats/${r.heatId}`} className="text-blue-600 hover:underline">Heat {r.heatId}</Link>
+                    </td>
+                    <td className="py-1 px-2">{r.lane}</td>
+                    <td className="py-1 px-2">{r.result ?? 0}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

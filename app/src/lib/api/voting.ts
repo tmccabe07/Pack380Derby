@@ -23,10 +23,12 @@ export async function submitVote(vote: VoteSubmission) {
   if (!res.ok) throw new Error("Failed to submit vote");
   return res.json();
 }
-
-// Get all votes
-export async function getVotes() {
-  const res = await fetchPinewoodAPI(`/api/voting`);
+// Get all votes or votes by racerId
+export async function getVotes(racerId?: string | number) {
+  const endpoint = racerId
+    ? `/api/voting/voter/${encodeURIComponent(racerId)}`
+    : `/api/voting`;
+  const res = await fetchPinewoodAPI(endpoint);
   if (!res.ok) throw new Error("Failed to fetch votes");
   return res.json();
 }

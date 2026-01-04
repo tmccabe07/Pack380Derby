@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import React, { useState } from "react";
+import { state } from "@/lib/utils/state";
 import { HeatEntry, updateHeat } from "@/lib/api/heats";
 import { useAdmin } from "@/hooks/useAdmin";
 
@@ -114,6 +115,8 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
     }
   }
 
+  // Get logged-in carId from session
+  const loggedInCarId = state.getItem("logged_in_carId");
   return (
     <div className={`overflow-x-auto ${compact ? '' : 'mb-8'}`}>
       {error && <div className="text-red-600 mb-2">{error}</div>}
@@ -136,8 +139,10 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
             const hasError = group.entries.some((_, idx) => fieldErrors[`${group.heatId}-${idx}`]);
             // Each prior group contributes its entry fields plus one extra focusable control (e.g., the per-heat Save/action button), hence the `+ 1`.
             const priorTabCount = localGroups.slice(0, groupIdx).reduce((acc, g) => acc + g.entries.length + 1, 0);
-            return group.entries.map((entry, idx) => (
-              <tr key={`${group.heatId}-${idx}`} className="border-t">
+            return group.entries.map((entry, idx) => {
+              const isLoggedInCar = loggedInCarId && String(entry.carId) === String(loggedInCarId);
+              return (
+                <tr key={`${group.heatId}-${idx}`} className={`border-t${isLoggedInCar ? ' bg-yellow-100 font-bold' : ''}`}>
                 {idx === 0 && (
                   <td className="py-2 px-2 align-top" rowSpan={group.entries.length}>
                     <div className="flex flex-col gap-1">
@@ -203,7 +208,8 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
                   </td>
                 )}
               </tr>
-            ));
+              );
+            });
           })}
         </tbody>
       </table>

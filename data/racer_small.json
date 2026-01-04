@@ -1,8 +1,8 @@
 [
-  { "id": 1, "name": "Alice", "den": "1", "rank": "Bears", "racerType": "cub" },
-  { "id": 2, "name": "Bob", "den": "1", "rank": "Wolves", "racerType": "cub" },
-  { "id": 3, "name": "Charlie", "den": "1", "rank": "Lions", "racerType": "cub" },
-  { "id": 4, "name": "Daisy", "den": "1", "rank": "Tigers", "racerType": "cub" },
+  { "id": 1, "name": "Alice", "den": "1", "rank": "bear", "racerType": "cub" },
+  { "id": 2, "name": "Bob", "den": "1", "rank": "wolf", "racerType": "cub" },
+  { "id": 3, "name": "Charlie", "den": "1", "rank": "lion", "racerType": "cub" },
+  { "id": 4, "name": "Daisy", "den": "1", "rank": "tiger", "racerType": "cub" },
   { "id": 5, "name": "Ethan", "den": "1", "rank": "", "racerType": "sibling" },
   { "id": 6, "name": "Fiona", "den": "1", "rank": "", "racerType": "sibling" },
   { "id": 7, "name": "George", "den": "1", "rank": "", "racerType": "sibling" },

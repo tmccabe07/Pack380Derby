@@ -13,7 +13,24 @@ const AdminContext = createContext<AdminContextValue | undefined>(undefined);
 
 export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const params = useSearchParams();
-  const isAdmin = params.get("admin") === "true";
+  // Check sessionStorage first
+  let sessionAdmin: string | null = null;
+  if (typeof window !== "undefined") {
+    sessionAdmin = window.sessionStorage.getItem("isAdmin");
+  }
+  let isAdmin = sessionAdmin === "true";
+  // If URL param is present, update sessionStorage
+  if (params.get("admin") === "true") {
+    isAdmin = true;
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem("isAdmin", "true");
+    }
+  } else if (params.get("admin") === "false") {
+    isAdmin = false;
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem("isAdmin", "false");
+    }
+  }
 
   const value = useMemo<AdminContextValue>(() => ({
     isAdmin,

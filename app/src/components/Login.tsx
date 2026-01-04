@@ -6,7 +6,15 @@ interface LoginProps {
 }
 
 export default function Login({ onLogin, error }: LoginProps) {
-  const [password, setPassword] = useState("");
+  // Check for ?password= in the URL
+  function getInitialPassword() {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("password") || "";
+    }
+    return "";
+  }
+  const [password, setPassword] = useState<string>(getInitialPassword());
   const [show, setShow] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {

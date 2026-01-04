@@ -24,7 +24,7 @@ async function bootstrap() {
    app.enableCors({
     origin: '*', // Allow your Next.js frontend
     credentials: true, // Allow cookies/authorization headers if needed
-  });*/
+  });
 
   app.setGlobalPrefix('api');
 

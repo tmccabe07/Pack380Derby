@@ -14,7 +14,6 @@ export default function VotingAdminPage() {
   // const { isAdmin } = useAdmin();
   const [categories, setCategories] = useState<VotingCategory[]>([]);
   const [results, setResults] = useState<{ [cat: string]: { carId: string | number; votes: number }[] }>({});
-  const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,15 +21,10 @@ export default function VotingAdminPage() {
     let cancelled = false;
     async function load() {
       try {
-        const [catRes, carRes] = await Promise.all([
-          getVotingCategories(),
-          fetchCars()
-        ]);
+        const [catRes] = await Promise.all([
+          getVotingCategories()        ]);
         if (cancelled) return;
-        setCategories(catRes || []);
-        setCars(carRes);
-        log(`Fetched categories for voting admin: ${catRes}`);
-        // Fetch votes for each category
+        setCategories(catRes || []);        // Fetch votes for each category
         const resultsObj: { [cat: string]: { carId: string | number; votes: number }[] } = {};
         for (const category of catRes || []) {
           const voteScores = await getVoteScoresByCategory(String(category.id));
@@ -38,6 +32,8 @@ export default function VotingAdminPage() {
             carId: vote.carId,
             votes: vote.totalScore
           }));
+          log(`Fetched category for voting: ${JSON.stringify(category)} => ${JSON.stringify(resultsObj[category.id])}`);
+
         }
         if (!cancelled) setResults(resultsObj);
       } catch {
@@ -51,11 +47,17 @@ export default function VotingAdminPage() {
   }, []);
 
   // if (!isAdmin) return <Layout><div className="text-center text-red-600">Admin access required.</div></Layout>;
+  const [cars, setCars] = useState<Car[]>([]);
+
+  useEffect(() => {
+    fetchCars().then(setCars).catch(() => setError("Failed to load cars"));
+  }, []);
+
   if (loading) return <Layout><div className="text-center text-gray-500">Loading...</div></Layout>;
   if (error) return <Layout><div className="text-center text-red-500">{error}</div></Layout>;
 
   function getCar(carId: string | number): Car | undefined {
-    return cars.find(c => c.id === String(carId));
+    return cars.find((c: Car) => String(c.id) === String(carId));
   }
 
   return (

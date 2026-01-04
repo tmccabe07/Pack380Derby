@@ -62,8 +62,8 @@ export default function VotingPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
-      const voterRaw = state.getItem("voterId");
-      const voterId = Number(voterRaw ?? 1);
+      // Use session racer's ID if available, otherwise fallback to voterId in state
+      const voterId = sessionRacer?.id ? Number(sessionRacer.id) : Number(state.getItem("voterId") ?? 1);
       for (const category of categories) {
         const vote: VoteSubmission = {
           carId: Number(selected[category.id]),

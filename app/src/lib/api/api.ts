@@ -5,7 +5,7 @@ export async function fetchPinewoodAPI(path: string, options: RequestInit = {}) 
   const sessionPassword = getSessionPassword();
   let authHeader = undefined;
   if (sessionPassword) {
-    authHeader = `Bearer ${getApiAuthToken(sessionPassword, DERBY_API_TOKEN)}`;
+    authHeader = `Bearer ${getApiAuthToken(sessionPassword)}`;
   } else if (DERBY_API_TOKEN) {
     authHeader = `Bearer ${DERBY_API_TOKEN}`;
   }

@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, memo } from "react";
 import { fetchRacers, Racer, searchRacers } from "@/lib/api/racers";
 import RacerCard from "@/components/racers/RacerCard";
-import RankType from "@/lib/api/racers".
+import { RankType } from "@/lib/api/racers";
 
 // Parent component: only input re-renders; results handled by child
 export default function RacerList() {

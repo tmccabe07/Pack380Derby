@@ -10,7 +10,7 @@ import { use } from 'react';
 import Layout from "@/components/Layout";
 import { useAdmin } from "@/hooks/useAdmin";
 import Link from "next/dist/client/link";
-import { RacerType, RankType } from "../../../lib/api/racers";
+import { RankType } from "../../../lib/api/racers";
 
 export default function RacerViewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id }= use(params);

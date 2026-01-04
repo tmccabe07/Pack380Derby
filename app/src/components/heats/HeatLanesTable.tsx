@@ -134,6 +134,7 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
           {localGroups.map((group, groupIdx) => {
             const status = computeStatus(group.entries);
             const hasError = group.entries.some((_, idx) => fieldErrors[`${group.heatId}-${idx}`]);
+            // Each prior group contributes its entry fields plus one extra focusable control (e.g., the per-heat Save/action button), hence the `+ 1`.
             const priorTabCount = localGroups.slice(0, groupIdx).reduce((acc, g) => acc + g.entries.length + 1, 0);
             return group.entries.map((entry, idx) => (
               <tr key={`${group.heatId}-${idx}`} className="border-t">

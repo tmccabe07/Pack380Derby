@@ -23,7 +23,7 @@ export enum RacerType {
 export interface Racer {
   id?: string;
   name: string;
-  racerType?: RacerType;
+  racerType?: RacerType | null;
   rank?: RankType;
   den?: string;
 }

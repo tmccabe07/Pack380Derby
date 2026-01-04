@@ -247,8 +247,8 @@ export class ResultsService {
 
     console.log('API: Heat lanes considered for non-finals:', heatLanes);
     console.log(
-      `API: carResults map before processing:`,
-      Array.from(carResults.entries()),
+      `API: carHighestStage map before processing:`,
+      Array.from(carHighestStage.entries()),
     );
 
     heatLanes.forEach((lane) => {

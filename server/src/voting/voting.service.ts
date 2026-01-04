@@ -156,7 +156,7 @@ export class VotingService {
         return await this.prisma.vote.findMany({
             where: { voterId },
             include: {
-                car: true,
+                //car: true,
                 category: true,
             },
         });

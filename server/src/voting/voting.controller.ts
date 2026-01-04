@@ -131,6 +131,21 @@ export class VotingController {
         return this.votingService.getVotesByCarId(carId);
     }
 
+    @Get('voter/:voterId')
+    @ApiOperation({ summary: 'Get votes by voter ID' })
+    @ApiParam({ name: 'voterId', type: 'number', description: 'ID of the voter' })
+    @ApiResponse({ 
+        status: 200, 
+        description: 'Return votes for the specified voter',
+        type: VoteResponseDto,
+        isArray: true
+    })
+    @ApiResponse({ status: 404, description: 'Voter not found' })
+    async getVotesByVoterId(@Param('voterId', ParseIntPipe) voterId: number): Promise<Vote[]> {
+        return this.votingService.getVotesByVoterId(voterId);
+    }
+
+
     @Patch('category/:id')
     @ApiOperation({ summary: 'Update a voting category' })
     @ApiParam({ name: 'id', type: 'number', description: 'ID of the voting category to update' })

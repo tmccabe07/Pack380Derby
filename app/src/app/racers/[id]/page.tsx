@@ -10,6 +10,7 @@ import { use } from 'react';
 import Layout from "@/components/Layout";
 import { useAdmin } from "@/hooks/useAdmin";
 import Link from "next/dist/client/link";
+import { RacerType, RankType } from "../../../lib/api/racers";
 
 export default function RacerViewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id }= use(params);
@@ -74,7 +75,12 @@ export default function RacerViewPage({ params }: { params: Promise<{ id: string
         <section className="rounded-2xl border border-gray-200 bg-white/70 backdrop-blur px-6 py-5 shadow-sm flex flex-col gap-6">
           <div className="flex items-start justify-between gap-6 flex-col md:flex-row">
             <div className="flex-1 space-y-4">
-              <RacerCard racer={racer} />
+              <RacerCard racer={{
+                id: racer.id,
+                name: racer.name,
+                rank: racer.rank ?? RankType.Lion,
+                den: racer.den ?? ""
+              }} />
             </div>
             {isAdmin && (
               <div className="flex flex-col gap-3 w-full md:w-auto md:items-end">

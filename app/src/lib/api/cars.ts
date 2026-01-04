@@ -1,5 +1,5 @@
 import { fetchPinewoodAPI } from "./api";
-import { fetchRacerById } from "./racers";
+import { RacerType, fetchRacerById } from "./racers";
 import { Racer } from "./racers";
 import { pinewoodKit } from "@/assets/images";
 import { RankType } from "@/lib/api/racers";
@@ -53,8 +53,27 @@ export async function fetchCarsByRank(rank: RankType): Promise<Car[]> {
   }
   const cars: Car[] = await res.json();
   const results = await Promise.all(cars.map(enrichCar));
+  // Filter out cars where the name is "blank"
+  const filteredResults = results.filter(car => car.name.toLowerCase() !== "blank");
+  return filteredResults;
+}
 
-  return results;
+/**
+ * Fetch cars by cub, sibling, or adult using the RacerType enum.
+ * @param type - RacerType value
+ * @returns Array of Car objects
+ */
+export async function fetchCarsByRacerType(type: RacerType): Promise<Car[]> {
+  const res = await fetchPinewoodAPI(`/api/car/byRacerType/${type}`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cars for racer type: ${type}`);
+  }
+  const cars: Car[] = await res.json();
+  const results = await Promise.all(cars.map(enrichCar));
+  // Filter out cars where the name is "blank"
+  const filteredResults = results.filter(car => car.name.toLowerCase() !== "blank");
+  return filteredResults;
+
 }
 
 /**
@@ -62,8 +81,8 @@ export async function fetchCarsByRank(rank: RankType): Promise<Car[]> {
  * @returns Array of Car objects for all cub ranks
  */
 export async function fetchCarsForCubs(): Promise<Car[]> {
-  const cubRanks: RankType[] = [
-    RankType.Cub
+  const cubRanks: RacerType[] = [
+    RacerType.CUB
     // RankType.Tiger,
     // RankType.Lion,
     // RankType.Bear,
@@ -71,7 +90,7 @@ export async function fetchCarsForCubs(): Promise<Car[]> {
     // RankType.Webelos,
     // RankType.AOL
   ];
-  const results = await Promise.all(cubRanks.map(rank => fetchCarsByRank(rank)));
+  const results = await Promise.all(cubRanks.map(rank => fetchCarsByRacerType(rank)));
   const cars = results.flat();
   
   return cars;
@@ -94,8 +113,9 @@ export async function fetchCars(racerId?: string) {
   }
   const cars: Car[] = await res.json();
   const results = await Promise.all(cars.map(enrichCar));
-  
-  return results;
+  // Filter out cars where the name is "blank"
+  const filteredResults = results.filter(car => car.name.toLowerCase() !== "blank");
+  return filteredResults;
 }
 
 /**

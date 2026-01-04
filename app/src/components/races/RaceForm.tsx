@@ -1,29 +1,19 @@
 "use client";
 import { useState } from "react";
-import { RACE_TYPE_LABELS } from "@/lib/api/races";
+import { RACE_TYPE_LABELS, RaceType } from "@/lib/api/races";
 import { Race } from "@/lib/api/races";
-import { RankType } from "@/lib/api/racers";
+import { RacerType } from "@/lib/api/racers";
+import { createableRaceTypes } from "@/lib/api/races";
 
-const raceTypeOptions = Object.entries(RACE_TYPE_LABELS).map(([value, label]) => ({
-  value: Number(value),
-  label
+const raceTypeOptions = createableRaceTypes.map(value => ({
+  value,
+  label: RACE_TYPE_LABELS[value]
 }));
-const ranks: RankType[] = [
-  RankType.Cub,
-  RankType.Lion,
-  RankType.Tiger,
-  RankType.Wolf,
-  RankType.Bear,
-  RankType.Webelos,
-  RankType.AOL,
-  RankType.Sibling,
-  RankType.Adult,
-];
 
 export default function RaceForm({ onCreate }: { onCreate: (race: Race) => void }) {
-  const [numLanes, setNumLanes] = useState(6);
-  const [raceType, setRaceType] = useState(1);
-  const [rank, setRank] = useState<RankType>(RankType.Cub);
+  const [numLanes, setNumLanes] = useState(6);  
+  const [raceType, setRaceType] = useState<RaceType>(createableRaceTypes[0]);
+  const [racerType, setRacerType] = useState<RacerType>(RacerType.CUB);
   const [groupByRank, setGroupByRank] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +23,7 @@ export default function RaceForm({ onCreate }: { onCreate: (race: Race) => void 
       setError("Number of lanes must be between 2 and 6.");
       return;
     }
-    onCreate({ numLanes, raceType, rank, groupByRank });
+    onCreate({ numLanes, raceType, racerType, groupByRank });
   }
 
   return (
@@ -44,7 +34,7 @@ export default function RaceForm({ onCreate }: { onCreate: (race: Race) => void 
         <input type="number" min={2} max={6} value={numLanes} onChange={e => setNumLanes(Number(e.target.value))} className="border p-2 w-24" />
       </div>
       <div>
-        <label className="block font-bold mb-1">Existing Race</label>
+        <label className="block font-bold mb-1">Create Race type</label>
         <select value={raceType} onChange={e => setRaceType(Number(e.target.value))} className="border p-2 w-full">
           {raceTypeOptions.map((rt: { value: number; label: string }) => (
             <option key={rt.value} value={rt.value}>{rt.label}</option>
@@ -52,9 +42,9 @@ export default function RaceForm({ onCreate }: { onCreate: (race: Race) => void 
         </select>
       </div>
       <div>
-        <label className="block font-bold mb-1">Rank</label>
-        <select value={rank} onChange={e => setRank(e.target.value as RankType)} className="border p-2 w-full">
-          {ranks.map(r => <option key={r} value={r}>{r}</option>)}
+        <label className="block font-bold mb-1">Racer Type</label>
+        <select value={racerType} onChange={e => setRacerType(e.target.value as RacerType)} className="border p-2 w-full">
+          {Object.values(RacerType).map(r => <option key={r} value={r}>{r}</option>)}
         </select>
       </div>
       <div>

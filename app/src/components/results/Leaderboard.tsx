@@ -1,23 +1,24 @@
 import React from "react";
-import { RaceType, fetchResultsByRank } from "@/lib/api/races";
+import { RaceType, fetchResults } from "@/lib/api/races";
 import CarCell from "./CarCell";
 import RacerCell from "./RacerCell";
 import { logger } from "@/lib/utils/log";
-
+import { RankType, RacerType } from "@/lib/api/racers";
 interface LeaderboardEntry {
   carId: number;
   carName?: string;
   racerId?: number;
   racerName?: string;
-  totalPlace: number;
+  weightedTotal: number;
 }
 
 interface LeaderboardProps {
   raceType: RaceType;
-  rank: import("@/lib/api/racers").RankType;
+  rank?: RankType;
+  racerType?: RacerType;
 }
 
-export const Leaderboard: React.FC<LeaderboardProps> = ({ raceType, rank }) => {
+export const Leaderboard: React.FC<LeaderboardProps> = ({ raceType, rank, racerType }) => {
   const [entries, setEntries] = React.useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -25,30 +26,30 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ raceType, rank }) => {
   React.useEffect(() => {
     setLoading(true);
     setError(null);
-    fetchResultsByRank(raceType, rank)
+    fetchResults(raceType, rank, racerType)
       .then((results) => {
-      // Assume results is an array of { carId, carName, racerId, racerName, totalPlace }
+      // Assume results is an array of { carId, carName, racerId, racerName, weightedTotal }
       const leaderboardEntries: LeaderboardEntry[] = results
-        .sort((a, b) => a.totalPlace - b.totalPlace)
+        .sort((a, b) => a.weightedTotal - b.weightedTotal)
         .map((result) => ({
           carId: result.carId,
           carName: result.carName,
           racerId: result.racerId,
           racerName: result.racerName,
-          totalPlace: result.totalPlace, // or use another property if needed
+          weightedTotal: result.weightedTotal, // or use another property if needed
         }));
       setEntries(leaderboardEntries);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, [raceType, rank]);
+  }, [raceType, rank, racerType]);
 
   if (loading) return <div>Loading leaderboard...</div>;
   if (error) return <div className="text-red-600">{error}</div>;
   if (!entries.length) return (
    <div className="border rounded-lg p-4 bg-white shadow">
       <h2 className="text-xl font-bold mb-4">
-        Leaderboard: {RaceType[raceType]} / {rank}
+        Leaderboard: {RaceType[raceType]} / {racerType}
       </h2>
       <div>No results available.</div>
     </div>
@@ -57,7 +58,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ raceType, rank }) => {
   return (
     <div className="border rounded-lg p-4 bg-white shadow">
       <h2 className="text-xl font-bold mb-4">
-        Leaderboard: {RaceType[raceType]} / {rank}
+        Leaderboard: {RaceType[raceType]} / {racerType}
       </h2>
       <table className="min-w-full text-sm">
         <thead>
@@ -76,7 +77,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ raceType, rank }) => {
               <td className="py-2 px-2">{idx + 1}</td>
               <CarCell carId={entry.carId} carName={entry.carName} />
               <RacerCell carId={entry.carId} />
-              <td className="py-2 px-2">{entry.totalPlace}</td>
+              <td className="py-2 px-2">{entry.weightedTotal}</td>
               </tr>
             );
             })}

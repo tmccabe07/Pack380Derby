@@ -1,11 +1,12 @@
 import { fetchPinewoodAPI } from "./api";
-import { RankType } from "./racers";
+import { RacerType, RankType } from "./racers";
 import { logger } from "@/lib/utils/log";
 
 // Race with heats grouped by rankType and heatId
 export interface RaceWithRankedHeats extends Race {
   heatsByRank?: Record<RankType, Record<number, HeatLane[]>>;
 }
+
 
 // RaceType enum based on server README
 export enum RaceType {
@@ -17,11 +18,16 @@ export enum RaceType {
   Final = 30,
 }
 
+// These are the only types which should be requested.
+export const createableRaceTypes = [RaceType.Preliminary, RaceType.Semifinal, RaceType.Final];
+
+
 export interface Race {
   id?: string;
   numLanes: number;
   raceType: RaceType;
-  rank: RankType;
+  racerType?: RacerType;
+  rank?: RankType;
   groupByRank: boolean;
   createdAt?: string;
 }
@@ -39,7 +45,7 @@ export const RACE_TYPE_LABELS: Record<RaceType, string> = {
 export async function createRace(data: {
   numLanes: number;
   raceType: RaceType;
-  rank: RankType;
+  racerType: RacerType;
   groupByRank: boolean;
 }): Promise<Race> {
     const res = await fetchPinewoodAPI(`/api/race`, {
@@ -148,14 +154,34 @@ export interface RaceResult {
   racerName?: string;
   rank: RankType;
   raceType: RaceType;
-  totalPlace: number; // e.g., place or time
+  weightedTotal: number; // e.g., place or time
+}
+
+export async function fetchResults(
+  raceType: RaceType,
+  rank?: RankType,
+  racerType?: RacerType
+): Promise<RaceResult[]> {
+  const filters = [raceType, rank, racerType].filter(Boolean).join(",");
+  const res = await fetchPinewoodAPI(`/api/results?include=${filters}`);
+  if (!res.ok) throw new Error(`Failed to fetch results for raceType ${raceType} and racerType ${racerType}`);
+  return res.json();
 }
 
 export async function fetchResultsByRank(
   raceType: RaceType,
   rank: RankType
 ): Promise<RaceResult[]> {
-    const res = await fetchPinewoodAPI(`/api/results/by-rank/${raceType}/${rank}`);
+    const res = await fetchPinewoodAPI(`/api/results?include=${raceType},${rank}`);
   if (!res.ok) throw new Error(`Failed to fetch results for raceType ${raceType} and rank ${rank}`);
+  return res.json();
+}
+
+export async function fetchResultsByRacerType(
+  raceType: RaceType,
+  racerType: RacerType
+): Promise<RaceResult[]> {
+    const res = await fetchPinewoodAPI(`/api/results?include=${raceType},${racerType}`);
+  if (!res.ok) throw new Error(`Failed to fetch results for raceType ${raceType} and racerType ${racerType}`);
   return res.json();
 }

@@ -7,8 +7,8 @@ export enum RankType {
   Wolf = "wolf",
   Bear = "bear",
   Webelos = "webelos",
-  Cub = "cub",
   AOL = "aol",
+  Cub = "cub",
   Sibling = "sibling",
   Adult = "adult"
 }
@@ -23,9 +23,9 @@ export enum RacerType {
 export interface Racer {
   id?: string;
   name: string;
-  type?: RacerType;
-  rank: RankType;
-  den: string;
+  racerType?: RacerType | null;
+  rank?: RankType;
+  den?: string;
 }
 
 export async function fetchRacerById(racerId: string): Promise<Racer> {
@@ -40,7 +40,9 @@ export async function fetchRacers() {
   if (!res.ok) {
     throw new Error("Failed to fetch Racers");
   }
-  return res.json();
+  const results = res.json();
+  const racers = await results;
+  return racers.filter((racer: Racer) => racer.name.toLowerCase() !== "blank");
 }
 
 export async function createRacer(racer: Racer): Promise<Racer> {

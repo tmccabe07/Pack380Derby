@@ -127,11 +127,15 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
             <th className="py-2 px-2 text-left">Car Name</th>
             <th className="py-2 px-2 text-left">Racer Name</th>
             <th className="py-2 px-2 text-left">Status</th>
+            {isAdmin && <th className="py-2 px-2 text-left">Action</th>}
           </tr>
         </thead>
         <tbody>
-          {localGroups.map(group => {
+          {localGroups.map((group, groupIdx) => {
             const status = computeStatus(group.entries);
+            const hasError = group.entries.some((_, idx) => fieldErrors[`${group.heatId}-${idx}`]);
+            // Each prior group contributes its entry fields plus one extra focusable control (e.g., the per-heat Save/action button), hence the `+ 1`.
+            const priorTabCount = localGroups.slice(0, groupIdx).reduce((acc, g) => acc + g.entries.length + 1, 0);
             return group.entries.map((entry, idx) => (
               <tr key={`${group.heatId}-${idx}`} className="border-t">
                 {idx === 0 && (
@@ -167,7 +171,7 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
                           validatePlaces(group.heatId, group.entries, false, idx);
                         }}
                         className={`border p-1 w-14 text-center ${fieldErrors[`${group.heatId}-${idx}`] ? 'border-red-500' : ''}`}
-                        tabIndex={idx + 1}
+                        tabIndex={priorTabCount + idx + 1}
                         disabled={saving[`${group.heatId}`]}
                         aria-invalid={!!fieldErrors[`${group.heatId}-${idx}`]}
                         aria-describedby={fieldErrors[`${group.heatId}-${idx}`] ? `error-${group.heatId}-${idx}` : undefined}
@@ -186,29 +190,23 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
                 {idx === 0 && (
                   <td className="py-2 px-2 align-top" rowSpan={group.entries.length}>{status}</td>
                 )}
+                {idx === 0 && isAdmin && (
+                  <td className="py-2 px-2 align-top" rowSpan={group.entries.length}>
+                    <button
+                      onClick={() => handleSaveAll(group.heatId, group.entries)}
+                      className={`bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 text-sm${hasError ? ' opacity-50 cursor-not-allowed' : ''} saved-${savedState[`${group.heatId}`] || 'false'}`}
+                      disabled={saving[`${group.heatId}`] || hasError}
+                      tabIndex={priorTabCount + group.entries.length + 1}
+                    >
+                      {saving[`${group.heatId}`] ? 'Saving...' : savedState[`${group.heatId}`] === 'true' ? 'Saved' : savedState[`${group.heatId}`] === 'failure' ? 'Save Failed' : 'Save Heat'}
+                    </button>
+                  </td>
+                )}
               </tr>
             ));
           })}
         </tbody>
       </table>
-      {isAdmin && (
-        <div className="mt-4 flex justify-end">
-          {localGroups.map(group => {
-            // Disable if any error for this group
-            const hasError = group.entries.some((_, idx) => fieldErrors[`${group.heatId}-${idx}`]);
-            return (
-              <button
-                key={group.heatId}
-                onClick={() => handleSaveAll(group.heatId, group.entries)}
-                className={`bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 ml-2${hasError ? ' opacity-50 cursor-not-allowed' : ''} saved-${savedState[`${group.heatId}`] || 'false'}`}
-                disabled={saving[`${group.heatId}`] || hasError}
-              >
-                {saving[`${group.heatId}`] ? 'Saving...' : savedState[`${group.heatId}`] === 'true' ? 'Saved' : savedState[`${group.heatId}`] === 'failure' ? 'Save Failed' : 'Save Heat'}
-              </button>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 };

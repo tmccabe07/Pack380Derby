@@ -26,5 +26,5 @@ export class RankResultsResponseDto {
         example: 106,
         description: 'The summed place of all heats for this car, plus 100',
     })
-    totalPlace: number;
+    weightedTotal: number;
 }

@@ -1,12 +1,12 @@
 [
-  { "id": 1, "name": "Alice", "den": "Bears", "rank": "cub" },
-  { "id": 2, "name": "Bob", "den": "Wolves", "rank": "cub" },
-  { "id": 3, "name": "Charlie", "den": "Lions", "rank": "cub" },
-  { "id": 4, "name": "Daisy", "den": "Tigers", "rank": "cub" },
-  { "id": 5, "name": "Ethan", "den": "Bears", "rank": "sibling" },
-  { "id": 6, "name": "Fiona", "den": "Wolves", "rank": "sibling" },
-  { "id": 7, "name": "George", "den": "Lions", "rank": "sibling" },
-  { "id": 8, "name": "Hannah", "den": "Tigers", "rank": "sibling" },
-  { "id": 9, "name": "Ian", "den": "Bears", "rank": "adult" },
-  { "id": 10, "name": "Julia", "den": "Wolves", "rank": "adult" }
+  { "id": 1, "name": "Alice", "den": "1", "rank": "bear", "racerType": "cub" },
+  { "id": 2, "name": "Bob", "den": "1", "rank": "wolf", "racerType": "cub" },
+  { "id": 3, "name": "Charlie", "den": "1", "rank": "lion", "racerType": "cub" },
+  { "id": 4, "name": "Daisy", "den": "1", "rank": "tiger", "racerType": "cub" },
+  { "id": 5, "name": "Ethan", "den": "1", "rank": "", "racerType": "sibling" },
+  { "id": 6, "name": "Fiona", "den": "1", "rank": "", "racerType": "sibling" },
+  { "id": 7, "name": "George", "den": "1", "rank": "", "racerType": "sibling" },
+  { "id": 8, "name": "Hannah", "den": "1", "rank": "", "racerType": "sibling" },
+  { "id": 9, "name": "Ian", "den": "1", "rank": "", "racerType": "adult" },
+  { "id": 10, "name": "Julia", "den": "1", "rank": "", "racerType": "adult" }
 ]

@@ -6,7 +6,7 @@ import { getVotingCategories } from "@/lib/api/competition";
 import { VotingCategory } from "@/types/VotingCategory";
 import type { Car } from "@/lib/api/cars";
 import { fetchCarsForCubs } from "@/lib/api/cars";
-import { submitVote } from "@/lib/api/voting";
+import { submitVote, getVotes } from "@/lib/api/voting";
 import type { VoteSubmission } from "@/types/VoteSubmission";
 import CarCard from "@/components/cars/CarCard";
 import { state } from "@/lib/utils/state";
@@ -45,6 +45,21 @@ export default function VotingPage() {
         setCategories(catRes || []);
         setCars(carRes);
         if (catRes && catRes.length > 0) setActiveCategory(catRes[0].id);
+
+        // Check for existing votes for this racer
+        if (sessionRacer?.id) {
+          const votes = await getVotes(sessionRacer.id);
+          if (Array.isArray(votes)) {
+            // votes: [{ categoryId, carId, ... }]
+            const selectedVotes: { [cat: string]: string | number } = {};
+            votes.forEach(vote => {
+              if (vote.categoryId && vote.carId) {
+                selectedVotes[vote.categoryId] = vote.carId;
+              }
+            });
+            setSelected(selectedVotes);
+          }
+        }
       } catch {
         if (!cancelled) setError("Failed to load voting data");
       } finally {
@@ -53,7 +68,7 @@ export default function VotingPage() {
     }
     load();
     return () => { cancelled = true; };
-  }, []);
+  }, [sessionRacer?.id]);
 
   function handleSelect(category: number, carId: string | number) {
     setSelected(prev => ({ ...prev, [category]: carId }));

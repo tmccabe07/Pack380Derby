@@ -16,14 +16,27 @@ export default function SessionGate({ children }: Props) {
     setPasswordState(getSessionPassword());
   }, []);
 
-  const handleLogin = (pw: string) => {
+  const handleLogin = async (pw: string) => {
     if (!pw || pw.length < 3) {
       setError("Password required");
       return;
     }
-    setSessionPassword(pw);
-    setPasswordState(pw);
-    setError(null);
+    try {
+      // Temporarily set password for API call
+      setSessionPassword(pw);
+      const { fetchRacers } = await import("@/lib/api/racers");
+      const racers = await fetchRacers();
+      if (Array.isArray(racers) && racers.length > 0) {
+        setPasswordState(pw);
+        setError(null);
+      } else {
+        setError("Incorrect password");
+        setSessionPassword("");
+      }
+    } catch {
+      setError("Incorrect password");
+      setSessionPassword("");
+    }
   };
 
   if (!password) {

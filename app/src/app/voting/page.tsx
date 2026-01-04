@@ -10,8 +10,21 @@ import { submitVote } from "@/lib/api/voting";
 import type { VoteSubmission } from "@/types/VoteSubmission";
 import CarCard from "@/components/cars/CarCard";
 import { state } from "@/lib/utils/state";
+import { RacerType } from "@/lib/api/racers";
+
+function getSessionRacer() {
+  const stored = state.getItem("logged_in_racer");
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return null;
+  }
+}
 
 export default function VotingPage() {
+  const sessionRacer = getSessionRacer();
+  const isCub = sessionRacer?.racerType === RacerType.CUB;
   const [categories, setCategories] = useState<VotingCategory[]>([]);
   const [cars, setCars] = useState<Car[]>([]);
   const [selected, setSelected] = useState<{ [cat: string]: string | number }>({});
@@ -66,8 +79,12 @@ export default function VotingPage() {
     }
   }
 
+
   if (loading) return <Layout><div className="text-center text-gray-500">Loading...</div></Layout>;
   if (error) return <Layout><div className="text-center text-red-500">{error}</div></Layout>;
+  if (!isCub) {
+    return <Layout><div className="text-center text-red-600 text-xl font-bold">Voting is only open to Cub Scout racers.</div></Layout>;
+  }
   if (submitted) return <Layout><div className="text-center text-green-600 text-xl font-bold">Thank you for voting!</div></Layout>;
 
   return (

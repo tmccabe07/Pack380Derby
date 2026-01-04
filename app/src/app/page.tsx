@@ -6,6 +6,8 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { Leaderboard } from "@/components/results/Leaderboard";
 import { RaceType } from "@/lib/api/races";
 import { RacerType } from "@/lib/api/racers";
+import RacerLoginSelect from "@/components/racers/RacerLoginSelect";
+import RacerDashboardDetails from "@/components/racers/RacerDashboardDetails";
 
 export default function Home() {
   const { data, loading, refreshing, error, lastUpdated } = useDashboardData();
@@ -33,6 +35,8 @@ export default function Home() {
         <div className="text-center text-red-600">{error}</div>
       ) : (
         <>
+            <RacerLoginSelect />
+            <RacerDashboardDetails />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <DashboardCard title="Cars" count={data.cars} href="/cars" />
             <DashboardCard title="Racers" count={data.racers} href="/racers" />

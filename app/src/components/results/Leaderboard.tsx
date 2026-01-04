@@ -1,4 +1,5 @@
 import React from "react";
+import { state } from "@/lib/utils/state";
 import { RaceType, fetchResults } from "@/lib/api/races";
 import CarCell from "./CarCell";
 import RacerCell from "./RacerCell";
@@ -71,13 +72,14 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ raceType, rank, racerT
         </thead>
         <tbody>
             {entries.map((entry, idx) => {
-            logger.debug("leaderboard", "entry", entry);
+            const loggedInCarId = state.getItem("logged_in_carId");
+            const isLoggedInCar = loggedInCarId && String(entry.carId) === String(loggedInCarId);
             return (
-              <tr key={entry.carId} className="border-t">
-              <td className="py-2 px-2">{idx + 1}</td>
-              <CarCell carId={entry.carId} carName={entry.carName} />
-              <RacerCell carId={entry.carId} />
-              <td className="py-2 px-2">{entry.weightedTotal}</td>
+              <tr key={entry.carId} className={`border-t${isLoggedInCar ? ' bg-yellow-100 font-bold' : ''}`}>
+                <td className="py-2 px-2">{idx + 1}</td>
+                <CarCell carId={entry.carId} carName={entry.carName} />
+                <RacerCell carId={entry.carId} />
+                <td className="py-2 px-2">{entry.weightedTotal}</td>
               </tr>
             );
             })}

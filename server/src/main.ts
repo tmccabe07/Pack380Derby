@@ -2,19 +2,29 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ValidationPipe, Logger } from '@nestjs/common';
+import * as fs from 'fs';
+import * as path from 'path';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
   
+  // Configure HTTPS options if SSL is enabled
+  const useSSL = process.env.USE_SSL === 'true';
+  const httpsOptions = useSSL ? {
+    key: fs.readFileSync(path.join(__dirname, '../../derby.key')),
+    cert: fs.readFileSync(path.join(__dirname, '../../derby.crt')),
+  } : undefined;
+
   const app = await NestFactory.create(AppModule, {
     logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+    ...(httpsOptions && { httpsOptions }),
   });
 
    // Enable CORS
-   app.enableCors({
-    origin: 'http://localhost:3001', // Allow your Next.js frontend
+   /*app.enableCors({
+    origin: 'http://192.168.0.81:3001', // Allow your Next.js frontend
     credentials: true, // Allow cookies/authorization headers if needed
-  });
+  });*/
 
   app.setGlobalPrefix('api');
 
@@ -43,8 +53,12 @@ async function bootstrap() {
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
-  logger.log(`🚀 Server is running on: http://localhost:${port}/api`);
-  logger.log(`📚 API Documentation available at: http://localhost:${port}/api/docs`);
+  const protocol = useSSL ? 'https' : 'http';
+  logger.log(`🚀 Server is running on: ${protocol}://localhost:${port}/api`);
+  logger.log(`📚 API Documentation available at: ${protocol}://localhost:${port}/api/docs`);
+  if (useSSL) {
+    logger.log(`🔒 SSL/HTTPS is enabled`);
+  }
 }
 bootstrap().catch(err => {
   console.error('Failed to start server:', err);

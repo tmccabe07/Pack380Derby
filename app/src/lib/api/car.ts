@@ -36,7 +36,7 @@ export async function fetchCars() {
       if (!car.racer && car.racerId) {
         try {
           car.racer = await fetchPersonById(car.racerId);
-        } catch (e) {
+        } catch {
           car.racer = undefined;
         }
       }
@@ -59,7 +59,7 @@ export async function createCar(car: Omit<Car, "id">): Promise<Car> {
   }
 
   const createdCar: Car = await res.json();
-  attachRacerGetter(createdCar);
+  // attachRacerGetter(createdCar);
   return createdCar;
 }
 

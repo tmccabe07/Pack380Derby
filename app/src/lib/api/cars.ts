@@ -2,6 +2,7 @@ import { fetchPinewoodAPI } from "./api";
 import { fetchRacerById } from "./racers";
 import { Racer } from "./racers";
 import { pinewoodKit } from "@/assets/images";
+import { RankType } from "@/lib/api/racers";
 
 export interface Car {
   id: string;
@@ -41,6 +42,44 @@ export async function fetchCarById(carId: string): Promise<Car | null> {
 }
 
 /**
+ * Fetch cars by rank using the RankType enum.
+ * @param rank - RankType value
+ * @returns Array of Car objects
+ */
+export async function fetchCarsByRank(rank: RankType): Promise<Car[]> {
+  const res = await fetchPinewoodAPI(`/api/car/byRank/${rank}`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch cars for rank: ${rank}`);
+  }
+  const cars: Car[] = await res.json();
+  const results = await Promise.all(cars.map(enrichCar));
+
+  return results;
+}
+
+/**
+ * Fetch all cars for cub ranks (Tiger, Lion, Bear, Wolf, Webelos, AOL).
+ * @returns Array of Car objects for all cub ranks
+ */
+export async function fetchCarsForCubs(): Promise<Car[]> {
+  const cubRanks: RankType[] = [
+    RankType.Cub
+    // RankType.Tiger,
+    // RankType.Lion,
+    // RankType.Bear,
+    // RankType.Wolf,
+    // RankType.Webelos,
+    // RankType.AOL
+  ];
+  const results = await Promise.all(cubRanks.map(rank => fetchCarsByRank(rank)));
+  const cars = results.flat();
+  
+  return cars;
+}
+
+
+
+/**
  * Fetch all cars, optionally filtered by racerId. Attaches racer and normalizes image.
  * @param racerId - Optional racer ID to filter
  * @returns Array of Car objects
@@ -54,30 +93,33 @@ export async function fetchCars(racerId?: string) {
     throw new Error("Failed to fetch cars");
   }
   const cars: Car[] = await res.json();
-  // Fetch and attach person for each car if not present
-  await Promise.all(
-    cars.map(async (car) => {
-      if (!car.racer && car.racerId) {
-        try {
-          car.racer = await fetchRacerById(car.racerId);
-          // default to pinewood kit if no image
-          car.image = car.image || pinewoodKit;
-        } catch {
-          car.racer = undefined;
-        }
-      }
-      // Remove data URI prefix from image if present
-      if (car.image && car.image.startsWith("data:")) {
-        const commaIndex = car.image.indexOf(",");
-        if (commaIndex !== -1) {
-          car.image = car.image.slice(commaIndex + 1);
-        }
-      }
-    })
-  );
-  return cars;
+  const results = await Promise.all(cars.map(enrichCar));
+  
+  return results;
 }
 
+/**
+ * Enrich a car object by attaching racer and normalizing image.
+ * @param car - Car object
+ */
+export async function enrichCar(car: Car): Promise<Car> {
+  
+  if (!car.racer && car.racerId) {
+    try {
+      car.racer = await fetchRacerById(car.racerId);
+      car.image = car.image || pinewoodKit;
+    } catch {
+      car.racer = undefined;
+    }
+  }
+  if (car.image && car.image.startsWith("data:")) {
+    const commaIndex = car.image.indexOf(",");
+    if (commaIndex !== -1) {
+      car.image = car.image.slice(commaIndex + 1);
+    }
+  }
+  return car;
+}
 
 /**
  * Create a new car entry.
@@ -85,7 +127,6 @@ export async function fetchCars(racerId?: string) {
  * @returns Created Car object
  */
 export async function createCar(newCar: Omit<Car, "id">): Promise<Car> {
-console.log("Creating car:", newCar);
   const res = await fetchPinewoodAPI(`/api/car`, {
     method: "POST",
     headers: {

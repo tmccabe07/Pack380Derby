@@ -1,12 +1,14 @@
 "use client";
 import Layout from "@/components/Layout";
 import { useEffect, useState } from "react";
-import { fetchResultsByRank } from "@/lib/api/results";
+import { fetchResultsByRank, ResultItem } from "@/lib/api/results";
 import { RankType } from "@/lib/api/racers";
+import { RaceType } from "@/lib/api/races";
+import { Leaderboard } from "@/components/results/Leaderboard";
 
 export default function ResultsPage() {
 
-  const [results, setResults] = useState<Record<string, any[]>>({});
+  const [results, setResults] = useState<Record<string, ResultItem[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,7 +17,7 @@ export default function ResultsPage() {
     async function load() {
       try {
         const ranks = Object.values(RankType);
-        const resultsObj: Record<string, any[]> = {};
+        const resultsObj: Record<string, ResultItem[]> = {};
         for (const rank of ranks) {
           try {
             const res = await fetchResultsByRank(rank);
@@ -40,12 +42,26 @@ export default function ResultsPage() {
 
   return (
     <Layout>
-      <div className="max-w-3xl mx-auto mt-10 space-y-6">
-        <h1 className="text-3xl font-bold">Race Results</h1>
+      <div className="max-w-7xl mx-auto mt-10">
+        <h1 className="text-3xl font-bold mb-8">Race Results</h1>
+          <div className="mb-8">
+            <Leaderboard raceType={RaceType.Final} rank={RankType.Cub} />
+          </div>
+
+          <div className="mb-8">
+            <Leaderboard raceType={RaceType.Final} rank={RankType.Sibling} />            
+          </div>
+
+          <div className="mb-8">
+            <Leaderboard raceType={RaceType.Final} rank={RankType.Adult} />            
+          </div>
         {loading && <div>Loading results...</div>}
         {error && <div className="text-red-600">{error}</div>}
+        <h2 className="text-2xl font-bold mb-8">Best of the rest...</h2>
         {!loading && !error && (
-          <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    
+
             {Object.entries(results).map(([rank, items]) => (
               <div key={rank} className="rounded-xl border border-gray-200 bg-white/70 backdrop-blur p-6 shadow-sm">
                 <h2 className="text-2xl font-semibold mb-4">{rank} Results</h2>
@@ -61,25 +77,25 @@ export default function ResultsPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {items.map((result: any, idx: number) => (
+                      {items.map((result: ResultItem, idx: number) => (
                         <tr key={result.carId || idx} className="border-t">
                           <td className="py-2 px-2">{result.place ?? idx + 1}</td>
-                            <td className="py-2 px-2">
+                          <td className="py-2 px-2">
                             <a
                               href={`/cars/${result.carId}`}
                               className="text-blue-600 hover:underline"
                             >
                               {result.car?.name || result.carId}
                             </a>
-                            </td>
-                            <td className="py-2 px-2">
+                          </td>
+                          <td className="py-2 px-2">
                             <a
                               href={`/racers/${result.racerId}`}
                               className="text-blue-600 hover:underline"
                             >
                               {result.car?.racer?.name || result.racerId}
                             </a>
-                            </td>
+                          </td>
                         </tr>
                       ))}
                     </tbody>

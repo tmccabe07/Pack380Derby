@@ -1,5 +1,6 @@
 import { fetchPinewoodAPI } from "./api";
 import { RankType } from "./racers";
+import { logger } from "@/lib/utils/log";
 
 // Race with heats grouped by rankType and heatId
 export interface RaceWithRankedHeats extends Race {
@@ -8,13 +9,16 @@ export interface RaceWithRankedHeats extends Race {
 
 // RaceType enum based on server README
 export enum RaceType {
+  Initialize = 1,
   Preliminary = 10,
+  PreliminaryDeadheat = 40,
   Semifinal = 20,
+  SemifinalDeadheat = 50,
   Final = 30,
 }
 
 export interface Race {
-  id: string;
+  id?: string;
   numLanes: number;
   raceType: RaceType;
   rank: RankType;
@@ -24,8 +28,11 @@ export interface Race {
 
 // Optional mapping of race type enum to friendly labels
 export const RACE_TYPE_LABELS: Record<RaceType, string> = {
+  [RaceType.Initialize]: "Initialize",
   [RaceType.Preliminary]: "Preliminary",
+  [RaceType.PreliminaryDeadheat]: "Preliminary Deadheat",
   [RaceType.Semifinal]: "Semifinal",
+  [RaceType.SemifinalDeadheat]: "Semifinal Deadheat",
   [RaceType.Final]: "Final",
 };
 
@@ -47,7 +54,7 @@ export async function fetchRaces(): Promise<Race[]> {
   const res = await fetchPinewoodAPI(`/api/race`);
   if (!res.ok) throw new Error("Failed to fetch races");
   const races = await res.json();
-  console.log("fetchRaces() -> ", races);
+  logger.debug("races", "fetchRaces()", races);
   return races
 }
 
@@ -71,17 +78,11 @@ export interface HeatLane {
   carId: number;
   result?: number; // place or time/result
   car?: CarSummary;
+  status?: "Upcoming" | "Completed";
 }
 
 export interface CarSummary { id: number; name?: string; image?: string; racerId?: number; racer?: RacerSummary; }
 export interface RacerSummary { id: number; name?: string; rank?: string; }
-
-type CompatibleHeatEntry = HeatEntry & { carId: string | number; };
-
-function computeStatus(entries: CompatibleHeatEntry[]): "Upcoming" | "Completed" {
-  const allWithResult = entries.length > 0 && entries.every(e => typeof e.result === "number" && e.result > 0);
-  return allWithResult ? "Completed" : "Upcoming";
-}
 
 export async function fetchHeatsForRace(raceId: number): Promise<Record<RankType, Record<number, HeatLane[]>>> {
   const res = await fetchPinewoodAPI(`/api/race/${raceId}/heats`);
@@ -95,6 +96,9 @@ export async function fetchHeatsForRace(raceId: number): Promise<Record<RankType
     [RankType.Tiger]: {},
     [RankType.Wolf]: {},
     [RankType.Bear]: {},
+    [RankType.Webelos]: {},
+    [RankType.Cub]: {},
+    [RankType.AOL]: {},
     [RankType.Adult]: {},
     [RankType.Sibling]: {},
   };
@@ -117,8 +121,8 @@ export async function fetchHeatsForRace(raceId: number): Promise<Record<RankType
   }, initialAcc);
 
   // Add status to each heat group
-  Object.entries(hl).forEach(([rank, heatsById]) => {
-    Object.entries(heatsById).forEach(([heatId, lanes]) => {
+  Object.entries(hl).forEach(([, heatsById]) => {
+    Object.entries(heatsById).forEach(([, lanes]) => {
       const status = computeStatus(lanes);
       lanes.forEach(lane => {
         lane.status = status;
@@ -126,7 +130,7 @@ export async function fetchHeatsForRace(raceId: number): Promise<Record<RankType
     });
   });
 
-  console.log("Grouped heat lanes by rank and heatId with status:", hl);
+  logger.debug("races", "Grouped heat lanes by rank and heatId with status", hl);
   return hl;
 }
 

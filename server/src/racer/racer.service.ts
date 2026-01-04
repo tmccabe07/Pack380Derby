@@ -22,7 +22,7 @@ export class RacerService {
   async update(id: number, updateData: UpdateRacerDto): Promise<Racer> {
     const checkIndex = await this.prisma.racer.findUnique({
       where: {
-        id: id, 
+        id: id,
       },
     })
 

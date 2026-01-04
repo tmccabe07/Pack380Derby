@@ -15,6 +15,7 @@ export default function CarCard({ car, onlyImage = false }: CarCardProps) {
 
   const details = (
     <div className="ml-4 text-sm text-gray-700">
+      <span className="font-bold">Car #{car.id}</span>
       {racer?.name && <div><span className="font-medium"></span> {racer.name}</div>}
       {racer?.rank && <div><span className="font-medium"></span> {racer.rank}</div>}
       {isCub && racer?.den && <div><span className="font-medium"></span> {racer.den}</div>}
@@ -33,6 +34,7 @@ export default function CarCard({ car, onlyImage = false }: CarCardProps) {
             className="object-cover rounded"
           />
         )}
+        <span className="font-bold">Car #{car.id}</span>
       </div>
     </div>
   ) : (

@@ -101,7 +101,14 @@ const RacerResults = memo(function RacerResults({ search }: { search: string }) 
   ) : (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
       {racers.map((racer) => (
-        <RacerCard key={racer.id} racer={racer} />
+        <RacerCard
+          key={racer.id}
+          racer={{
+            ...racer,
+            rank: racer.rank ?? import("@/lib/api/racers").RankType.Lion,
+            den: racer.den ?? "",
+          }}
+        />
       ))}
     </div>
   );

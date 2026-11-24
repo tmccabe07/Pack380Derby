@@ -9,7 +9,9 @@ describe('HeatLaneController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [HeatLaneController],
       providers: [HeatLaneService],
-    }).compile();
+    })
+      .useMocker(() => ({}))
+      .compile();
 
     controller = module.get<HeatLaneController>(HeatLaneController);
   });

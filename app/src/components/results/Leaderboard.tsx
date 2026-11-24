@@ -48,7 +48,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ raceType, rank, racerT
   if (loading) return <div>Loading leaderboard...</div>;
   if (error) return <div className="text-red-600">{error}</div>;
   if (!entries.length) return (
-   <div className="border rounded-lg p-4 bg-white shadow">
+   <div className="border rounded-lg p-4 bg-white shadow" data-testid={`leaderboard-${raceType}-${racerType}`}>
       <h2 className="text-xl font-bold mb-4">
         Leaderboard: {RaceType[raceType]} / {racerType}
       </h2>
@@ -57,7 +57,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ raceType, rank, racerT
   );
 
   return (
-    <div className="border rounded-lg p-4 bg-white shadow">
+    <div className="border rounded-lg p-4 bg-white shadow" data-testid={`leaderboard-${raceType}-${racerType}`}>
       <h2 className="text-xl font-bold mb-4">
         Leaderboard: {RaceType[raceType]} / {racerType}
       </h2>

@@ -2,7 +2,7 @@
   "scripts": {
     "start:server": "cd server && npm run start:dev",
     "start:app": "cd app && npm run start:dev",
-    "test:playwright": "npx playwright test",
+    "test:playwright": "cd app && npx playwright test",
     "start:all": "npm-run-all --parallel start:server start:app"
   },
   "devDependencies": {

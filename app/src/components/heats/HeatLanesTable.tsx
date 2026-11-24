@@ -142,7 +142,7 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
             return group.entries.map((entry, idx) => {
               const isLoggedInCar = loggedInCarId && String(entry.carId) === String(loggedInCarId);
               return (
-                <tr key={`${group.heatId}-${idx}`} className={`border-t${isLoggedInCar ? ' bg-yellow-100 font-bold' : ''}`}>
+                <tr key={`${group.heatId}-${idx}`} data-testid={`heat-${group.heatId}-lane-${entry.lane}`} className={`border-t${isLoggedInCar ? ' bg-yellow-100 font-bold' : ''}`}>
                 {idx === 0 && (
                   <td className="py-2 px-2 align-top" rowSpan={group.entries.length}>
                     <div className="flex flex-col gap-1">
@@ -162,6 +162,7 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
                     <div className="flex flex-col items-center">
                       <input
                         type="number"
+                        data-testid={`place-heat-${group.heatId}-lane-${entry.lane}`}
                         min={1}
                         max={group.entries.length}
                         value={editResults[`${group.heatId}-${idx}`] ?? entry.result ?? ''}
@@ -193,11 +194,12 @@ const HeatLanesTable: React.FC<HeatLanesTableProps> = ({
                 <td className="py-2 px-2">{entry.carId ? <Link href={`/cars/${entry.carId}`} className="text-blue-600 hover:underline">{entry.car?.name}</Link> : '—'}</td>
                 <td className="py-2 px-2">{entry.car?.racer ? <Link href={`/racers/${entry.car?.racerId}`} className="text-green-600 hover:underline">{entry.car?.racer?.name}</Link> : '—'}</td>
                 {idx === 0 && (
-                  <td className="py-2 px-2 align-top" rowSpan={group.entries.length}>{status}</td>
+                  <td className="py-2 px-2 align-top" rowSpan={group.entries.length} data-testid={`heat-status-${group.heatId}`}>{status}</td>
                 )}
                 {idx === 0 && isAdmin && (
                   <td className="py-2 px-2 align-top" rowSpan={group.entries.length}>
                     <button
+                      data-testid={`save-heat-${group.heatId}`}
                       onClick={() => handleSaveAll(group.heatId, group.entries)}
                       className={`bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 text-sm${hasError ? ' opacity-50 cursor-not-allowed' : ''} saved-${savedState[`${group.heatId}`] || 'false'}`}
                       disabled={saving[`${group.heatId}`] || hasError}

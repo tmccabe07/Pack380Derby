@@ -95,6 +95,7 @@ export default function CarForm({ car, onChange, racer, hideSubmit, onSubmit }: 
           <label className="block text-sm font-bold mb-1">Car Name</label>
           <input
             type="text"
+            data-testid="car-name-input"
             className="border p-2 w-full"
             value={car.name}
             onChange={(e) => handleChange("name", e.target.value)}
@@ -141,6 +142,7 @@ export default function CarForm({ car, onChange, racer, hideSubmit, onSubmit }: 
           <label className="block text-sm font-bold mb-1">Weight</label>
           <input
             type="text"
+            data-testid="car-weight-input"
             className="border p-2 w-full"
             value={car.weight}
             onChange={(e) => handleChange("weight", e.target.value)}

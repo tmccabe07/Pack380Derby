@@ -1,63 +1,55 @@
 # Testing Guide
 
-This project uses Playwright for end-to-end (E2E) testing and Vitest for unit testing.
+Three layers run in CI on every pull request (`.github/workflows/ci.yml`):
 
-## Prerequisites
-- Node.js (v18+ recommended)
-- npm (v9+ recommended)
-- All dependencies installed: `npm install` (run in root, app, and server folders if needed)
+| Layer | Where | Command |
+|---|---|---|
+| Server unit tests (Jest) | `server/` | `npm test` |
+| App unit tests (Vitest) | `app/` | `npm test` |
+| End-to-end tests (Playwright) | `app/` | `npm run test:e2e` |
 
-## Playwright E2E Tests
+Run `npm ci` in both `server/` and `app/` first, and `npx prisma generate` in `server/`.
 
-### Setup
-1. Install Playwright browsers:
-   ```sh
-   npx playwright install
-   ```
-2. Ensure both the frontend (app) and backend (server) can start locally.
-   - The Playwright config will start both automatically using:
-     ```sh
-     npm run start:all
-     ```
-   - This runs both `start:server` and `start:app` in parallel.
+## End-to-end tests
 
-### Running Tests
-- From the project root, run:
-  ```sh
-  npm run test:playwright
-  ```
-- This will:
-  - Start both the server and app
-  - Run all Playwright tests in `/app/tests`
-  - Generate a report in `/app/playwright-report`
+The Playwright suite drives a real browser against a real API, app and Postgres database. Playwright starts everything itself: it migrates and seeds the test database, builds and starts the API on port 3100 and the app on port 3101, signs in once, then runs the specs. The ports are different from the usual dev servers (3000 and 3001), so a dev session can stay open.
 
-### Troubleshooting
-- If you see a timeout error, make sure both services start and listen on the expected ports (default: 3000).
-- You can increase the timeout in `playwright.config.ts` if your servers are slow to start.
-- Make sure you have `npm-run-all` installed:
-  ```sh
-  npm install --save-dev npm-run-all
-  ```
+### One-time setup
 
-## Unit Tests (Vitest)
+```sh
+createdb pinewood_derby_e2e
+cd app && npx playwright install chromium
+```
 
-- Run unit tests from the app folder:
-  ```sh
-  cd app
-  npm run test
-  ```
-- Unit tests are located in `app/__tests__`.
+### Run
 
-## Environment Variables
-- Ensure `.env.local` or `.env` files are set up for both app and server as needed.
-- Example variables:
-  ```env
-  NEXT_PUBLIC_DERBY_API_URL=http://localhost:3000
-  NEXT_PUBLIC_DERBY_API_TOKEN=your_token_here
-  ```
+```sh
+cd app
+npm run test:e2e
+```
 
-## Summary
-- E2E: `npm run test:playwright` (root)
-- Unit: `npm run test` (in app folder)
-- Both services must be able to start locally for E2E tests.
-- See `playwright.config.ts` for more details and customization.
+`npx playwright test --ui` opens the interactive runner. The HTML report is written to `app/playwright-report/`.
+
+### The test database is wiped on every run
+
+`server/scripts/seed-e2e.ts` empties every table and loads a small synthetic event: 12 cub cars, 3 sibling cars, 3 adult cars, one scout without a car, and two voting categories. It refuses to run unless the database name contains `e2e` or `test`.
+
+By default the suite uses `postgresql://$USER@localhost:5432/pinewood_derby_e2e`. Override with `E2E_DATABASE_URL`. Never point it at a database with real event data.
+
+### What the specs cover
+
+Specs share one database and run in file order on a single worker.
+
+- `01-smoke`: shared-password sign-in, dashboard counts, browsing, organizer-only controls.
+- `02-derby-journey`: one cub division from preliminary to final: create rounds, score heats, place validation, advancement, leaderboards, results page, print sheet, picking your own racer.
+- `03-voting`: who may vote, one vote per category, changing a vote, tallies.
+- `04-registration`: registering a car for a rostered scout and for a new adult.
+
+These describe what the app does today, including a few quirks that are noted in comments with their issue numbers. When a tracked issue changes behaviour, update the spec in the same pull request.
+
+### Writing specs
+
+- Heats are drawn at random. Read the cars from the page and score by rule (see `scoreHeatInLaneOrder` in `app/tests/helpers.ts`) rather than expecting a particular car in a particular lane.
+- Prefer `data-testid` for scorer inputs and leaderboards; prefer roles and visible text elsewhere.
+- Organizer screens are reached with `asOrganizer('/path')`.
+- Only use synthetic names. Never copy real event data into fixtures.

@@ -35,7 +35,7 @@ export default function RaceForm({ onCreate }: { onCreate: (race: Race) => void 
       </div>
       <div>
         <label className="block font-bold mb-1">Create Race type</label>
-        <select value={raceType} onChange={e => setRaceType(Number(e.target.value))} className="border p-2 w-full">
+        <select data-testid="race-type-select" value={raceType} onChange={e => setRaceType(Number(e.target.value))} className="border p-2 w-full">
           {raceTypeOptions.map((rt: { value: number; label: string }) => (
             <option key={rt.value} value={rt.value}>{rt.label}</option>
           ))}
@@ -43,7 +43,7 @@ export default function RaceForm({ onCreate }: { onCreate: (race: Race) => void 
       </div>
       <div>
         <label className="block font-bold mb-1">Racer Type</label>
-        <select value={racerType} onChange={e => setRacerType(e.target.value as RacerType)} className="border p-2 w-full">
+        <select data-testid="racer-type-select" value={racerType} onChange={e => setRacerType(e.target.value as RacerType)} className="border p-2 w-full">
           {Object.values(RacerType).map(r => <option key={r} value={r}>{r}</option>)}
         </select>
       </div>

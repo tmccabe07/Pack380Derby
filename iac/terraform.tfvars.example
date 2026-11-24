@@ -1,0 +1,7 @@
+vpc_id              = "replace-with-vpc-id"
+public_subnet_id    = "replace-with-public-subnet-id"
+private_subnet_1_id = "replace-with-first-private-subnet-id"
+private_subnet_2_id = "replace-with-second-private-subnet-id"
+db_username         = "replace-with-db-username"
+db_password         = "replace-with-db-password"
+key_name            = "replace-with-key-pair-name"

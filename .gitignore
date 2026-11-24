@@ -142,4 +142,7 @@ dist
 .tfstate.*
 *.tfstate
 *.backup
+/iac/terraform.tfstate
+/iac/terraform.tfstate.backup
+/iac/terraform.tfvars
 iac/derby.pem

@@ -1,0 +1,45 @@
+schema: spec-driven
+
+context: |
+  Volunteer-run Pinewood Derby app for a Cub Scout pack; specs are read by scout leaders, not only developers.
+  Write specs and proposals in plain language: no code, file names or API routes in requirements.
+  Never include real names of scouts or families in any artifact; this repository is public.
+  The next event is January 30, 2027, with a code freeze on December 31, 2026.
+  Changes to race format, awards, voting or registration rules need agreement from pack leaders before implementation.
+
+rules:
+  proposal:
+    - Keep proposals under 500 words and open with the decision leaders are being asked to make
+    - List the options considered and a recommendation
+    - Link the GitHub issue the proposal belongs to
+
+# Project context (optional)
+# Add only constraints that should guide OpenSpec artifacts and workflows.
+# Include constraints an agent cannot infer by reading the code.
+# Keep general project documentation and discoverable codebase facts out.
+# Example:
+#   context: |
+#     Designs and tasks must cover Windows, macOS, and Linux
+#     Write all artifacts in Spanish
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always state what is out of scope
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing

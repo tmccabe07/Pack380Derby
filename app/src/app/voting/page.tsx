@@ -11,6 +11,7 @@ import type { VoteSubmission } from "@/types/VoteSubmission";
 import CarCard from "@/components/cars/CarCard";
 import { state } from "@/lib/utils/state";
 import { RacerType } from "@/lib/api/racers";
+import RacerLoginSelect from "@/components/racers/RacerLoginSelect";
 
 function getSessionRacer() {
   const stored = state.getItem("logged_in_racer");
@@ -23,7 +24,7 @@ function getSessionRacer() {
 }
 
 export default function VotingPage() {
-  const sessionRacer = getSessionRacer();
+  const [sessionRacer, setSessionRacer] = useState<any>(getSessionRacer());
   const isCub = sessionRacer?.racerType === RacerType.CUB;
   const [categories, setCategories] = useState<VotingCategory[]>([]);
   const [cars, setCars] = useState<Car[]>([]);
@@ -98,12 +99,17 @@ export default function VotingPage() {
   if (loading) return <Layout><div className="text-center text-gray-500">Loading...</div></Layout>;
   if (error) return <Layout><div className="text-center text-red-500">{error}</div></Layout>;
   if (!isCub) {
-    return <Layout><div className="text-center text-red-600 text-xl font-bold">Voting is only open to Cub Scout racers.</div></Layout>;
+    return <Layout><div className="mb-6">
+        <RacerLoginSelect onChange={(racer) => setSessionRacer(racer)} />
+      </div><div className="text-center text-red-600 text-xl font-bold">Voting is only open to Cub Scout racers.</div></Layout>;
   }
   if (submitted) return <Layout><div className="text-center text-green-600 text-xl font-bold">Thank you for voting!</div></Layout>;
 
   return (
     <Layout>
+        <div className="mb-6">
+        <RacerLoginSelect onChange={(racer) => setSessionRacer(racer)} />
+      </div>
       <h1 className="text-3xl font-bold mb-6">Vote for...</h1>
       {/* Category Tabs */}
       <div className="flex gap-4 mb-8">

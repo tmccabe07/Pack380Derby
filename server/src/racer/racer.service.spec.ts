@@ -113,6 +113,7 @@ describe('RacerService', () => {
   describe('updateOne', () => {
     it('should call the update method', async () => {
       const cat = await service.update(2, {
+        id: 2,
         name: 'Racer 1',
         den: '8',
         rank: 'tiger',
@@ -124,7 +125,7 @@ describe('RacerService', () => {
       const dbSpy = jest
         .spyOn(prisma.racer, 'update')
         .mockRejectedValueOnce(new Error('Racer with 4 does not exist.'));
-      expect(service.update(4, {name: 'Racer 1', den: '8', rank: 'tiger'})).rejects.toThrow('Racer with 4 does not exist.')
+      expect(service.update(4, {id: 4, name: 'Racer 1', den: '8', rank: 'tiger'})).rejects.toThrow('Racer with 4 does not exist.')
     });
   });
 
